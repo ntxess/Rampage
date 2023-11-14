@@ -15,15 +15,14 @@
 class FileManager
 {
 private:
-	SystemData* sysData;
 	const std::string RELATIVE_PATH;
 	const std::string MAIN_CONFIG;
 
 public:
-	FileManager() = delete;
-	FileManager(SystemData* g_data);
+	FileManager();
 	FileManager(const FileManager&) = delete;
 	~FileManager() = default;
+	SystemStatus init(DataMap& datamap);
 	SystemStatus load(const std::string& filepath, DataMap& datamap);
 	SystemStatus save(const std::string& filepath, DataMap& datamap);
 
@@ -31,6 +30,5 @@ private:
 	void read(rapidjson::Value& val, DataKey& nodeId, DataMap& datamap);
 	void write(rapidjson::Value& val, DataKey& nodeId, const DataMap& datamap, rapidjson::Document& doc);
 	std::any resolveType(rapidjson::Value& key);
-	SystemStatus initSystemFolders();
 	SystemStatus creatConfig(const std::string& filepath);
 };

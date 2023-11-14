@@ -2,6 +2,7 @@
 
 #include "CommonEnum.hpp"
 #include "SystemData.hpp"
+#include "FileManager.hpp"
 #include "SFML/Graphics.hpp"
 #include "SFML/Audio.hpp"
 #include "boost/thread.hpp"
@@ -19,6 +20,7 @@ private:
     boost::thread audio;
     boost::thread resource;
     boost::thread menu;
+    FileManager fileManager;
 
 public:
     Engine();

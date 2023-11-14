@@ -2,12 +2,12 @@
 
 Engine::Engine()
     : sysData(std::make_shared<SystemData>())
-    , window(&Engine::windowThread, this)
-    , physic(&Engine::physicThread, this)
-    , render(&Engine::renderThread, this)
-    , audio(&Engine::soundThread, this)
-    , resource(&Engine::resourceThread, this)
-    , menu(&Engine::menuThread, this)
+    //, window(&Engine::windowThread, this)
+    //, physic(&Engine::physicThread, this)
+    //, render(&Engine::renderThread, this)
+    //, audio(&Engine::soundThread, this)
+    //, resource(&Engine::resourceThread, this)
+    //, menu(&Engine::menuThread, this)
 {
     if (init() == SystemStatus::OK)
     {
@@ -39,7 +39,10 @@ void Engine::test()
 
 SystemStatus Engine::init()
 {
-    configureWindow();
+    if (fileManager.init(sysData->configuration) == SystemStatus::FILE_MNGR_SUCCESS)
+    {
+        configureWindow();
+    }
 
     return SystemStatus::OK;
 }
@@ -57,6 +60,7 @@ SystemStatus Engine::configureWindow()
     unsigned int height = std::any_cast<int>(sysData->configuration[HEIGHT]);
     std::string name = std::any_cast<std::string>(sysData->configuration[NAME]);
     sysData->window.create(sf::VideoMode(width, height), name, sf::Style::Default, settings);
+
     return SystemStatus::OK;
 }
 

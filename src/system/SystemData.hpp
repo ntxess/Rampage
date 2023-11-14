@@ -1,11 +1,11 @@
 #pragma once
 
 #include "CommonEnum.hpp"
-#include "FileManager.hpp"
-#include "SceneManager.hpp"
-#include "SpriteManager.hpp"
-#include "WaypointManager.hpp"
-#include "Logger.hpp"
+//#include "FileManager.hpp"
+//#include "SceneManager.hpp"
+//#include "SpriteManager.hpp"
+//#include "WaypointManager.hpp"
+//#include "Logger.hpp"
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/View.hpp>
 #include <SFML/System/Clock.hpp>

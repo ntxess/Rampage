@@ -1,17 +1,44 @@
 #include "FileManager.hpp"
 
-FileManager::FileManager(SystemData* data)
-    : sysData(data)
-    , RELATIVE_PATH(std::filesystem::current_path().string() + "\\config\\")
-    , MAIN_CONFIG("config.json")
+FileManager::FileManager()
+    : RELATIVE_PATH(std::filesystem::current_path().string())
+    , MAIN_CONFIG("\\config\\config.json")
+{}
+
+SystemStatus FileManager::init(DataMap& datamap)
 {
-    initSystemFolders();
-    load(RELATIVE_PATH + MAIN_CONFIG, sysData->configuration);
+    std::vector<DataKey> paths = { PATH_SAVE, PATH_SCRIPT };
+
+    try
+    {
+        std::filesystem::create_directories(RELATIVE_PATH + "\\config\\");
+
+        if (datamap.empty())
+        {
+            creatConfig(MAIN_CONFIG);
+
+            if (load(MAIN_CONFIG, datamap) == SystemStatus::FILE_MNGR_SUCCESS)
+            {
+                for (const auto& path : paths)
+                {
+                    if (anyToString(datamap[path]).empty()) continue;
+                    std::filesystem::create_directories(RELATIVE_PATH + anyToString(datamap[path]));
+                }
+            }
+        }
+    }
+    catch (...)
+    {
+        return creatConfig(RELATIVE_PATH + MAIN_CONFIG);
+    }
+
+    return SystemStatus::FILE_MNGR_SUCCESS;
 }
 
 SystemStatus FileManager::load(const std::string& filepath, DataMap& datamap)
 {
-    std::fstream ifs(filepath, std::fstream::in | std::fstream::out | std::fstream::app);
+    std::string temp = RELATIVE_PATH + filepath;
+    std::fstream ifs(RELATIVE_PATH + filepath, std::fstream::in | std::fstream::out | std::fstream::app);
     if (!ifs.good()) return SystemStatus::FILE_MNGR_FAIL_READ;
     if (ifs.peek() == std::ifstream::traits_type::eof()) 
         return SystemStatus::FILE_MNGR_FAIL_FILE_EMPTY;
@@ -28,7 +55,7 @@ SystemStatus FileManager::load(const std::string& filepath, DataMap& datamap)
 
 SystemStatus FileManager::save(const std::string& filepath, DataMap& datamap)
 {
-    std::fstream ifs(filepath, std::fstream::in | std::fstream::out | std::fstream::app);
+    std::fstream ifs(RELATIVE_PATH + filepath, std::fstream::in | std::fstream::out | std::fstream::app);
     if (!ifs.good()) return SystemStatus::FILE_MNGR_FAIL_READ;
     if (ifs.peek() == std::ifstream::traits_type::eof())
         return SystemStatus::FILE_MNGR_FAIL_FILE_EMPTY;
@@ -44,7 +71,7 @@ SystemStatus FileManager::save(const std::string& filepath, DataMap& datamap)
     doc.Accept(writer);
     std::string json(buffer.GetString(), buffer.GetSize());
 
-    std::ofstream of(filepath);
+    std::ofstream of(RELATIVE_PATH + filepath);
     of << json;
 
     if (!of.good()) return SystemStatus::FILE_MNGR_FAIL_WRITE;
@@ -140,32 +167,12 @@ std::any FileManager::resolveType(rapidjson::Value& key)
     return std::string();
 }
 
-SystemStatus FileManager::initSystemFolders()
-{
-    std::vector<DataKey> paths = { PATH_SAVE, PATH_SCRIPT };
-
-    try
-    {
-        std::filesystem::create_directories(RELATIVE_PATH);
-
-        for (const auto& path : paths)
-        {
-            std::filesystem::create_directories(anyToString(sysData->configuration[path]));
-        }
-    }
-    catch (...)
-    {
-        return creatConfig(RELATIVE_PATH + MAIN_CONFIG);
-    }
-
-    return SystemStatus::FILE_MNGR_SUCCESS;
-}
-
 SystemStatus FileManager::creatConfig(const std::string& filepath)
 {
-    std::fstream ifs(filepath, std::fstream::in | std::fstream::out | std::fstream::app);
+    std::string temp = RELATIVE_PATH + filepath;
+    std::fstream ifs(RELATIVE_PATH + filepath, std::fstream::in | std::fstream::out | std::fstream::app);
     if (!ifs.good()) return SystemStatus::FILE_MNGR_FAIL_READ;
-
+    
     std::stringstream buffer;
     buffer << ifs.rdbuf();
     std::string json = buffer.str();
@@ -185,8 +192,8 @@ SystemStatus FileManager::creatConfig(const std::string& filepath)
             "    },\n"
             "    \"video-settings\": {\n"
             "        \"resolution\": {\n"
-            "            \"width\": 1280.0,\n"
-            "            \"height\": 720.0\n"
+            "            \"width\": 1280,\n"
+            "            \"height\": 720\n"
             "        },\n"
             "        \"fullscreen\": false,\n"
             "        \"damage-number\": true,\n"
@@ -228,6 +235,5 @@ SystemStatus FileManager::creatConfig(const std::string& filepath)
         ifs << data;
         return SystemStatus::FILE_MNGR_CREATED_FILE;
     }
-
     return SystemStatus::FILE_MNGR_SUCCESS;
 }
