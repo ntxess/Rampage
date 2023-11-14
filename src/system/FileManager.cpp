@@ -1,12 +1,12 @@
 #include "FileManager.hpp"
 
-FileManager::FileManager(SystemData* g_data)
-    : g_data(g_data)
+FileManager::FileManager(SystemData* data)
+    : sysData(data)
     , RELATIVE_PATH(std::filesystem::current_path().string() + "\\config\\")
     , MAIN_CONFIG("config.json")
 {
     initSystemFolders();
-    load(RELATIVE_PATH + MAIN_CONFIG, g_data->configData);
+    load(RELATIVE_PATH + MAIN_CONFIG, sysData->configuration);
 }
 
 SystemStatus FileManager::load(const std::string& filepath, DataMap& datamap)
@@ -124,11 +124,10 @@ std::any FileManager::resolveType(rapidjson::Value& key)
         return std::string(key.GetString());
 
     case rapidjson::kNumberType:
-        if (key.IsInt())
-            return key.GetInt();
-        else if (key.IsDouble());
-            return key.GetDouble();
-        break;
+        if (key.IsInt()) return key.GetInt();
+        else if (key.IsDouble()) return key.GetDouble();
+        else return std::string();
+
     case rapidjson::kTrueType:
         [[fallthrough]];
 
@@ -151,7 +150,7 @@ SystemStatus FileManager::initSystemFolders()
 
         for (const auto& path : paths)
         {
-            std::filesystem::create_directories(anyToString(g_data->configData[path]));
+            std::filesystem::create_directories(anyToString(sysData->configuration[path]));
         }
     }
     catch (...)

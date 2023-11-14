@@ -1,7 +1,8 @@
 #pragma once
 
-#include <string>
 #include <any>
+#include <atomic>
+#include <string>
 #include <unordered_map>
 
 enum class SystemStatus
@@ -151,4 +152,6 @@ std::string anyToString(const std::any& value)
 	return "";
 }
 
+
 typedef std::unordered_map<DataKey, std::any> DataMap;
+typedef std::atomic<size_t> ID;

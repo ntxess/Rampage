@@ -5,18 +5,19 @@
 #include "rapidjson/document.h"
 #include "rapidjson/istreamwrapper.h"
 #include "rapidjson/prettywriter.h"
+#include <any>
+#include <memory>
 #include <string>
 #include <fstream>
 #include <filesystem>
 #include <unordered_map>
-#include <any>
 
 class FileManager
 {
 private:
+	SystemData* sysData;
 	const std::string RELATIVE_PATH;
 	const std::string MAIN_CONFIG;
-	SystemData* g_data;
 
 public:
 	FileManager() = delete;

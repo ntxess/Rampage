@@ -1,14 +1,31 @@
 #include "Engine.hpp"
 
 Engine::Engine()
-    : sys_data(std::make_unique<SystemData>())
-    , mngr_file(sys_data.get())
+    : sysData(std::make_shared<SystemData>())
+    , window(&Engine::windowThread, this)
+    , physic(&Engine::physicThread, this)
+    , render(&Engine::renderThread, this)
+    , audio(&Engine::soundThread, this)
+    , resource(&Engine::resourceThread, this)
+    , menu(&Engine::menuThread, this)
 {
-    init();
+    if (init() == SystemStatus::OK)
+    {
+        window.detach();
+        physic.detach();
+        render.detach();
+        audio.detach();
+        resource.detach();
+        menu.detach();
+    }
 }
 
 void Engine::run()
 {
+    while (true)
+    {
+
+    }
 
 }
 
@@ -36,9 +53,57 @@ SystemStatus Engine::configureWindow()
     settings.majorVersion = 4;
     settings.minorVersion = 3;
 
-    unsigned int width = std::any_cast<int>(sys_data->configData[WIDTH]);
-    unsigned int height = std::any_cast<int>(sys_data->configData[HEIGHT]);
-    std::string name = std::any_cast<std::string>(sys_data->configData[NAME]);
-    sys_data->window.create(sf::VideoMode(width, height), name, sf::Style::Default, settings);
+    unsigned int width = std::any_cast<int>(sysData->configuration[WIDTH]);
+    unsigned int height = std::any_cast<int>(sysData->configuration[HEIGHT]);
+    std::string name = std::any_cast<std::string>(sysData->configuration[NAME]);
+    sysData->window.create(sf::VideoMode(width, height), name, sf::Style::Default, settings);
     return SystemStatus::OK;
+}
+
+void Engine::windowThread()
+{
+    while (true)
+    {
+
+    }
+}
+
+void Engine::physicThread()
+{
+    while (true)
+    {
+
+    }
+}
+
+void Engine::renderThread()
+{
+    while (true)
+    {
+
+    }
+}
+
+void Engine::soundThread()
+{
+    while (true)
+    {
+
+    }
+}
+
+void Engine::resourceThread()
+{
+    while (true)
+    {
+
+    }
+}
+
+void Engine::menuThread()
+{
+    while (true)
+    {
+
+    }
 }

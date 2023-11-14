@@ -2,13 +2,9 @@
 
 #include "CommonEnum.hpp"
 #include "SystemData.hpp"
-#include "SceneManager.hpp"
-#include "SpriteManager.hpp"
-#include "WaypointManager.hpp"
-#include "FileManager.hpp"
-#include "Logger.hpp"
 #include "SFML/Graphics.hpp"
 #include "SFML/Audio.hpp"
+#include "boost/thread.hpp"
 #include <string>
 #include <memory>
 #include <iostream>
@@ -16,12 +12,13 @@
 class Engine
 {
 private:
-    std::unique_ptr<SystemData> sys_data;
-    FileManager     mngr_file;
-    SceneManager    mngr_scene;
-    SpriteManager   mngr_sprite;
-    WaypointManager mngr_waypoint;
-    Logger			mngr_logger;
+    std::shared_ptr<SystemData> sysData;
+    boost::thread window;
+    boost::thread physic;
+    boost::thread render;
+    boost::thread audio;
+    boost::thread resource;
+    boost::thread menu;
 
 public:
     Engine();
@@ -33,8 +30,10 @@ public:
 private:
     SystemStatus init();
     SystemStatus configureWindow();
-    void renderEngine();
-    void physicEngine();
-    void soundEngine();
-    void resourceEngine();
+    void windowThread();
+    void physicThread();
+    void renderThread();
+    void soundThread();
+    void resourceThread();
+    void menuThread();
 };
