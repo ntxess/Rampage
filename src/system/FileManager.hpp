@@ -1,0 +1,35 @@
+#pragma once
+
+#include "CommonEnum.hpp"
+#include "SystemData.hpp"
+#include "rapidjson/document.h"
+#include "rapidjson/istreamwrapper.h"
+#include "rapidjson/prettywriter.h"
+#include <string>
+#include <fstream>
+#include <filesystem>
+#include <unordered_map>
+#include <any>
+
+class FileManager
+{
+private:
+	const std::string RELATIVE_PATH;
+	const std::string MAIN_CONFIG;
+	SystemData* g_data;
+
+public:
+	FileManager() = delete;
+	FileManager(SystemData* g_data);
+	FileManager(const FileManager&) = delete;
+	~FileManager() = default;
+	SystemStatus load(const std::string& filepath, DataMap& datamap);
+	SystemStatus save(const std::string& filepath, DataMap& datamap);
+
+private:
+	void read(rapidjson::Value& val, DataKey& nodeId, DataMap& datamap);
+	void write(rapidjson::Value& val, DataKey& nodeId, const DataMap& datamap, rapidjson::Document& doc);
+	std::any resolveType(rapidjson::Value& key);
+	SystemStatus initSystemFolders();
+	SystemStatus creatConfig(const std::string& filepath);
+};
