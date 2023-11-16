@@ -3,6 +3,6 @@
 int main()
 {
 	Engine engine;
-	engine.test();
+	engine.run();
 	return 0;
 }

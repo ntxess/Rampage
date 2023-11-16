@@ -43,6 +43,7 @@ enum DataKey
 	WIDTH,
 	HEIGHT,
 	FULLSCREEN,
+	FRAMERATE,
 	DMG_NUMBER,
 	VISUAL_EFFECTS,
 	SCREEN_SHAKE,
@@ -134,20 +135,19 @@ inline const PathID strToPid(const std::string path)
 		return PathID::DEFAULT;
 }
 
-inline std::string anyToString(const std::any& value);
-std::string anyToString(const std::any& value)
+inline std::string anyToString(const std::any& val)
 {
-	if (auto x = std::any_cast<std::string>(&value))
+	if (auto x = std::any_cast<std::string>(&val))
 		return *x;
-	if (auto x = std::any_cast<const char*>(&value))
+	if (auto x = std::any_cast<const char*>(&val))
 		return *x;
-	else if (auto x = std::any_cast<bool>(&value))
+	else if (auto x = std::any_cast<bool>(&val))
 		return std::to_string(*x);
-	else if (auto x = std::any_cast<int>(&value))
+	else if (auto x = std::any_cast<int>(&val))
 		return std::to_string(*x);
-	else if (auto x = std::any_cast<float>(&value))
+	else if (auto x = std::any_cast<float>(&val))
 		return std::to_string(*x);
-	else if (auto x = std::any_cast<double>(&value))
+	else if (auto x = std::any_cast<double>(&val))
 		return std::to_string(*x);
 	return "";
 }

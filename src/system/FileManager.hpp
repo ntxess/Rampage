@@ -1,7 +1,6 @@
 #pragma once
 
 #include "CommonEnum.hpp"
-#include "SystemData.hpp"
 #include "rapidjson/document.h"
 #include "rapidjson/istreamwrapper.h"
 #include "rapidjson/prettywriter.h"
@@ -20,7 +19,8 @@ private:
 
 public:
 	FileManager();
-	FileManager(const FileManager&) = delete;
+	FileManager(const std::string filepath);
+	FileManager(const FileManager&) = default;
 	~FileManager() = default;
 	SystemStatus init(DataMap& datamap);
 	SystemStatus load(const std::string& filepath, DataMap& datamap);

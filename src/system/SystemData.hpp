@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CommonEnum.hpp"
-//#include "FileManager.hpp"
+#include "FileManager.hpp"
 //#include "SceneManager.hpp"
 //#include "SpriteManager.hpp"
 //#include "WaypointManager.hpp"
@@ -13,7 +13,7 @@
 // Global System Data 
 struct SystemData
 {
-	//FileManager      fileManager;
+	FileManager fileManager;
 	//SceneManager     sceneManager;
 	//SpriteManager    spriteManager;
 	//WaypointManager  waypointManager;
@@ -27,4 +27,3 @@ struct SystemData
 	ID				 entityId;
 	DataMap			 configuration;
 };
-

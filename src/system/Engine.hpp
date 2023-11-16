@@ -2,40 +2,56 @@
 
 #include "CommonEnum.hpp"
 #include "SystemData.hpp"
-#include "FileManager.hpp"
 #include "SFML/Graphics.hpp"
 #include "SFML/Audio.hpp"
-#include "boost/thread.hpp"
+#include <thread>
 #include <string>
 #include <memory>
+#include <variant>
 #include <iostream>
+
 
 class Engine
 {
 private:
     std::shared_ptr<SystemData> sysData;
-    boost::thread window;
-    boost::thread physic;
-    boost::thread render;
-    boost::thread audio;
-    boost::thread resource;
-    boost::thread menu;
-    FileManager fileManager;
+    std::unique_ptr<std::thread> physic;
+    std::unique_ptr<std::thread> render;
+    std::unique_ptr<std::thread> audio;
+    std::unique_ptr<std::thread> resource;
+    std::unique_ptr<std::thread> menu;
 
 public:
     Engine();
     ~Engine() = default;
 
     void run();
-    void test();
+    template<typename T>
+    T Configuration(DataKey key);
+
+    template<typename T>
+    T Data(const std::any& val);
 
 private:
     SystemStatus init();
     SystemStatus configureWindow();
-    void windowThread();
     void physicThread();
     void renderThread();
     void soundThread();
     void resourceThread();
     void menuThread();
 };
+
+template<typename T>
+inline T Engine::Configuration(DataKey key)
+{
+    std::any& val = sysData->configuration[key];
+    return (val.type() == typeid(T)) ? std::any_cast<T>(val) : T();
+}
+
+template<typename T>
+inline T Engine::Data(const std::any& val)
+{
+    return (val.type() == typeid(T)) ? std::any_cast<T>(val) : T();
+}
+

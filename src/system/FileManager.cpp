@@ -5,6 +5,11 @@ FileManager::FileManager()
     , MAIN_CONFIG("\\config\\config.json")
 {}
 
+FileManager::FileManager(const std::string filepath)
+    : RELATIVE_PATH(std::filesystem::current_path().string())
+    , MAIN_CONFIG(filepath)
+{}
+
 SystemStatus FileManager::init(DataMap& datamap)
 {
     std::vector<DataKey> paths = { PATH_SAVE, PATH_SCRIPT };
@@ -37,9 +42,11 @@ SystemStatus FileManager::init(DataMap& datamap)
 
 SystemStatus FileManager::load(const std::string& filepath, DataMap& datamap)
 {
-    std::string temp = RELATIVE_PATH + filepath;
     std::fstream ifs(RELATIVE_PATH + filepath, std::fstream::in | std::fstream::out | std::fstream::app);
-    if (!ifs.good()) return SystemStatus::FILE_MNGR_FAIL_READ;
+
+    if (!ifs.good()) 
+        return SystemStatus::FILE_MNGR_FAIL_READ;
+
     if (ifs.peek() == std::ifstream::traits_type::eof()) 
         return SystemStatus::FILE_MNGR_FAIL_FILE_EMPTY;
 
@@ -56,7 +63,10 @@ SystemStatus FileManager::load(const std::string& filepath, DataMap& datamap)
 SystemStatus FileManager::save(const std::string& filepath, DataMap& datamap)
 {
     std::fstream ifs(RELATIVE_PATH + filepath, std::fstream::in | std::fstream::out | std::fstream::app);
-    if (!ifs.good()) return SystemStatus::FILE_MNGR_FAIL_READ;
+
+    if (!ifs.good()) 
+        return SystemStatus::FILE_MNGR_FAIL_READ;
+
     if (ifs.peek() == std::ifstream::traits_type::eof())
         return SystemStatus::FILE_MNGR_FAIL_FILE_EMPTY;
 
@@ -129,7 +139,10 @@ void FileManager::write(rapidjson::Value& val, DataKey& nodeId, const DataMap& d
             break;
 
         case rapidjson::kNumberType:
-            val.SetDouble(std::any_cast<double>(datamap.at(nodeId)));
+            if (val.IsInt()) 
+                val.SetInt(std::any_cast<int>(datamap.at(nodeId)));
+            else if (val.IsDouble()) 
+                val.SetDouble(std::any_cast<double>(datamap.at(nodeId)));
             break;
 
         case rapidjson::kTrueType:
@@ -143,23 +156,25 @@ void FileManager::write(rapidjson::Value& val, DataKey& nodeId, const DataMap& d
     }
 }
 
-std::any FileManager::resolveType(rapidjson::Value& key)
+std::any FileManager::resolveType(rapidjson::Value& val)
 {
-    switch (key.GetType())
+    switch (val.GetType())
     {
     case rapidjson::kStringType:
-        return std::string(key.GetString());
+        return std::string(val.GetString());
 
     case rapidjson::kNumberType:
-        if (key.IsInt()) return key.GetInt();
-        else if (key.IsDouble()) return key.GetDouble();
+        if (val.IsInt())
+            return val.GetInt();
+        else if (val.IsDouble())
+            return val.GetDouble();
         else return std::string();
 
     case rapidjson::kTrueType:
         [[fallthrough]];
 
     case rapidjson::kFalseType:
-        return key.GetBool();
+        return val.GetBool();
 
     case rapidjson::kArrayType:
         break;
