@@ -1,21 +1,19 @@
 #pragma once
 
+#include "../scene/Sandbox.hpp"
 #include "CommonEnum.hpp"
 #include "SystemData.hpp"
 #include "SFML/Graphics.hpp"
 #include "SFML/Audio.hpp"
 #include <thread>
-#include <string>
 #include <memory>
-#include <variant>
-#include <iostream>
-
 
 class Engine
 {
 private:
     std::shared_ptr<SystemData> sysData;
     std::unique_ptr<std::thread> physic;
+    std::unique_ptr<std::thread> event;
     std::unique_ptr<std::thread> render;
     std::unique_ptr<std::thread> audio;
     std::unique_ptr<std::thread> resource;
@@ -23,6 +21,7 @@ private:
 
 public:
     Engine();
+    Engine(const Engine&) = delete;
     ~Engine() = default;
 
     void run();

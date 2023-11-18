@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CommonEnum.hpp"
+#include "../common/CommonEnum.hpp"
 #include "rapidjson/document.h"
 #include "rapidjson/istreamwrapper.h"
 #include "rapidjson/prettywriter.h"

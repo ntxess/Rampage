@@ -14,7 +14,7 @@
       "height": 720
     },
     "fullscreen": false,
-    "framerate" : 165,
+    "framerate" : 165.0,
     "damage-number": true,
     "visual-effects": true,
     "screen-shake": true,

@@ -152,6 +152,5 @@ inline std::string anyToString(const std::any& val)
 	return "";
 }
 
-
 typedef std::unordered_map<DataKey, std::any> DataMap;
 typedef std::atomic<size_t> ID;

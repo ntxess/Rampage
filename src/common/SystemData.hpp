@@ -1,11 +1,8 @@
 #pragma once
 
 #include "CommonEnum.hpp"
-#include "FileManager.hpp"
-//#include "SceneManager.hpp"
-//#include "SpriteManager.hpp"
-//#include "WaypointManager.hpp"
-//#include "Logger.hpp"
+#include "../manager/FileManager.hpp"
+#include "../manager/SceneManager.hpp"
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/View.hpp>
 #include <SFML/System/Clock.hpp>
@@ -13,12 +10,8 @@
 // Global System Data 
 struct SystemData
 {
-	FileManager fileManager;
-	//SceneManager     sceneManager;
-	//SpriteManager    spriteManager;
-	//WaypointManager  waypointManager;
-	//Logger			 logger;
-
+	FileManager      fileManager;
+	SceneManager     sceneManager;
 	sf::RenderWindow window;
 	sf::View		 viewport;
 	sf::Clock		 clock;
