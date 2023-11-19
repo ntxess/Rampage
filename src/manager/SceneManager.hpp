@@ -21,5 +21,5 @@ public:
 	void addScene(std::unique_ptr<Scene> newScene, bool isReplacing = true);
 	void removeScene();
 	void processChange();
-	std::unique_ptr<Scene>& getActiveScene();
+	Scene* getActiveScene();
 };

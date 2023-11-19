@@ -1,10 +1,14 @@
 #pragma once
 
+#include <entt/entt.hpp>
 #include <any>
 #include <atomic>
 #include <string>
 #include <unordered_map>
 
+/**
+ * @brief System Status codes.
+*/
 enum class SystemStatus
 {
 	OK,
@@ -13,26 +17,12 @@ enum class SystemStatus
 	FILE_MNGR_CREATED_FILE,
 	FILE_MNGR_FAIL_WRITE,
 	FILE_MNGR_FAIL_READ,
-	FILE_MNGR_FAIL_CREATE_FOLDER,
-	FILE_MNGR_FAIL_LOOKUP,
 	FILE_MNGR_FAIL_FILE_EMPTY,
 };
 
-enum class SystemID
-{
-	DEFAULT,
-	SCENE_MNGR,
-	WAYPOINT_MNGR,
-};
-
-enum class PathID
-{
-	DEFAULT,
-	CONFIG,
-	SAVE,
-	SCRIPT
-};
-
+/**
+ * @brief Enum key for configurations values.
+*/
 enum ConfigKey
 {
 	NAME,
@@ -70,6 +60,11 @@ enum ConfigKey
 	COLOR_BLIND
 };
 
+/**
+ * @brief [FOR DEBUG] SystemStatus enum to string for debugging.
+ * @param [IN] status 
+ * @return SystemStatus in std::string.
+*/
 inline const std::string ssToStr(SystemStatus status)
 {
 	switch (status)
@@ -86,55 +81,16 @@ inline const std::string ssToStr(SystemStatus status)
 		return "FILE_MNGR_FAIL_WRITE";
 	case SystemStatus::FILE_MNGR_FAIL_READ:
 		return "FILE_MNGR_FAIL_READ";
-	case SystemStatus::FILE_MNGR_FAIL_CREATE_FOLDER:
-		return "FILE_MNGR_FAIL_CREATE_FOLDER";
-	case SystemStatus::FILE_MNGR_FAIL_LOOKUP:
-		return "FILE_MNGR_FAIL_LOOKUP";
 	default:
 		return "DEFAULT";
 	}
 }
 
-inline const std::string sidToStr(const SystemID sysId)
-{
-	switch (sysId)
-	{
-	case SystemID::SCENE_MNGR:
-		return "SCENE_MNGR";
-	case SystemID::WAYPOINT_MNGR:
-		return "WAYPOINT_MNGR";
-	default:
-		return "DEFAULT";
-	}
-}
-
-inline const std::string pidToStr(const PathID pathId)
-{
-	switch (pathId)
-	{
-	case PathID::CONFIG:
-		return "CONFIG";
-	case PathID::SAVE:
-		return "SAVE";
-	case PathID::SCRIPT:
-		return "SCRIPT";
-	default:
-		return "DEFAULT";
-	}
-}
-
-inline const PathID strToPid(const std::string path)
-{
-	if (path == "CONFIG")
-		return PathID::CONFIG;
-	else if (path == "SAVE")
-		return PathID::SAVE;
-	else if (path == "SCRIPT")
-		return PathID::SCRIPT;
-	else 
-		return PathID::DEFAULT;
-}
-
+/**
+ * @brief [FOR DEBUG] Converts std::any value to std::string.
+ * @param [IN] val 
+ * @return std::any in std::string
+*/
 inline std::string anyToString(const std::any& val)
 {
 	if (auto x = std::any_cast<std::string>(&val))
@@ -152,4 +108,7 @@ inline std::string anyToString(const std::any& val)
 	return "";
 }
 
-typedef std::unordered_map<ConfigKey, std::any> ConfigMap;
+typedef entt::hashed_string::hash_type HashKey;
+typedef std::unordered_map<ConfigKey, std::any> ConfigData;
+typedef std::unordered_map<HashKey, std::any> DataMap;
+typedef std::unordered_map<HashKey, DataMap*> SaveData;

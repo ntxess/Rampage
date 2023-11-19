@@ -1,13 +1,16 @@
 #include "Engine.hpp"
 
+/**
+ * @brief [Public] Default constuctor.
+*/
 Engine::Engine()
     : sysData(std::make_shared<GlobalData>())
     , physic(nullptr)
     , render(nullptr)
     , audio(nullptr)
     , resource(nullptr)
-    , menu(nullptr)
 {
+    // Start threads on successful init of the application configs
     if (init() == SystemStatus::OK)
     {
         physic = std::make_unique<std::thread>(&Engine::physicThread, this);
@@ -16,17 +19,18 @@ Engine::Engine()
         render = std::make_unique<std::thread>(&Engine::renderThread, this);
         render->detach();
 
-        //audio = std::make_unique<std::thread>(&Engine::soundThread, this);
-        //audio->detach();
+        audio = std::make_unique<std::thread>(&Engine::audioThread, this);
+        audio->detach();
 
-        //resource = std::make_unique<std::thread>(&Engine::resourceThread, this);
-        //resource->detach();
-
-        //menu = std::make_unique<std::thread>(&Engine::menuThread, this);
-        //menu->detach();
+        resource = std::make_unique<std::thread>(&Engine::resourceThread, this);
+        resource->detach();
     }
 }
 
+/**
+ * @brief [Public] Main thread of the application. Responsible for handling opengl context and
+ * SFML event handling.
+*/
 void Engine::run()
 {
     sf::Event event;
@@ -67,16 +71,25 @@ void Engine::run()
     }
 }
 
+/**
+ * @brief [Private] Initialize the application configurations. Success depends on loading and main config file.
+ * @return SystemStatus error code if failure; otherwise, SystemStatus::Success.
+*/
 SystemStatus Engine::init()
 {
-    if (sysData->configManager.init(sysData->configuration) == SystemStatus::FILE_MNGR_SUCCESS)
+    SystemStatus status = sysData->configManager.init(sysData->configData);
+    if (status == SystemStatus::FILE_MNGR_SUCCESS)
     {
         configureWindow();
     }
 
-    return SystemStatus::OK;
+    return status;
 }
 
+/**
+ * @brief [Private] Setup the SFML window and opengl context.
+ * @return SystemStatus error code if failure; otherwise, SystemStatus::Success.
+*/
 SystemStatus Engine::configureWindow()
 {
     sf::ContextSettings settings;
@@ -86,18 +99,21 @@ SystemStatus Engine::configureWindow()
     settings.majorVersion = 4;
     settings.minorVersion = 3;
 
-    std::string name = Configuration<std::string>(NAME);
-    unsigned int width = Configuration<int>(WIDTH);
-    unsigned int height = Configuration<int>(HEIGHT);
+    std::string name = sysData->Configuration<std::string>(NAME);
+    unsigned int width = sysData->Configuration<int>(WIDTH);
+    unsigned int height = sysData->Configuration<int>(HEIGHT);
     sysData->aspectRatio = static_cast<float>(width) / static_cast<float>(height);
-    sysData->deltaTime = 1.f / Configuration<float>(FRAMERATE);
+    sysData->deltaTime = 1.f / sysData->Configuration<float>(FRAMERATE);
     sysData->window.create(sf::VideoMode(width, height), name, sf::Style::Default, settings);
     sysData->window.setActive(false);
     sysData->sceneManager.addScene(std::make_unique<Sandbox>(sysData.get()));
 
     return SystemStatus::OK;
 }
-  
+
+/**
+ * @brief [Private] Seperate thread for physics simulation.
+*/
 void Engine::physicThread()
 {
     float newTime, frameTime;
@@ -119,6 +135,9 @@ void Engine::physicThread()
     }
 }
 
+/**
+ * @brief [Private] Seperate thread for rendering.
+*/
 void Engine::renderThread()
 {
     float newTime, frameTime;
@@ -140,7 +159,10 @@ void Engine::renderThread()
     }
 }
 
-void Engine::soundThread()
+/**
+ * @brief [Private] Seperate thread for audio management.
+*/
+void Engine::audioThread()
 {
     while (true)
     {
@@ -148,15 +170,10 @@ void Engine::soundThread()
     }
 }
 
+/**
+ * @brief [Private] Seperate thread for resource management.
+*/
 void Engine::resourceThread()
-{
-    while (true)
-    {
-
-    }
-}
-
-void Engine::menuThread()
 {
     while (true)
     {

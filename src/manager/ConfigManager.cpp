@@ -1,19 +1,36 @@
 #include "ConfigManager.hpp"
 
+/**
+ * @brief [Public] Default constructor.
+*/
 ConfigManager::ConfigManager()
     : RELATIVE_PATH(std::filesystem::current_path().string())
     , MAIN_CONFIG("/config/config.json")
 {}
 
+/**
+ * @brief [Public] Normal Constructor. Load in a different config file on creation.
+ * @param [IN] filepath 
+*/
 ConfigManager::ConfigManager(const std::string filepath)
     : RELATIVE_PATH(std::filesystem::current_path().string())
     , MAIN_CONFIG(filepath)
 {}
 
-SystemStatus ConfigManager::init(ConfigMap& configMap)
+
+/**
+ * @brief [Public] Initialize the application's configuration. Configuration is also saved inside the 
+ * passed in config map.Default configuraiton is also generated if file location is inaccessible / missing.
+ * Folder system is setup upon reading a valid configuration file.
+ * @param [OUT] configMap 
+ * @return SystemStatus error code if failure; otherwise, SystemStatus::Success.
+*/
+SystemStatus ConfigManager::init(ConfigData& configMap)
 {
     std::vector<ConfigKey> paths = { SAVE_FOLDER, SCRIPT_FOLDER };
 
+    // Try to create a new default config file if one does not exist
+    // After loading the congigurations setup the folder system for the entire application
     try
     {
         std::filesystem::create_directories(RELATIVE_PATH + "/config/");
@@ -40,7 +57,13 @@ SystemStatus ConfigManager::init(ConfigMap& configMap)
     return SystemStatus::FILE_MNGR_SUCCESS;
 }
 
-SystemStatus ConfigManager::load(const std::string& filepath, ConfigMap& configMap)
+/**
+ * @brief [Public] Load in another configuration given a filepath. Configuration is saved inside a ConfigData map.
+ * @param [IN] filepath 
+ * @param [OUT] configMap 
+ * @return SystemStatus error code if failure; otherwise, SystemStatus::Success.
+*/
+SystemStatus ConfigManager::load(const std::string& filepath, ConfigData& configMap)
 {
     std::ifstream ifs(RELATIVE_PATH + filepath, std::fstream::app);
 
@@ -60,7 +83,13 @@ SystemStatus ConfigManager::load(const std::string& filepath, ConfigMap& configM
     return SystemStatus::FILE_MNGR_SUCCESS;;
 }
 
-SystemStatus ConfigManager::save(const std::string& filepath, ConfigMap& configMap)
+/**
+ * @brief [Public] Save/Update the file with the incoming configmap. Save file is written at the given filepath.
+ * @param [IN] filepath 
+ * @param [IN] configMap 
+ * @return SystemStatus error code if failure; otherwise, SystemStatus::Success.
+*/
+SystemStatus ConfigManager::save(const std::string& filepath, const ConfigData& configMap)
 {
     std::ifstream ifs(RELATIVE_PATH + filepath, std::fstream::app);
 
@@ -86,7 +115,13 @@ SystemStatus ConfigManager::save(const std::string& filepath, ConfigMap& configM
     return SystemStatus::FILE_MNGR_SUCCESS;
 }
 
-void ConfigManager::read(rapidjson::Value& val, ConfigKey& configId, ConfigMap& configMap)
+/**
+ * @brief [Private] Healper function for load(). Recusively reads json file. 
+ * @param [IN] val 
+ * @param [IN] configId 
+ * @param [OUT] configMap 
+*/
+void ConfigManager::read(rapidjson::Value& val, ConfigKey& configId, ConfigData& configMap)
 {
     if (val.IsObject())
     {
@@ -110,7 +145,14 @@ void ConfigManager::read(rapidjson::Value& val, ConfigKey& configId, ConfigMap& 
     }
 }
 
-void ConfigManager::write(rapidjson::Value& val, ConfigKey& configId, const ConfigMap& configMap, rapidjson::Document& doc)
+/**
+ * @brief [Private] Healper function for save(). Recusively updates json file with configmap when configId is found.
+ * @param [In] val 
+ * @param [In] configId 
+ * @param [In] configMap 
+ * @param [In] doc 
+*/
+void ConfigManager::write(rapidjson::Value& val, ConfigKey& configId, const ConfigData& configMap, rapidjson::Document& doc)
 {
     if (val.IsObject())
     {
@@ -159,6 +201,11 @@ void ConfigManager::write(rapidjson::Value& val, ConfigKey& configId, const Conf
     }
 }
 
+/**
+ * @brief [Private] Converts rapidjson::Val to std::any.
+ * @param [IN] val 
+ * @return Copy of std::any with the underlining data type.
+*/
 std::any ConfigManager::resolveType(rapidjson::Value& val)
 {
     switch (val.GetType())
@@ -185,6 +232,11 @@ std::any ConfigManager::resolveType(rapidjson::Value& val)
     return std::string();
 }
 
+/**
+ * @brief [Private] Generates a default config file with default settings.
+ * @param [IN] filepath 
+ * @return SystemStatus error code if failure; otherwise, SystemStatus::Success.
+*/
 SystemStatus ConfigManager::creatConfig(const std::string& filepath)
 {
     std::fstream ifs(RELATIVE_PATH + filepath, std::fstream::in | std::fstream::out | std::fstream::app);

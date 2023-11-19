@@ -1,9 +1,18 @@
 #include "SceneManager.hpp"
 
+/**
+ * @brief [Public] Default constructor.
+*/
 SceneManager::SceneManager()
 	: m_removeFlag(false), m_addFlag(false), m_replaceFlag(false)
 {}
 
+/**
+ * @brief [Public] Adds a new scene. New scene is ready upon the next processChange() call. 
+ * If the new scene is replacing, destory the current scene. Otherwise, pause the current scene. 
+ * @param newScene 
+ * @param isReplacing 
+*/
 void SceneManager::addScene(std::unique_ptr<Scene> newScene, bool isReplacing)
 {
 	m_addFlag = true;
@@ -11,11 +20,19 @@ void SceneManager::addScene(std::unique_ptr<Scene> newScene, bool isReplacing)
 	m_newScene = std::move(newScene);
 }
 
+/**
+ * @brief [Public] Remove the current scene. Scene is removed upon the next processChange() call. 
+ * Scene cannot be removed if it is the only scene available.
+*/
 void SceneManager::removeScene()
 {
 	m_removeFlag = true;
 }
 
+/**
+ * @brief [Public] Process the new scene changes. Adding new scenes will push new scene to top of the stack. 
+ * Removing scene will pop current scene off stack.
+*/
 void SceneManager::processChange()
 {
 	if (m_removeFlag && !m_scenes.empty())
@@ -47,7 +64,11 @@ void SceneManager::processChange()
 	}
 }
 
-std::unique_ptr<Scene>& SceneManager::getActiveScene()
+/**
+ * @brief [Public] Get current scene (Top scene of the stack).
+ * @return Current scene pointer
+*/
+Scene* SceneManager::getActiveScene()
 {
-	return m_scenes.top();
+	return m_scenes.top().get();
 }

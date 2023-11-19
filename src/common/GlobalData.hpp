@@ -2,6 +2,7 @@
 
 #include "CommonEnum.hpp"
 #include "../manager/ConfigManager.hpp"
+#include "../manager/SaveManager.hpp"
 #include "../manager/SceneManager.hpp"
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/View.hpp>
@@ -10,15 +11,42 @@
 // Global System Data 
 struct GlobalData
 {
-	ConfigManager    configManager;
-	ConfigMap	     configuration;
-
-	SceneManager     sceneManager;
-
-
+	// Application window data
 	sf::RenderWindow window;
 	sf::View		 viewport;
 	sf::Clock		 clock;
 	float			 aspectRatio;
 	float			 deltaTime;
+
+	// Application config data
+	ConfigManager    configManager;
+	ConfigData	     configData;
+
+	// Application save data
+	SaveManager      saveManager;
+	SaveData         saveData;
+
+	SceneManager     sceneManager;
+
+
+	// Helper functions for converting std::any to underlining data type
+	template<typename T>
+	T Configuration(ConfigKey key);
+
+	template<typename T>
+	T Data(HashKey group, HashKey key, const std::any& val);
 };
+
+template<typename T>
+T GlobalData::Configuration(ConfigKey key)
+{
+	std::any& val = configData[key];
+	return (val.type() == typeid(T)) ? std::any_cast<T>(val) : T();
+}
+
+template<typename T>
+T GlobalData::Data(HashKey group, HashKey key, const std::any& val)
+{
+	std::any& val = saveData[group][key];
+	return (val.type() == typeid(T)) ? std::any_cast<T>(val) : T();
+}
