@@ -163,26 +163,22 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\system\FileManager.cpp" />
-    <ClCompile Include="src\system\Logger.cpp" />
-    <ClCompile Include="src\system\SceneManager.cpp" />
-    <ClCompile Include="src\system\SpriteManager.cpp" />
-    <ClCompile Include="src\system\Scene.cpp" />
-    <ClCompile Include="src\system\CommonEnum.hpp" />
-    <ClCompile Include="src\system\Engine.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="src\system\WaypointManager.cpp" />
+    <ClCompile Include="src\common\Engine.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\manager\ConfigManager.cpp" />
+    <ClCompile Include="src\manager\SaveManager.cpp" />
+    <ClCompile Include="src\manager\SceneManager.cpp" />
+    <ClCompile Include="src\scene\Sandbox.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\system\FileManager.hpp" />
-    <ClInclude Include="src\system\Logger.hpp" />
-    <ClInclude Include="src\system\SceneManager.hpp" />
-    <ClInclude Include="src\system\SpriteManager.hpp" />
-    <ClInclude Include="src\system\Scene.hpp" />
-    <ClInclude Include="src\system\Engine.hpp" />
-    <ClInclude Include="src\system\System.hpp" />
-    <ClInclude Include="src\system\SystemData.hpp" />
-    <ClInclude Include="src\system\WaypointManager.hpp" />
+    <ClInclude Include="src\common\CommonEnum.hpp" />
+    <ClInclude Include="src\common\Engine.hpp" />
+    <ClInclude Include="src\common\GlobalData.hpp" />
+    <ClInclude Include="src\common\Scene.hpp" />
+    <ClInclude Include="src\manager\ConfigManager.hpp" />
+    <ClInclude Include="src\manager\SaveManager.hpp" />
+    <ClInclude Include="src\manager\SceneManager.hpp" />
+    <ClInclude Include="src\scene\Sandbox.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

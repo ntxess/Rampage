@@ -1,6 +1,6 @@
 #pragma once
 
-class SpriteManager
+class SaveManager
 {
 };
 

@@ -4,15 +4,16 @@
         "version": "0.1b"
     },
     "system-paths": {
-        "path-config": "\\config\\config.json",
-        "path-save": "\\save\\",
-        "path_script": "\\script\\"
+        "path-config": "/config/config.json",
+        "save-folder": "/save/",
+        "script-folder": "/script/"
     },
     "video-settings": {
         "resolution": {
             "width": 1280,
             "height": 720
         },
+        "frame-rate": 165.0,
         "fullscreen": false,
         "damage-number": true,
         "visual-effects": true,

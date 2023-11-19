@@ -1,7 +1,8 @@
 #pragma once
 
-#include <string>
 #include <any>
+#include <atomic>
+#include <string>
 #include <unordered_map>
 
 enum class SystemStatus
@@ -32,15 +33,16 @@ enum class PathID
 	SCRIPT
 };
 
-enum DataKey
+enum ConfigKey
 {
 	NAME,
 	VERSION,
 	PATH_CONFIG,
-	PATH_SAVE,
-	PATH_SCRIPT,
+	SAVE_FOLDER,
+	SCRIPT_FOLDER,
 	WIDTH,
 	HEIGHT,
+	FRAMERATE,
 	FULLSCREEN,
 	DMG_NUMBER,
 	VISUAL_EFFECTS,
@@ -133,22 +135,21 @@ inline const PathID strToPid(const std::string path)
 		return PathID::DEFAULT;
 }
 
-inline std::string anyToString(const std::any& value);
-std::string anyToString(const std::any& value)
+inline std::string anyToString(const std::any& val)
 {
-	if (auto x = std::any_cast<std::string>(&value))
+	if (auto x = std::any_cast<std::string>(&val))
 		return *x;
-	if (auto x = std::any_cast<const char*>(&value))
+	if (auto x = std::any_cast<const char*>(&val))
 		return *x;
-	else if (auto x = std::any_cast<bool>(&value))
+	else if (auto x = std::any_cast<bool>(&val))
+		return (std::to_string(*x) == "1") ? "true" : "false";
+	else if (auto x = std::any_cast<int>(&val))
 		return std::to_string(*x);
-	else if (auto x = std::any_cast<int>(&value))
+	else if (auto x = std::any_cast<float>(&val))
 		return std::to_string(*x);
-	else if (auto x = std::any_cast<float>(&value))
-		return std::to_string(*x);
-	else if (auto x = std::any_cast<double>(&value))
+	else if (auto x = std::any_cast<double>(&val))
 		return std::to_string(*x);
 	return "";
 }
 
-typedef std::unordered_map<DataKey, std::any> DataMap;
+typedef std::unordered_map<ConfigKey, std::any> ConfigMap;
