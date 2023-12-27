@@ -22,19 +22,18 @@ struct GlobalData
 	ConfigManager    configManager;
 	ConfigData	     configData;
 
-	// Application save data
+	// Game save data
 	SaveManager      saveManager;
 	SaveData         saveData;
 
 	SceneManager     sceneManager;
-
 
 	// Helper functions for converting std::any to underlining data type
 	template<typename T>
 	T Configuration(ConfigKey key);
 
 	template<typename T>
-	T Data(HashKey group, HashKey key, const std::any& val);
+	T Data(HashKey group, HashKey key);
 };
 
 template<typename T>
@@ -45,7 +44,7 @@ T GlobalData::Configuration(ConfigKey key)
 }
 
 template<typename T>
-T GlobalData::Data(HashKey group, HashKey key, const std::any& val)
+T GlobalData::Data(HashKey group, HashKey key)
 {
 	std::any& val = saveData[group][key];
 	return (val.type() == typeid(T)) ? std::any_cast<T>(val) : T();

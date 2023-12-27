@@ -5,18 +5,19 @@
 */
 ConfigManager::ConfigManager()
     : RELATIVE_PATH(std::filesystem::current_path().string())
-    , MAIN_CONFIG("/config/config.json")
+    , CONFIG_FOLDER("/config/")
+    , MAIN_CONFIG("config.json")
 {}
 
 /**
  * @brief [Public] Normal Constructor. Load in a different config file on creation.
- * @param [IN] filepath 
+ * @param [IN] filename 
 */
-ConfigManager::ConfigManager(const std::string filepath)
+ConfigManager::ConfigManager(const std::string filename)
     : RELATIVE_PATH(std::filesystem::current_path().string())
-    , MAIN_CONFIG(filepath)
+    , CONFIG_FOLDER("/config/")
+    , MAIN_CONFIG(filename)
 {}
-
 
 /**
  * @brief [Public] Initialize the application's configuration. Configuration is also saved inside the 
@@ -33,13 +34,13 @@ SystemStatus ConfigManager::init(ConfigData& configMap)
     // After loading the congigurations setup the folder system for the entire application
     try
     {
-        std::filesystem::create_directories(RELATIVE_PATH + "/config/");
+        std::filesystem::create_directories(RELATIVE_PATH + CONFIG_FOLDER);
 
         if (configMap.empty())
         {
             creatConfig(MAIN_CONFIG);
 
-            if (load(MAIN_CONFIG, configMap) == SystemStatus::FILE_MNGR_SUCCESS)
+            if (load(MAIN_CONFIG, configMap) == SystemStatus::CFG_MNGR_SUCCESS)
             {
                 for (const auto& path : paths)
                 {
@@ -51,27 +52,27 @@ SystemStatus ConfigManager::init(ConfigData& configMap)
     }
     catch (...)
     {
-        return creatConfig(RELATIVE_PATH + MAIN_CONFIG);
+        return creatConfig(MAIN_CONFIG);
     }
 
-    return SystemStatus::FILE_MNGR_SUCCESS;
+    return SystemStatus::CFG_MNGR_SUCCESS;
 }
 
 /**
- * @brief [Public] Load in another configuration given a filepath. Configuration is saved inside a ConfigData map.
- * @param [IN] filepath 
+ * @brief [Public] Load in another configuration given a filename. Configuration is saved inside a ConfigData map.
+ * @param [IN] filename 
  * @param [OUT] configMap 
  * @return SystemStatus error code if failure; otherwise, SystemStatus::Success.
 */
-SystemStatus ConfigManager::load(const std::string& filepath, ConfigData& configMap)
+SystemStatus ConfigManager::load(const std::string& filename, ConfigData& configMap)
 {
-    std::ifstream ifs(RELATIVE_PATH + filepath, std::fstream::app);
+    std::ifstream ifs(RELATIVE_PATH + CONFIG_FOLDER + filename, std::fstream::app);
 
     if (!ifs.good()) 
-        return SystemStatus::FILE_MNGR_FAIL_READ;
+        return SystemStatus::CFG_MNGR_FAIL_READ;
 
-    if (std::filesystem::is_empty(RELATIVE_PATH + filepath))
-        return SystemStatus::FILE_MNGR_FAIL_FILE_EMPTY;
+    if (std::filesystem::is_empty(RELATIVE_PATH + CONFIG_FOLDER + filename))
+        return SystemStatus::CFG_MNGR_FAIL_FILE_EMPTY;
 
     rapidjson::IStreamWrapper isw(ifs);
     rapidjson::Document doc;
@@ -80,21 +81,21 @@ SystemStatus ConfigManager::load(const std::string& filepath, ConfigData& config
     ConfigKey configId = NAME;
     read(doc, configId, configMap);
 
-    return SystemStatus::FILE_MNGR_SUCCESS;;
+    return SystemStatus::CFG_MNGR_SUCCESS;;
 }
 
 /**
- * @brief [Public] Save/Update the file with the incoming configmap. Save file is written at the given filepath.
- * @param [IN] filepath 
+ * @brief [Public] Save/Update the file with the incoming configmap. Save file is written at the given filename.
+ * @param [IN] filename 
  * @param [IN] configMap 
  * @return SystemStatus error code if failure; otherwise, SystemStatus::Success.
 */
-SystemStatus ConfigManager::save(const std::string& filepath, const ConfigData& configMap)
+SystemStatus ConfigManager::save(const std::string& filename, const ConfigData& configMap)
 {
-    std::ifstream ifs(RELATIVE_PATH + filepath, std::fstream::app);
+    std::ifstream ifs(RELATIVE_PATH + CONFIG_FOLDER + filename, std::fstream::app);
 
     if (!ifs.good())
-        return SystemStatus::FILE_MNGR_FAIL_READ;
+        return SystemStatus::CFG_MNGR_FAIL_READ;
 
     rapidjson::IStreamWrapper isw(ifs);
     rapidjson::Document doc;
@@ -107,12 +108,12 @@ SystemStatus ConfigManager::save(const std::string& filepath, const ConfigData& 
     doc.Accept(writer);
     std::string json(buffer.GetString(), buffer.GetSize());
 
-    std::ofstream ofs(RELATIVE_PATH + filepath);
-    if (!ofs.good()) return SystemStatus::FILE_MNGR_FAIL_WRITE;
+    std::ofstream ofs(RELATIVE_PATH + CONFIG_FOLDER + filename);
+    if (!ofs.good()) return SystemStatus::CFG_MNGR_FAIL_WRITE;
 
     ofs << json;
 
-    return SystemStatus::FILE_MNGR_SUCCESS;
+    return SystemStatus::CFG_MNGR_SUCCESS;
 }
 
 /**
@@ -139,8 +140,7 @@ void ConfigManager::read(rapidjson::Value& val, ConfigKey& configId, ConfigData&
     }
     else
     {
-        rapidjson::StringBuffer sb;
-        configMap[configId] = resolveType(val);
+        configMap[configId] = anyCast(val);
         configId = ConfigKey(int(configId) + 1);
     }
 }
@@ -163,7 +163,7 @@ void ConfigManager::write(rapidjson::Value& val, ConfigKey& configId, const Conf
     }
     else if (val.IsArray())
     {
-        for (rapidjson::SizeType i = 0; i < val.Size(); i++)
+        for (rapidjson::SizeType i = 0; i < val.Size(); ++i)
         {
             write(val[i], configId, configMap, doc);
         }
@@ -206,7 +206,7 @@ void ConfigManager::write(rapidjson::Value& val, ConfigKey& configId, const Conf
  * @param [IN] val 
  * @return Copy of std::any with the underlining data type.
 */
-std::any ConfigManager::resolveType(rapidjson::Value& val)
+std::any ConfigManager::anyCast(rapidjson::Value& val)
 {
     switch (val.GetType())
     {
@@ -234,15 +234,15 @@ std::any ConfigManager::resolveType(rapidjson::Value& val)
 
 /**
  * @brief [Private] Generates a default config file with default settings.
- * @param [IN] filepath 
+ * @param [IN] filename 
  * @return SystemStatus error code if failure; otherwise, SystemStatus::Success.
 */
-SystemStatus ConfigManager::creatConfig(const std::string& filepath)
+SystemStatus ConfigManager::creatConfig(const std::string& filename)
 {
-    std::fstream ifs(RELATIVE_PATH + filepath, std::fstream::in | std::fstream::out | std::fstream::app);
+    std::fstream ifs(RELATIVE_PATH + CONFIG_FOLDER + filename, std::fstream::in | std::fstream::out | std::fstream::app);
 
     if (!ifs.good()) 
-        return SystemStatus::FILE_MNGR_FAIL_READ;
+        return SystemStatus::CFG_MNGR_FAIL_READ;
     
     std::stringstream buffer;
     buffer << ifs.rdbuf();
@@ -257,7 +257,7 @@ SystemStatus ConfigManager::creatConfig(const std::string& filepath)
             "        \"version\": \"0.1b\"\n"
             "    },\n"
             "    \"system-paths\": {\n"
-            "        \"path-config\": \"/config/config.json\",\n"
+            "        \"config-folder\": \"/config/\",\n"
             "        \"save-folder\": \"/save/\",\n"
             "        \"script-folder\": \"/script/\"\n"
             "    },\n"
@@ -305,7 +305,7 @@ SystemStatus ConfigManager::creatConfig(const std::string& filepath)
             "    }\n"
             "}";
         ifs << data;
-        return SystemStatus::FILE_MNGR_CREATED_FILE;
+        return SystemStatus::CFG_MNGR_CREATED_FILE;
     }
-    return SystemStatus::FILE_MNGR_SUCCESS;
+    return SystemStatus::CFG_MNGR_SUCCESS;
 }

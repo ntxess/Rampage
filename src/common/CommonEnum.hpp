@@ -13,11 +13,16 @@ enum class SystemStatus
 {
 	OK,
 	ERROR,
-	FILE_MNGR_SUCCESS,
-	FILE_MNGR_CREATED_FILE,
-	FILE_MNGR_FAIL_WRITE,
-	FILE_MNGR_FAIL_READ,
-	FILE_MNGR_FAIL_FILE_EMPTY,
+	CFG_MNGR_SUCCESS,
+	CFG_MNGR_CREATED_FILE,
+	CFG_MNGR_FAIL_WRITE,
+	CFG_MNGR_FAIL_READ,
+	CFG_MNGR_FAIL_FILE_EMPTY,
+	SAVE_MNGR_SUCCESS,
+	SAVE_MNGR_CREATED_FILE,
+	SAVE_MNGR_FAIL_WRITE,
+	SAVE_MNGR_FAIL_READ,
+	SAVE_MNGR_FAIL_FILE_EMPTY,
 };
 
 /**
@@ -27,7 +32,7 @@ enum ConfigKey
 {
 	NAME,
 	VERSION,
-	PATH_CONFIG,
+	CONFIG_FOLDER,
 	SAVE_FOLDER,
 	SCRIPT_FOLDER,
 	WIDTH,
@@ -73,14 +78,14 @@ inline const std::string ssToStr(SystemStatus status)
 		return "OK";
 	case SystemStatus::ERROR:
 		return "ERROR";
-	case SystemStatus::FILE_MNGR_SUCCESS:
-		return "FILE_MNGR_SUCCESS";
-	case SystemStatus::FILE_MNGR_CREATED_FILE:
-		return "FILE_MNGR_CREATED_FILE";
-	case SystemStatus::FILE_MNGR_FAIL_WRITE:
-		return "FILE_MNGR_FAIL_WRITE";
-	case SystemStatus::FILE_MNGR_FAIL_READ:
-		return "FILE_MNGR_FAIL_READ";
+	case SystemStatus::CFG_MNGR_SUCCESS:
+		return "CFG_MNGR_SUCCESS";
+	case SystemStatus::CFG_MNGR_CREATED_FILE:
+		return "CFG_MNGR_CREATED_FILE";
+	case SystemStatus::CFG_MNGR_FAIL_WRITE:
+		return "CFG_MNGR_FAIL_WRITE";
+	case SystemStatus::CFG_MNGR_FAIL_READ:
+		return "CFG_MNGR_FAIL_READ";
 	default:
 		return "DEFAULT";
 	}
@@ -110,5 +115,5 @@ inline std::string anyToString(const std::any& val)
 
 typedef entt::hashed_string::hash_type HashKey;
 typedef std::unordered_map<ConfigKey, std::any> ConfigData;
-typedef std::unordered_map<HashKey, std::any> DataMap;
-typedef std::unordered_map<HashKey, DataMap*> SaveData;
+typedef std::unordered_map<std::string, std::any> DataMap;
+typedef std::unordered_map<HashKey, std::unique_ptr<DataMap>> SaveData;

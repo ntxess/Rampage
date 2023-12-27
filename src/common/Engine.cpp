@@ -44,14 +44,19 @@ void Engine::run()
 
         case sf::Event::Resized:
         {
-            float newWidth = event.size.width;
+            float newWidth = static_cast<float>(event.size.width);
             float newHeight = newWidth / sysData->aspectRatio;
             if (newHeight > event.size.height)
             {
-                newHeight = event.size.height;
+                newHeight = static_cast<float>(event.size.height);
                 newWidth = newHeight * sysData->aspectRatio;
             }
-            sysData->window.setSize(sf::Vector2u(newWidth, newHeight));
+
+            sysData->window.setSize(sf::Vector2u(
+                static_cast<unsigned int>(newWidth), 
+                static_cast<unsigned int>(newHeight))
+            );
+
             sysData->viewport.setSize(newWidth, newHeight);
             break;
         }
@@ -78,7 +83,7 @@ void Engine::run()
 SystemStatus Engine::init()
 {
     SystemStatus status = sysData->configManager.init(sysData->configData);
-    if (status == SystemStatus::FILE_MNGR_SUCCESS)
+    if (status == SystemStatus::CFG_MNGR_SUCCESS)
     {
         configureWindow();
     }
@@ -107,6 +112,7 @@ SystemStatus Engine::configureWindow()
     sysData->window.create(sf::VideoMode(width, height), name, sf::Style::Default, settings);
     sysData->window.setActive(false);
     sysData->sceneManager.addScene(std::make_unique<Sandbox>(sysData.get()));
+    sysData->sceneManager.processChange();
 
     return SystemStatus::OK;
 }

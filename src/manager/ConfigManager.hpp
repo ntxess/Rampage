@@ -14,21 +14,22 @@ class ConfigManager
 {
 private:
 	const std::string RELATIVE_PATH;
+	const std::string CONFIG_FOLDER;
 	const std::string MAIN_CONFIG;
 
 public:
 	ConfigManager();
-	ConfigManager(const std::string filepath);
+	ConfigManager(const std::string filename);
 	ConfigManager(const ConfigManager&) = default;
 	~ConfigManager() = default;
 
 	SystemStatus init(ConfigData& configMap);
-	SystemStatus load(const std::string& filepath, ConfigData& configMap);
-	SystemStatus save(const std::string& filepath, const ConfigData& configMap);
+	SystemStatus load(const std::string& filename, ConfigData& configMap);
+	SystemStatus save(const std::string& filename, const ConfigData& configMap);
 
 private:
 	void read(rapidjson::Value& val, ConfigKey& configId, ConfigData& configMap);
 	void write(rapidjson::Value& val, ConfigKey& configId, const ConfigData& configMap, rapidjson::Document& doc);
-	std::any resolveType(rapidjson::Value& val);
-	SystemStatus creatConfig(const std::string& filepath);
+	std::any anyCast(rapidjson::Value& val);
+	SystemStatus creatConfig(const std::string& filename);
 };
