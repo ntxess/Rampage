@@ -165,17 +165,17 @@
   <ItemGroup>
     <ClCompile Include="src\common\Engine.cpp" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\manager\ConfigManager.cpp" />
     <ClCompile Include="src\manager\SaveManager.cpp" />
     <ClCompile Include="src\manager\SceneManager.cpp" />
     <ClCompile Include="src\scene\Sandbox.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\common\System.hpp" />
+    <ClInclude Include="src\manager\SystemManager.hpp" />
     <ClInclude Include="src\common\CommonEnum.hpp" />
     <ClInclude Include="src\common\Engine.hpp" />
     <ClInclude Include="src\common\GlobalData.hpp" />
     <ClInclude Include="src\common\Scene.hpp" />
-    <ClInclude Include="src\manager\ConfigManager.hpp" />
     <ClInclude Include="src\manager\SaveManager.hpp" />
     <ClInclude Include="src\manager\SceneManager.hpp" />
     <ClInclude Include="src\scene\Sandbox.hpp" />

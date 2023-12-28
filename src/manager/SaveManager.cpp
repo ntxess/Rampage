@@ -5,42 +5,152 @@
 */
 SaveManager::SaveManager()
 	: RELATIVE_PATH(std::filesystem::current_path().string())
-	, SAVE_FOLDER("/save/")
+    , MAIN_CONFIG("config.json")
+    , CONFIG_FOLDER_PATH("/config/")
+	, SAVE_FOLDER_PATH("/save/")
 {}
 
 /**
- * @brief 
- * @param filename 
- * @param dataMap 
- * @return 
+ * @brief [Public] Normal Constructor. Load in a different config file on creation.
+ * @param [IN] filepath
 */
-SystemStatus SaveManager::load(const std::string& filename, DataMap& dataMap)
+SaveManager::SaveManager(const std::string filepath)
+    : RELATIVE_PATH(std::filesystem::current_path().string())
+    , MAIN_CONFIG(filepath)
+    , CONFIG_FOLDER_PATH("/config/")
+    , SAVE_FOLDER_PATH("/save/")
+{}
+
+/**
+ * @brief [Public] Initialize the application's configuration. Configuration is also saved inside the
+ * passed in config map.Default configuraiton is also generated if file location is inaccessible / missing.
+ * Folder system is setup upon reading a valid configuration file.
+ * @param [OUT] configMap
+ * @return SystemStatus error code if failure; otherwise, SystemStatus::Success.
+*/
+SystemStatus SaveManager::init(ConfigData& configMap)
 {
-	std::ifstream ifs(RELATIVE_PATH + SAVE_FOLDER + filename, std::fstream::app);
+    std::vector<ConfigKey> paths = { SAVE_FOLDER, SCRIPT_FOLDER };
 
-	if (!ifs.good())
-		return SystemStatus::SAVE_MNGR_FAIL_READ;
+    // Try to create a new default config file if one does not exist
+    // After loading the congigurations setup the folder system for the entire application
+    try
+    {
+        std::filesystem::create_directories(RELATIVE_PATH + CONFIG_FOLDER_PATH);
 
-	if (std::filesystem::is_empty(RELATIVE_PATH + SAVE_FOLDER + filename))
-		return SystemStatus::SAVE_MNGR_FAIL_FILE_EMPTY;
+        if (configMap.empty())
+        {
+            creatConfig(MAIN_CONFIG);
 
-	rapidjson::IStreamWrapper isw(ifs);
-	rapidjson::Document doc;
-	doc.ParseStream(isw);
+            if (load(MAIN_CONFIG, configMap) == SystemStatus::CFG_MNGR_SUCCESS)
+            {
+                for (const auto& path : paths)
+                {
+                    if (anyToString(configMap[path]).empty()) continue;
+                    std::filesystem::create_directories(RELATIVE_PATH + anyToString(configMap[path]));
+                }
+            }
+        }
+    }
+    catch (...)
+    {
+        return creatConfig(MAIN_CONFIG);
+    }
 
-    std::string key = "Key";
-	read(doc, dataMap, key);
-
-	return SystemStatus::SAVE_MNGR_SUCCESS;
+    return SystemStatus::CFG_MNGR_SUCCESS;
 }
 
 /**
- * @brief 
- * @return 
+ * @brief [Public] Load in another configuration given a filename. Configuration is saved inside a ConfigData map.
+ * @param [IN] filename
+ * @param [OUT] configMap
+ * @return SystemStatus error code if failure; otherwise, SystemStatus::Success.
+*/
+SystemStatus SaveManager::load(const std::string& filename, ConfigData& configMap)
+{
+    std::ifstream ifs(RELATIVE_PATH + CONFIG_FOLDER_PATH + filename, std::fstream::app);
+
+    if (!ifs.good())
+        return SystemStatus::CFG_MNGR_FAIL_READ;
+
+    if (std::filesystem::is_empty(RELATIVE_PATH + CONFIG_FOLDER_PATH + filename))
+        return SystemStatus::CFG_MNGR_FAIL_FILE_EMPTY;
+
+    rapidjson::IStreamWrapper isw(ifs);
+    rapidjson::Document doc;
+    doc.ParseStream(isw);
+
+    ConfigKey configId = NAME;
+    read(doc, configId, configMap);
+
+    return SystemStatus::CFG_MNGR_SUCCESS;;
+}
+
+/**
+ * @brief
+ * @param filename
+ * @param dataMap
+ * @return
+*/
+SystemStatus SaveManager::load(const std::string& filename, DataMap& dataMap)
+{
+    std::ifstream ifs(RELATIVE_PATH + SAVE_FOLDER_PATH + filename, std::fstream::app);
+
+    if (!ifs.good())
+        return SystemStatus::SAVE_MNGR_FAIL_READ;
+
+    if (std::filesystem::is_empty(RELATIVE_PATH + SAVE_FOLDER_PATH + filename))
+        return SystemStatus::SAVE_MNGR_FAIL_FILE_EMPTY;
+
+    rapidjson::IStreamWrapper isw(ifs);
+    rapidjson::Document doc;
+    doc.ParseStream(isw);
+
+    std::string key = "Key";
+    read(doc, dataMap, key);
+
+    return SystemStatus::SAVE_MNGR_SUCCESS;
+}
+
+/**
+ * @brief [Public] Save/Update the file with the incoming configmap. Save file is written at the given filename.
+ * @param [IN] filename
+ * @param [IN] configMap
+ * @return SystemStatus error code if failure; otherwise, SystemStatus::Success.
+*/
+SystemStatus SaveManager::save(const std::string& filename, const ConfigData& configMap)
+{
+    std::ifstream ifs(RELATIVE_PATH + CONFIG_FOLDER_PATH + filename, std::fstream::app);
+
+    if (!ifs.good())
+        return SystemStatus::CFG_MNGR_FAIL_READ;
+
+    rapidjson::IStreamWrapper isw(ifs);
+    rapidjson::Document doc;
+    doc.ParseStream(isw);
+    ConfigKey datakey = ConfigKey(0);
+    write(doc, datakey, configMap, doc);
+
+    rapidjson::StringBuffer buffer;
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
+    doc.Accept(writer);
+    std::string json(buffer.GetString(), buffer.GetSize());
+
+    std::ofstream ofs(RELATIVE_PATH + CONFIG_FOLDER_PATH + filename);
+    if (!ofs.good()) return SystemStatus::CFG_MNGR_FAIL_WRITE;
+
+    ofs << json;
+
+    return SystemStatus::CFG_MNGR_SUCCESS;
+}
+
+/**
+ * @brief
+ * @return
 */
 SystemStatus SaveManager::save(const std::string& filename, const DataMap& dataMap)
 {
-    std::ifstream ifs(RELATIVE_PATH + SAVE_FOLDER + filename, std::fstream::app);
+    std::ifstream ifs(RELATIVE_PATH + SAVE_FOLDER_PATH + filename, std::fstream::app);
 
     if (!ifs.good())
         return SystemStatus::SAVE_MNGR_FAIL_READ;
@@ -54,7 +164,7 @@ SystemStatus SaveManager::save(const std::string& filename, const DataMap& dataM
     doc.Accept(writer);
     std::string json(buffer.GetString(), buffer.GetSize());
 
-    std::ofstream ofs(RELATIVE_PATH + SAVE_FOLDER + filename);
+    std::ofstream ofs(RELATIVE_PATH + SAVE_FOLDER_PATH + filename);
     if (!ofs.good()) return SystemStatus::CFG_MNGR_FAIL_WRITE;
 
     ofs << json;
@@ -63,8 +173,37 @@ SystemStatus SaveManager::save(const std::string& filename, const DataMap& dataM
 }
 
 /**
- * @brief 
- * @param val 
+ * @brief [Private] Healper function for load(). Recusively reads json file.
+ * @param [IN] val
+ * @param [IN] configId
+ * @param [OUT] configMap
+*/
+void SaveManager::read(rapidjson::Value& val, ConfigKey& configId, ConfigData& configMap)
+{
+    if (val.IsObject())
+    {
+        for (auto it = val.MemberBegin(); it != val.MemberEnd(); ++it)
+        {
+            read(it->value, configId, configMap);
+        }
+    }
+    else if (val.IsArray())
+    {
+        for (rapidjson::SizeType i = 0; i < val.Size(); i++)
+        {
+            read(val[i], configId, configMap);
+        }
+    }
+    else
+    {
+        configMap[configId] = anyCast(val);
+        configId = ConfigKey(int(configId) + 1);
+    }
+}
+
+/**
+ * @brief
+ * @param val
  * @param dataMap
  * @param key
 */
@@ -74,7 +213,7 @@ void SaveManager::read(rapidjson::Value& val, DataMap& dataMap, std::string key)
     {
         for (auto it = val.MemberBegin(); it != val.MemberEnd(); ++it)
         {
-            
+
             read(it->value, dataMap, val.GetString());
         }
     }
@@ -93,6 +232,62 @@ void SaveManager::read(rapidjson::Value& val, DataMap& dataMap, std::string key)
         {
             dataMap[key] = anyCast(val);
         }
+    }
+}
+
+/**
+ * @brief [Private] Healper function for save(). Recusively updates json file with configmap when configId is found.
+ * @param [In] val
+ * @param [In] configId
+ * @param [In] configMap
+ * @param [In] doc
+*/
+void SaveManager::write(rapidjson::Value& val, ConfigKey& configId, const ConfigData& configMap, rapidjson::Document& doc)
+{
+    if (val.IsObject())
+    {
+        for (auto it = val.MemberBegin(); it != val.MemberEnd(); ++it)
+        {
+            write(it->value, configId, configMap, doc);
+        }
+    }
+    else if (val.IsArray())
+    {
+        for (rapidjson::SizeType i = 0; i < val.Size(); ++i)
+        {
+            write(val[i], configId, configMap, doc);
+        }
+    }
+    else
+    {
+        switch (val.GetType())
+        {
+        case rapidjson::kNullType:
+            break;
+
+        case rapidjson::kStringType:
+            if (!configMap.count(configId)) break;
+            val.SetString(anyToString(configMap.at(configId)).c_str(), doc.GetAllocator());
+            break;
+
+        case rapidjson::kNumberType:
+            if (val.IsInt())
+                val.SetInt(std::any_cast<int>(configMap.at(configId)));
+            else if (val.IsDouble())
+                val.SetDouble(std::any_cast<double>(configMap.at(configId)));
+            break;
+
+        case rapidjson::kTrueType:
+            [[fallthrough]];
+
+        case rapidjson::kFalseType:
+            val.SetBool(std::any_cast<bool>(configMap.at(configId)));
+            break;
+
+        default:
+            break;
+        }
+        configId = ConfigKey(int(configId) + 1);
     }
 }
 
@@ -227,4 +422,82 @@ bool SaveManager::createVal(rapidjson::Document& doc, rapidjson::Value& val, con
         return true;
     }
     return false;
+}
+
+/**
+ * @brief [Private] Generates a default config file with default settings.
+ * @param [IN] filename
+ * @return SystemStatus error code if failure; otherwise, SystemStatus::Success.
+*/
+SystemStatus SaveManager::creatConfig(const std::string& filename)
+{
+    std::fstream ifs(RELATIVE_PATH + CONFIG_FOLDER_PATH + filename, std::fstream::in | std::fstream::out | std::fstream::app);
+
+    if (!ifs.good())
+        return SystemStatus::CFG_MNGR_FAIL_READ;
+
+    std::stringstream buffer;
+    buffer << ifs.rdbuf();
+    std::string json = buffer.str();
+
+    if (json.empty())
+    {
+        const std::string data =
+            "{\n"
+            "    \"system\": {\n"
+            "        \"name\": \"Rampage\",\n"
+            "        \"version\": \"0.1b\"\n"
+            "    },\n"
+            "    \"system-paths\": {\n"
+            "        \"config-folder\": \"/config/\",\n"
+            "        \"save-folder\": \"/save/\",\n"
+            "        \"script-folder\": \"/script/\"\n"
+            "    },\n"
+            "    \"video-settings\": {\n"
+            "        \"resolution\": {\n"
+            "            \"width\": 1280,\n"
+            "            \"height\": 720\n"
+            "        },\n"
+            "        \"frame-rate\": 165.0,\n"
+            "        \"fullscreen\": false,\n"
+            "        \"damage-number\": true,\n"
+            "        \"visual-effects\": true,\n"
+            "        \"screen-shake\": true,\n"
+            "        \"mature\": true\n"
+            "    },\n"
+            "    \"sound-settings\": {\n"
+            "        \"music-volume\": 100.0,\n"
+            "        \"effects-volume\": 100.0\n"
+            "    },\n"
+            "    \"control-settings\": {\n"
+            "        \"key-bindings\": {\n"
+            "            \"key-up\": \"w\",\n"
+            "            \"key-left\": \"a\",\n"
+            "            \"key-down\": \"s\",\n"
+            "            \"key-right\": \"d\",\n"
+            "            \"key-jump\": \"space\",\n"
+            "            \"key-exit\": \"esc\",\n"
+            "            \"key-enter\": \"enter\",\n"
+            "            \"key-back\": \"enter\",\n"
+            "            \"key-1\": \"u\",\n"
+            "            \"key-2\": \"i\",\n"
+            "            \"key-3\": \"o\",\n"
+            "            \"key-4\": \"j\",\n"
+            "            \"key-5\": \"k\",\n"
+            "            \"key-6\": \"l\"\n"
+            "        }\n"
+            "    },\n"
+            "    \"language-settings\": {\n"
+            "        \"dub\": \"english\",\n"
+            "        \"sub\": \"english\",\n"
+            "        \"subtitle\": false\n"
+            "    },\n"
+            "    \"accessibility-settings\": {\n"
+            "        \"colorblind-mode\": false\n"
+            "    }\n"
+            "}";
+        ifs << data;
+        return SystemStatus::CFG_MNGR_CREATED_FILE;
+    }
+    return SystemStatus::CFG_MNGR_SUCCESS;
 }

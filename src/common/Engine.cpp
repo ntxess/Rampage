@@ -82,7 +82,7 @@ void Engine::run()
 */
 SystemStatus Engine::init()
 {
-    SystemStatus status = sysData->configManager.init(sysData->configData);
+    SystemStatus status = sysData->saveManager.init(sysData->configData);
     if (status == SystemStatus::CFG_MNGR_SUCCESS)
     {
         configureWindow();

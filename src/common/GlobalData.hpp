@@ -1,7 +1,6 @@
 #pragma once
 
 #include "CommonEnum.hpp"
-#include "../manager/ConfigManager.hpp"
 #include "../manager/SaveManager.hpp"
 #include "../manager/SceneManager.hpp"
 #include <SFML/Graphics/RenderWindow.hpp>
@@ -18,12 +17,8 @@ struct GlobalData
 	float			 aspectRatio;
 	float			 deltaTime;
 
-	// Application config data
-	ConfigManager    configManager;
-	ConfigData	     configData;
-
-	// Game save data
 	SaveManager      saveManager;
+	ConfigData	     configData;
 	SaveData         saveData;
 
 	SceneManager     sceneManager;
