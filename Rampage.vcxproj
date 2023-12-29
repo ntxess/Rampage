@@ -164,21 +164,25 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\common\Engine.cpp" />
+    <ClCompile Include="src\common\QuadTree.cpp" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\manager\SaveManager.cpp" />
-    <ClCompile Include="src\manager\SceneManager.cpp" />
-    <ClCompile Include="src\scene\Sandbox.cpp" />
+    <ClCompile Include="src\managers\SaveManager.cpp" />
+    <ClCompile Include="src\managers\SceneManager.cpp" />
+    <ClCompile Include="src\scenes\Sandbox.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\components\Component.hpp" />
+    <ClInclude Include="src\components\Sprite.hpp" />
+    <ClInclude Include="src\common\QuadTree.hpp" />
     <ClInclude Include="src\common\System.hpp" />
-    <ClInclude Include="src\manager\SystemManager.hpp" />
+    <ClInclude Include="src\managers\SaveManager.hpp" />
     <ClInclude Include="src\common\CommonEnum.hpp" />
     <ClInclude Include="src\common\Engine.hpp" />
     <ClInclude Include="src\common\GlobalData.hpp" />
     <ClInclude Include="src\common\Scene.hpp" />
-    <ClInclude Include="src\manager\SaveManager.hpp" />
-    <ClInclude Include="src\manager\SceneManager.hpp" />
-    <ClInclude Include="src\scene\Sandbox.hpp" />
+    <ClInclude Include="src\managers\SceneManager.hpp" />
+    <ClInclude Include="src\managers\SystemManager.hpp" />
+    <ClInclude Include="src\scenes\Sandbox.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

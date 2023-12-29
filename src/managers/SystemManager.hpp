@@ -7,9 +7,6 @@
 
 class SystemManager
 {
-private:
-    std::unordered_map<std::type_index, std::unique_ptr<System>> m_systems;
-
 public:
     template<typename T, typename... Args>
     void addSystem(Args&&... args)
@@ -30,5 +27,8 @@ public:
         for (auto& [id, system] : m_systems)
             system->update(reg, dt, ent);
     }
+
+private:
+    std::unordered_map<std::type_index, std::unique_ptr<System>> m_systems;
 };
 

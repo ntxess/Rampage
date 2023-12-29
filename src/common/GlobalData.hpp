@@ -1,8 +1,8 @@
 #pragma once
 
 #include "CommonEnum.hpp"
-#include "../manager/SaveManager.hpp"
-#include "../manager/SceneManager.hpp"
+#include "../managers/SaveManager.hpp"
+#include "../managers/SceneManager.hpp"
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/View.hpp>
 #include <SFML/System/Clock.hpp>

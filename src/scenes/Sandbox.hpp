@@ -7,15 +7,8 @@
 
 class Sandbox : public Scene
 {
-private:
-	GlobalData* m_data;
-	entt::registry m_reg;
-
 public:
-	Sandbox() = delete;
 	Sandbox(GlobalData* sysData);
-	Sandbox(const Sandbox&) = delete;
-	~Sandbox() = default;
 
 	void init();
 	void processEvent(const sf::Event& event);
@@ -25,4 +18,8 @@ public:
 	void pause();
 	void resume();
 	entt::registry& getRegistry();
+
+private:
+	GlobalData* m_data;
+	entt::registry m_reg;
 };

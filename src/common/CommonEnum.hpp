@@ -4,6 +4,7 @@
 #include <any>
 #include <atomic>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 
 /**
@@ -68,9 +69,9 @@ enum ConfigKey
 /**
  * @brief [FOR DEBUG] SystemStatus enum to string for debugging.
  * @param [IN] status 
- * @return SystemStatus in std::string.
+ * @return SystemStatus in std::string_view.
 */
-inline const std::string ssToStr(SystemStatus status)
+inline constexpr std::string_view ssToStr(SystemStatus status)
 {
 	switch (status)
 	{
@@ -94,7 +95,7 @@ inline const std::string ssToStr(SystemStatus status)
 /**
  * @brief [FOR DEBUG] Converts std::any value to std::string.
  * @param [IN] val 
- * @return std::any in std::string
+ * @return std::any in std::string.
 */
 inline std::string anyToString(const std::any& val)
 {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../scene/Sandbox.hpp"
+#include "../scenes/Sandbox.hpp"
 #include "CommonEnum.hpp"
 #include "GlobalData.hpp"
 #include <SFML/Graphics.hpp>
@@ -10,17 +10,8 @@
 
 class Engine
 {
-private:
-    std::shared_ptr<GlobalData> sysData;
-    std::unique_ptr<std::thread> physic;
-    std::unique_ptr<std::thread> render;
-    std::unique_ptr<std::thread> audio;
-    std::unique_ptr<std::thread> resource;
-
 public:
     Engine();
-    Engine(const Engine&) = delete;
-    ~Engine() = default;
 
     void run();
 
@@ -31,5 +22,11 @@ private:
     void renderThread();
     void audioThread();
     void resourceThread();
+
+    std::shared_ptr<GlobalData> sysData;
+    std::unique_ptr<std::thread> physic;
+    std::unique_ptr<std::thread> render;
+    std::unique_ptr<std::thread> audio;
+    std::unique_ptr<std::thread> resource;
 };
 
