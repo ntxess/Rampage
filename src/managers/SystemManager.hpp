@@ -47,9 +47,7 @@ public:
 
     void update(entt::registry& reg, const float& dt = 0.f, entt::entity ent = entt::null)
     {
-        for (auto& system : m_sequentialSystems)
-        {
-            auto start = std::chrono::high_resolution_clock::now();
+        for (auto& [id, system] : m_systems)
             system->update(reg, dt, ent);
             auto stop = std::chrono::high_resolution_clock::now();
 
