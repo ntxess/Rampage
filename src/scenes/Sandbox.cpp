@@ -40,7 +40,7 @@ void Sandbox::processInput()
 
 void Sandbox::update()
 {
-    m_system.update(m_reg);
+    m_system.update(m_reg, m_data->deltaTime);
 }
 
 void Sandbox::render()

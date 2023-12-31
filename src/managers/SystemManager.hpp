@@ -23,9 +23,8 @@ public:
     template<typename T>
     T* getSystem() 
     {
-        auto it = m_systems.find(typeid(T));
-        if (it != m_systems.end())
-            return static_cast<T*>(it->second.get());
+        if (m_systems.count(typeid(T)))
+            return static_cast<T*>(m_systems[typeid(T)].get());
         return nullptr;
     }
 
@@ -48,6 +47,8 @@ public:
     void update(entt::registry& reg, const float& dt = 0.f, entt::entity ent = entt::null)
     {
         for (auto& [id, system] : m_systems)
+        {
+            auto start = std::chrono::high_resolution_clock::now();
             system->update(reg, dt, ent);
             auto stop = std::chrono::high_resolution_clock::now();
 
