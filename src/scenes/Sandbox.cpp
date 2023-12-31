@@ -26,6 +26,8 @@ void Sandbox::init()
         {"DAT6", std::vector<std::any>{511.2, 611.3, 711.4}},
     };
     m_data->saveManager.save("test.sav", testData);
+
+    m_system.addSystem<CollisionSystem>(m_data->viewport.getCenter(), sf::Vector2f(m_data->window.getSize()));
 }
 
 void Sandbox::processEvent(const sf::Event& event)
@@ -38,6 +40,7 @@ void Sandbox::processInput()
 
 void Sandbox::update()
 {
+    m_system.update(m_reg);
 }
 
 void Sandbox::render()

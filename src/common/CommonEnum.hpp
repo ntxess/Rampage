@@ -7,6 +7,14 @@
 #include <string_view>
 #include <unordered_map>
 
+constexpr std::string_view RESET("\033[0m");    // Color Reset 
+constexpr std::string_view RED("\033[31m");     // Main Thread
+constexpr std::string_view GREEN("\033[32m");   // Physic Thread 
+constexpr std::string_view YELLOW("\033[33m");	// Render Thread
+constexpr std::string_view BLUE("\033[34m");	// Audio Thread
+constexpr std::string_view MAGENTA("\033[35m");	// Resource Thread
+constexpr std::string_view CYAN("\033[36m");	// Debug/Logging Thread
+
 /**
  * @brief System Status codes.
 */
@@ -14,11 +22,6 @@ enum class SystemStatus
 {
 	OK,
 	ERROR,
-	CFG_MNGR_SUCCESS,
-	CFG_MNGR_CREATED_FILE,
-	CFG_MNGR_FAIL_WRITE,
-	CFG_MNGR_FAIL_READ,
-	CFG_MNGR_FAIL_FILE_EMPTY,
 	SAVE_MNGR_SUCCESS,
 	SAVE_MNGR_CREATED_FILE,
 	SAVE_MNGR_FAIL_WRITE,
@@ -79,14 +82,16 @@ inline constexpr std::string_view ssToStr(SystemStatus status)
 		return "OK";
 	case SystemStatus::ERROR:
 		return "ERROR";
-	case SystemStatus::CFG_MNGR_SUCCESS:
-		return "CFG_MNGR_SUCCESS";
-	case SystemStatus::CFG_MNGR_CREATED_FILE:
-		return "CFG_MNGR_CREATED_FILE";
-	case SystemStatus::CFG_MNGR_FAIL_WRITE:
-		return "CFG_MNGR_FAIL_WRITE";
-	case SystemStatus::CFG_MNGR_FAIL_READ:
-		return "CFG_MNGR_FAIL_READ";
+	case SystemStatus::SAVE_MNGR_SUCCESS:
+		return "SAVE_MNGR_SUCCESS";
+	case SystemStatus::SAVE_MNGR_CREATED_FILE:
+		return "SAVE_MNGR_CREATED_FILE";
+	case SystemStatus::SAVE_MNGR_FAIL_WRITE:
+		return "SAVE_MNGR_FAIL_WRITE";
+	case SystemStatus::SAVE_MNGR_FAIL_READ:
+		return "SAVE_MNGR_FAIL_READ";
+	case SystemStatus::SAVE_MNGR_FAIL_FILE_EMPTY:
+		return "SAVE_MNGR_FAIL_FILE_EMPTY";
 	default:
 		return "DEFAULT";
 	}

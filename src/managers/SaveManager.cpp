@@ -42,7 +42,7 @@ SystemStatus SaveManager::init(ConfigData& configMap)
         {
             creatConfig(MAIN_CONFIG);
 
-            if (load(MAIN_CONFIG, configMap) == SystemStatus::CFG_MNGR_SUCCESS)
+            if (load(MAIN_CONFIG, configMap) == SystemStatus::SAVE_MNGR_SUCCESS)
             {
                 for (const auto& path : paths)
                 {
@@ -57,7 +57,7 @@ SystemStatus SaveManager::init(ConfigData& configMap)
         return creatConfig(MAIN_CONFIG);
     }
 
-    return SystemStatus::CFG_MNGR_SUCCESS;
+    return SystemStatus::SAVE_MNGR_SUCCESS;
 }
 
 /**
@@ -71,10 +71,10 @@ SystemStatus SaveManager::load(const std::string& filename, ConfigData& configMa
     std::ifstream ifs(RELATIVE_PATH + CONFIG_FOLDER_PATH + filename, std::fstream::app);
 
     if (!ifs.good())
-        return SystemStatus::CFG_MNGR_FAIL_READ;
+        return SystemStatus::SAVE_MNGR_FAIL_READ;
 
     if (std::filesystem::is_empty(RELATIVE_PATH + CONFIG_FOLDER_PATH + filename))
-        return SystemStatus::CFG_MNGR_FAIL_FILE_EMPTY;
+        return SystemStatus::SAVE_MNGR_FAIL_FILE_EMPTY;
 
     rapidjson::IStreamWrapper isw(ifs);
     rapidjson::Document doc;
@@ -83,7 +83,7 @@ SystemStatus SaveManager::load(const std::string& filename, ConfigData& configMa
     ConfigKey configId = NAME;
     read(doc, configId, configMap);
 
-    return SystemStatus::CFG_MNGR_SUCCESS;;
+    return SystemStatus::SAVE_MNGR_SUCCESS;;
 }
 
 /**
@@ -123,7 +123,7 @@ SystemStatus SaveManager::save(const std::string& filename, const ConfigData& co
     std::ifstream ifs(RELATIVE_PATH + CONFIG_FOLDER_PATH + filename, std::fstream::app);
 
     if (!ifs.good())
-        return SystemStatus::CFG_MNGR_FAIL_READ;
+        return SystemStatus::SAVE_MNGR_FAIL_READ;
 
     rapidjson::IStreamWrapper isw(ifs);
     rapidjson::Document doc;
@@ -137,11 +137,11 @@ SystemStatus SaveManager::save(const std::string& filename, const ConfigData& co
     std::string json(buffer.GetString(), buffer.GetSize());
 
     std::ofstream ofs(RELATIVE_PATH + CONFIG_FOLDER_PATH + filename);
-    if (!ofs.good()) return SystemStatus::CFG_MNGR_FAIL_WRITE;
+    if (!ofs.good()) return SystemStatus::SAVE_MNGR_FAIL_WRITE;
 
     ofs << json;
 
-    return SystemStatus::CFG_MNGR_SUCCESS;
+    return SystemStatus::SAVE_MNGR_SUCCESS;
 }
 
 /**
@@ -165,7 +165,7 @@ SystemStatus SaveManager::save(const std::string& filename, const DataMap& dataM
     std::string json(buffer.GetString(), buffer.GetSize());
 
     std::ofstream ofs(RELATIVE_PATH + SAVE_FOLDER_PATH + filename);
-    if (!ofs.good()) return SystemStatus::CFG_MNGR_FAIL_WRITE;
+    if (!ofs.good()) return SystemStatus::SAVE_MNGR_FAIL_WRITE;
 
     ofs << json;
 
@@ -351,70 +351,70 @@ std::any SaveManager::anyCast(rapidjson::Value& val)
 */
 bool SaveManager::createVal(rapidjson::Document& doc, rapidjson::Value& val, const std::string& key, const std::any& data)
 {
-    if (data.type().name() == typeid(const char*).name())
+    if (data.type() == typeid(const char*))
     {
         val.SetString(std::any_cast<const char*>(data), doc.GetAllocator());
         return true;
     }
-    else if (data.type().name() == typeid(std::string).name())
+    else if (data.type() == typeid(std::string))
     {
         val.SetString(std::any_cast<std::string>(data).c_str(), doc.GetAllocator());
         return true;
     }
-    else if (data.type().name() == typeid(bool).name())
+    else if (data.type() == typeid(bool))
     {
         val.SetBool(std::any_cast<bool>(data));
         return true;
     }
-    else if (data.type().name() == typeid(int).name())
+    else if (data.type()== typeid(int))
     {
         val.SetInt(std::any_cast<int>(data));
         return true;
     }
-    else if (data.type().name() == typeid(float).name())
+    else if (data.type() == typeid(float))
     {
         val.SetFloat(std::any_cast<float>(data));
         return true;
     }
-    else if (data.type().name() == typeid(double).name())
+    else if (data.type() == typeid(double))
     {
         val.SetDouble(std::any_cast<double>(data));
         return true;
     }
-    else if (data.type().name() == typeid(std::vector<std::any>).name())
+    else if (data.type() == typeid(std::vector<std::any>))
     {
         const std::vector<std::any>& vecRef = std::any_cast<std::vector<std::any>>(data);
         val.SetArray();
 
         for (const auto& dataIndex : vecRef)
         {
-            if (dataIndex.type().name() == typeid(const char*).name())
+            if (dataIndex.type() == typeid(const char*))
             {
                 rapidjson::Value strVal;
                 const char* str = std::any_cast<const char*>(dataIndex);
                 strVal.SetString(str, static_cast<rapidjson::SizeType>(strlen(str)), doc.GetAllocator());
                 val.PushBack(strVal, doc.GetAllocator());
             }
-            else if (dataIndex.type().name() == typeid(std::string).name())
+            else if (dataIndex.type() == typeid(std::string))
             {
                 rapidjson::Value strVal;
                 std::string str = std::any_cast<std::string>(dataIndex);
                 strVal.SetString(str.c_str(), static_cast<rapidjson::SizeType>(str.length()), doc.GetAllocator());
                 val.PushBack(strVal, doc.GetAllocator());
             }
-            else if (dataIndex.type().name() == typeid(bool).name())
+            else if (dataIndex.type() == typeid(bool))
             {
                 val.PushBack(std::any_cast<bool>(dataIndex), doc.GetAllocator());
             }
-            else if (dataIndex.type().name() == typeid(int).name())
+            else if (dataIndex.type() == typeid(int))
             {
                 val.PushBack(std::any_cast<int>(dataIndex), doc.GetAllocator());
             }
-            else if (dataIndex.type().name() == typeid(float).name())
+            else if (dataIndex.type() == typeid(float))
             {
                 val.PushBack(std::any_cast<float>(dataIndex), doc.GetAllocator());
             }
-            else if (dataIndex.type().name() == typeid(double).name())
+            else if (dataIndex.type() == typeid(double))
             {
                 val.PushBack(std::any_cast<double>(dataIndex), doc.GetAllocator());
             }
@@ -434,7 +434,7 @@ SystemStatus SaveManager::creatConfig(const std::string& filename)
     std::fstream ifs(RELATIVE_PATH + CONFIG_FOLDER_PATH + filename, std::fstream::in | std::fstream::out | std::fstream::app);
 
     if (!ifs.good())
-        return SystemStatus::CFG_MNGR_FAIL_READ;
+        return SystemStatus::SAVE_MNGR_FAIL_READ;
 
     std::stringstream buffer;
     buffer << ifs.rdbuf();
@@ -497,7 +497,7 @@ SystemStatus SaveManager::creatConfig(const std::string& filename)
             "    }\n"
             "}";
         ifs << data;
-        return SystemStatus::CFG_MNGR_CREATED_FILE;
+        return SystemStatus::SAVE_MNGR_CREATED_FILE;
     }
-    return SystemStatus::CFG_MNGR_SUCCESS;
+    return SystemStatus::SAVE_MNGR_SUCCESS;
 }
