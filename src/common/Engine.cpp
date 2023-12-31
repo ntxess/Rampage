@@ -33,6 +33,8 @@ Engine::Engine()
 */
 void Engine::run()
 {
+    std::cout << RED << "[Thread] | Main thread start\n";
+
     sf::Event event;
     while (sysData->window.waitEvent(event))
     {
@@ -82,13 +84,13 @@ void Engine::run()
 */
 SystemStatus Engine::init()
 {
-    SystemStatus status = sysData->saveManager.init(sysData->configData);
-    if (status == SystemStatus::CFG_MNGR_SUCCESS)
+    if (sysData->saveManager.init(sysData->configData) == SystemStatus::SAVE_MNGR_SUCCESS)
     {
         configureWindow();
+        return SystemStatus::OK;
     }
 
-    return status;
+    return SystemStatus::ERROR;
 }
 
 /**
@@ -108,7 +110,7 @@ SystemStatus Engine::configureWindow()
     unsigned int width = sysData->Configuration<int>(WIDTH);
     unsigned int height = sysData->Configuration<int>(HEIGHT);
     sysData->aspectRatio = static_cast<float>(width) / static_cast<float>(height);
-    sysData->deltaTime = 1.f / sysData->Configuration<float>(FRAMERATE);
+    sysData->deltaTime = static_cast<float>(1.f / sysData->Configuration<double>(FRAMERATE));
     sysData->window.create(sf::VideoMode(width, height), name, sf::Style::Default, settings);
     sysData->window.setActive(false);
     sysData->sceneManager.addScene(std::make_unique<Sandbox>(sysData.get()));
@@ -122,6 +124,8 @@ SystemStatus Engine::configureWindow()
 */
 void Engine::physicThread()
 {
+    std::cout << GREEN << "[Thread] | Physic thread start\n" << RESET;
+
     float newTime, frameTime;
     float currentTime = sysData->clock.getElapsedTime().asSeconds();
     float accumulator = 0.0f;
@@ -146,6 +150,8 @@ void Engine::physicThread()
 */
 void Engine::renderThread()
 {
+    std::cout << YELLOW << "[Thread] | Render thread start\n" << RESET;
+
     float newTime, frameTime;
     float currentTime = sysData->clock.getElapsedTime().asSeconds();
     float accumulator = 0.0f;
@@ -170,6 +176,8 @@ void Engine::renderThread()
 */
 void Engine::audioThread()
 {
+    std::cout << BLUE << "[Thread] | Audio thread start\n" << RESET;
+
     while (true)
     {
 
@@ -181,6 +189,8 @@ void Engine::audioThread()
 */
 void Engine::resourceThread()
 {
+    std::cout << MAGENTA << "[Thread] | Resource thread start\n" << RESET;
+
     while (true)
     {
 

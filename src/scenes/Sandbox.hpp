@@ -2,7 +2,8 @@
 
 #include "../common/CommonEnum.hpp"
 #include "../common/GlobalData.hpp"
-#include "../common/Scene.hpp"
+#include "../scenes/Scene.hpp"
+#include "../managers/SystemManager.hpp"
 #include <entt/entt.hpp>
 
 class Sandbox : public Scene
@@ -22,4 +23,5 @@ public:
 private:
 	GlobalData* m_data;
 	entt::registry m_reg;
+	SystemManager m_system;
 };
