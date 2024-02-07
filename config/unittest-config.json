@@ -1,0 +1,53 @@
+{
+    "system": {
+        "name": "unittest-config",
+        "version": "0.1b"
+    },
+    "system-paths": {
+        "config-folder": "/config/",
+        "save-folder": "/save/",
+        "script-folder": "/script/"
+    },
+    "video-settings": {
+        "resolution": {
+            "width": 1280,
+            "height": 720
+        },
+        "frame-rate": 165.0,
+        "fullscreen": false,
+        "damage-number": true,
+        "visual-effects": true,
+        "screen-shake": true,
+        "mature": true
+    },
+    "sound-settings": {
+        "music-volume": 100.0,
+        "effects-volume": 100.0
+    },
+    "control-settings": {
+        "key-bindings": {
+            "key-up": "w",
+            "key-left": "a",
+            "key-down": "s",
+            "key-right": "d",
+            "key-jump": "space",
+            "key-exit": "esc",
+            "key-enter": "enter",
+            "key-back": "enter",
+            "key-1": "u",
+            "key-2": "i",
+            "key-3": "o",
+            "key-4": "j",
+            "key-5": "k",
+            "key-6": "l"
+        }
+    },
+    "language-settings": {
+        "dub": "english",
+        "sub": "english",
+        "subtitle": false
+    },
+    "accessibility-settings": {
+        "colorblind-mode": false
+    }
+}

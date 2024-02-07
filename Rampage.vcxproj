@@ -169,6 +169,7 @@
     <ClCompile Include="src\managers\SaveManager.cpp" />
     <ClCompile Include="src\managers\SceneManager.cpp" />
     <ClCompile Include="src\scenes\Sandbox.cpp" />
+    <ClCompile Include="test\Unittest-Suite.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\common\CommonEnum.hpp" />
@@ -184,6 +185,7 @@
     <ClInclude Include="src\scenes\Scene.hpp" />
     <ClInclude Include="src\systems\CollisionSystem.hpp" />
     <ClInclude Include="src\systems\System.hpp" />
+    <ClInclude Include="test\Unittest-SaveManager.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

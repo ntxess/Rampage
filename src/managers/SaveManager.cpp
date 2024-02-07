@@ -106,7 +106,7 @@ SystemStatus SaveManager::load(const std::string& filename, DataMap& dataMap)
     rapidjson::Document doc;
     doc.ParseStream(isw);
 
-    std::string key = "Key";
+    std::string key;
     read(doc, dataMap, key);
 
     return SystemStatus::SAVE_MNGR_SUCCESS;
@@ -124,6 +124,13 @@ SystemStatus SaveManager::save(const std::string& filename, const ConfigData& co
 
     if (!ifs.good())
         return SystemStatus::SAVE_MNGR_FAIL_READ;
+
+    if (ifs.peek() == std::ifstream::traits_type::eof())
+    {
+        ifs.close();
+        creatConfig(filename);
+        ifs.open(RELATIVE_PATH + CONFIG_FOLDER_PATH + filename, std::fstream::app);
+    }
 
     rapidjson::IStreamWrapper isw(ifs);
     rapidjson::Document doc;
@@ -213,8 +220,7 @@ void SaveManager::read(rapidjson::Value& val, DataMap& dataMap, std::string key)
     {
         for (auto it = val.MemberBegin(); it != val.MemberEnd(); ++it)
         {
-
-            read(it->value, dataMap, val.GetString());
+            read(it->value, dataMap, it->name.GetString());
         }
     }
     else
