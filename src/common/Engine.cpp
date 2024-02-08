@@ -163,10 +163,10 @@ void Engine::renderThread()
         currentTime = newTime;
         accumulator += frameTime;
 
+        sysData->window.clear();
         sysData->sceneManager.processChange();
         sysData->sceneManager.getActiveScene()->processInput();
         sysData->sceneManager.getActiveScene()->render();
-
         sysData->window.display();
     }
 }
