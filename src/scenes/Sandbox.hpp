@@ -6,6 +6,9 @@
 #include "../scenes/Scene.hpp"
 #include "../managers/SystemManager.hpp"
 #include <entt/entt.hpp>
+#include <thread>
+#include <chrono>
+#include <mutex>
 
 class Sandbox : public Scene
 {
@@ -25,4 +28,7 @@ private:
 	GlobalData* m_data;
 	entt::registry m_reg;
 	SystemManager m_system;
+
+	sf::Texture texture;
+	std::shared_ptr<Entity> m_background;
 };
