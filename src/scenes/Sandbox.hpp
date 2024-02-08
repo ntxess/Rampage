@@ -1,5 +1,6 @@
 #pragma once 
 
+#include "../common/Entity.hpp"
 #include "../common/CommonEnum.hpp"
 #include "../common/GlobalData.hpp"
 #include "../scenes/Scene.hpp"

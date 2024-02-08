@@ -163,6 +163,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\common\Entity.cpp" />
     <ClCompile Include="src\common\Engine.cpp" />
     <ClCompile Include="src\common\QuadTree.cpp" />
     <ClCompile Include="src\main.cpp" />
@@ -172,6 +173,7 @@
     <ClCompile Include="test\Unittest-Suite.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\common\Entity.hpp" />
     <ClInclude Include="src\common\CommonEnum.hpp" />
     <ClInclude Include="src\common\Engine.hpp" />
     <ClInclude Include="src\common\GlobalData.hpp" />
