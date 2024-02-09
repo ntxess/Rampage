@@ -3,7 +3,7 @@
 #include "../components/Sprite.hpp"
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
-#include <entt/entt.hpp>
+#include <entt/entity/registry.hpp>
 #include <vector>
 #include <memory>
 
@@ -14,6 +14,7 @@ class QuadTree
 {
 public:
 	QuadTree(const sf::FloatRect& rect, const size_t depth = 0);
+
 	bool insert(const entt::registry& registry, const entt::entity entity);
 	void subdivide();
 	std::vector<entt::entity> queryRange(const entt::registry& registry, const sf::FloatRect& range);

@@ -1,19 +1,21 @@
 #pragma once
-#include "entt/entt.hpp"
+
+#include <entt/entity/entity.hpp>
+#include <entt/entity/registry.hpp>
 
 class Entity
 {
 private:
 	entt::entity m_entityId;
-	entt::registry& m_reg;
+	std::reference_wrapper<entt::registry> m_reg;
 
 public:
 	Entity(std::reference_wrapper<entt::registry> reg);
-	Entity(std::reference_wrapper<entt::registry> reg, entt::entity handle);
-	Entity(const Entity& other) = default;
+	Entity(std::reference_wrapper<entt::registry> reg, const entt::entity entityId);
+	Entity(const Entity&);
+	Entity& operator=(const Entity&);
 	~Entity();
-
-	operator bool() const { return m_entityId != (entt::entity)0; }
+	operator bool() const { return m_entityId != entt::null; }
 
 	const entt::entity getId() const;
 
@@ -33,23 +35,23 @@ public:
 template<typename T, typename... Args>
 inline T& Entity::addComponent(Args&&... args)
 {
-	return m_reg.emplace<T>(m_entityId, std::forward<Args>(args)...);
+	return m_reg.get().emplace<T>(m_entityId, std::forward<Args>(args)...);
 }
 
 template<typename T>
 inline T& Entity::getComponent() const
 {
-	return m_reg.get<T>(m_entityId);
+	return m_reg.get().get<T>(m_entityId);
 }
 
 template<typename T>
 inline bool Entity::hasComponent() const
 {
-	return m_reg.all_of<T>(m_entityId);
+	return m_reg.get().all_of<T>(m_entityId);
 }
 
 template<typename T>
 inline void Entity::removeComponent()
 {
-	m_reg.remove<T>(m_entityId);
+	m_reg.get().remove<T>(m_entityId);
 }
