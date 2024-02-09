@@ -1,11 +1,13 @@
 #pragma once 
 
-#include "../common/Entity.hpp"
 #include "../common/CommonEnum.hpp"
 #include "../common/GlobalData.hpp"
 #include "../scenes/Scene.hpp"
+#include "../common/Entity.hpp"
 #include "../managers/SystemManager.hpp"
-#include <entt/entt.hpp>
+#include <entt/entity/registry.hpp>
+
+// Testing
 #include <thread>
 #include <chrono>
 #include <mutex>
@@ -30,5 +32,8 @@ private:
 	SystemManager m_system;
 
 	sf::Texture texture;
-	std::shared_ptr<Entity> m_background;
+	std::mutex mtx;
+	int i = 0;
+	int j = 0;
+	std::unique_ptr<Entity> m_background;
 };

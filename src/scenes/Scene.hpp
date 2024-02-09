@@ -1,7 +1,7 @@
 #pragma once
 
 #include <SFML/Window/Event.hpp>
-#include <entt/entt.hpp>
+#include <entt/entity/registry.hpp>
 
 class Scene
 {

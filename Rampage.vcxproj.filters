@@ -122,5 +122,11 @@
     <ClInclude Include="src\common\Entity.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\managers\ResourceManager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\components\Hitbox.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

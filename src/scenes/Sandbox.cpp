@@ -13,8 +13,10 @@ void Sandbox::init()
 		std::cout << "Texture load failed." << std::endl;
 	}
 
-	m_background = std::make_shared<Entity>(m_reg);
+	m_background = std::make_unique<Entity>(m_reg);
 	m_background->addComponent<Sprite>(texture);
+
+	std::unique_ptr<Entity> background2 = std::make_unique<Entity>(m_reg);
 }
 
 void Sandbox::processEvent(const sf::Event& event)
@@ -31,15 +33,16 @@ void Sandbox::update()
 {
     m_system.update(m_reg, m_data->deltaTime);
 
+	std::scoped_lock<std::mutex> guard(mtx);
 	if (m_background)
 	{
 		m_background->getComponent<Sprite>().sprite.move(5, 0);
 		if (m_background->getComponent<Sprite>().sprite.getPosition().x > m_data->Configuration<int>(WIDTH))
 		{
-			m_background->getComponent<Sprite>().sprite.setPosition(0, 0);
+			m_background->getComponent<Sprite>().sprite.setPosition(0, j * 10);
 		}
 
-		if (static int i = 0; i++ > 500)
+		if (i++ > 500)
 		{
 			entt::entity handle = m_background->getId();
 
@@ -58,8 +61,18 @@ void Sandbox::update()
 
 void Sandbox::render()
 {
+	std::scoped_lock<std::mutex> guard(mtx);
 	if (m_background)
+	{
 		m_data->window.draw(m_background->getComponent<Sprite>().sprite);
+	}
+	else
+	{
+		m_background = std::make_unique<Entity>(m_reg);
+		m_background->addComponent<Sprite>(texture);
+		m_background->getComponent<Sprite>().sprite.setPosition(0, (++j * 10));
+		i = 0;
+	}
 }
 
 void Sandbox::pause()

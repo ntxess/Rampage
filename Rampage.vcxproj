@@ -173,6 +173,8 @@
     <ClCompile Include="test\Unittest-Suite.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\components\Hitbox.hpp" />
+    <ClInclude Include="src\managers\ResourceManager.hpp" />
     <ClInclude Include="src\common\Entity.hpp" />
     <ClInclude Include="src\common\CommonEnum.hpp" />
     <ClInclude Include="src\common\Engine.hpp" />
