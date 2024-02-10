@@ -1,15 +1,15 @@
 #pragma once
 
-#include "../modifiers/Modifier.hpp"
+#include "../modifiers/Modification.hpp"
 #include <vector>
 
 struct ModPool
 {
-	std::vector<Modifier> pool;
+	std::vector<Modification> pool;
 
 	ModPool() {}
 
-	void add(const Modifier& mods)
+	void add(const Modification& mods)
 	{
 		pool.push_back(mods);
 	}

@@ -47,7 +47,7 @@ public:
 				if (sourceTeamTag == receiverTeamTag)
 					continue;
 
-				reg.get<ModPool>(receiver).add({});
+				// reg.get<ModPool>(receiver).add({});
 			}
 		}
 	}
