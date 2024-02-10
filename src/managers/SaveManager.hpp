@@ -34,5 +34,4 @@ private:
 	const std::string RELATIVE_PATH;
 	const std::string MAIN_CONFIG;
 	const std::string CONFIG_FOLDER_PATH;
-	const std::string SAVE_FOLDER_PATH;
 };

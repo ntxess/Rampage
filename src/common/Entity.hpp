@@ -12,8 +12,8 @@ private:
 public:
 	Entity(std::reference_wrapper<entt::registry> reg);
 	Entity(std::reference_wrapper<entt::registry> reg, const entt::entity entityId);
-	Entity(const Entity&);
-	Entity& operator=(const Entity&);
+	Entity(const Entity& other);
+	Entity& operator=(const Entity& other);
 	~Entity();
 	operator bool() const { return m_entityId != entt::null; }
 

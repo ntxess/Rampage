@@ -11,6 +11,7 @@
 #include <thread>
 #include <chrono>
 #include <mutex>
+#include <filesystem>
 
 class Sandbox : public Scene
 {
@@ -31,9 +32,7 @@ private:
 	entt::registry m_reg;
 	SystemManager m_system;
 
-	sf::Texture texture;
-	std::mutex mtx;
-	int i = 0;
 	int j = 0;
-	std::unique_ptr<Entity> m_background;
+	std::unique_ptr<Entity> m_object;
+	std::mutex mtx;
 };

@@ -7,7 +7,6 @@ SaveManager::SaveManager()
 	: RELATIVE_PATH(std::filesystem::current_path().string())
     , MAIN_CONFIG("config.json")
     , CONFIG_FOLDER_PATH("/config/")
-	, SAVE_FOLDER_PATH("/save/")
 {}
 
 /**
@@ -18,7 +17,6 @@ SaveManager::SaveManager(const std::string filepath)
     : RELATIVE_PATH(std::filesystem::current_path().string())
     , MAIN_CONFIG(filepath)
     , CONFIG_FOLDER_PATH("/config/")
-    , SAVE_FOLDER_PATH("/save/")
 {}
 
 /**
@@ -94,12 +92,12 @@ SystemStatus SaveManager::load(const std::string& filename, ConfigData& configMa
 */
 SystemStatus SaveManager::load(const std::string& filename, DataMap& dataMap)
 {
-    std::ifstream ifs(RELATIVE_PATH + SAVE_FOLDER_PATH + filename, std::fstream::app);
+    std::ifstream ifs(RELATIVE_PATH + filename, std::fstream::app);
 
     if (!ifs.good())
         return SystemStatus::SAVE_MNGR_FAIL_READ;
 
-    if (std::filesystem::is_empty(RELATIVE_PATH + SAVE_FOLDER_PATH + filename))
+    if (std::filesystem::is_empty(RELATIVE_PATH + filename))
         return SystemStatus::SAVE_MNGR_FAIL_FILE_EMPTY;
 
     rapidjson::IStreamWrapper isw(ifs);
@@ -157,7 +155,7 @@ SystemStatus SaveManager::save(const std::string& filename, const ConfigData& co
 */
 SystemStatus SaveManager::save(const std::string& filename, const DataMap& dataMap)
 {
-    std::ifstream ifs(RELATIVE_PATH + SAVE_FOLDER_PATH + filename, std::fstream::app);
+    std::ifstream ifs(RELATIVE_PATH + filename, std::fstream::app);
 
     if (!ifs.good())
         return SystemStatus::SAVE_MNGR_FAIL_READ;
@@ -171,7 +169,7 @@ SystemStatus SaveManager::save(const std::string& filename, const DataMap& dataM
     doc.Accept(writer);
     std::string json(buffer.GetString(), buffer.GetSize());
 
-    std::ofstream ofs(RELATIVE_PATH + SAVE_FOLDER_PATH + filename);
+    std::ofstream ofs(RELATIVE_PATH + filename);
     if (!ofs.good()) return SystemStatus::SAVE_MNGR_FAIL_WRITE;
 
     ofs << json;

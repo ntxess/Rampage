@@ -1,19 +1,20 @@
 #pragma once
 
 #include "../common/CommonEnum.hpp"
-#include <Thor/Resources/ResourceHolder.hpp>
+#include <Thor/Resources.hpp>
 
 template<typename T>
 class ResourceManager
 {
 public:
 	ResourceManager() = default;
-	ResourceManager(const std::string& filepath, thor::Resources::KnownIdStrategy known = thor::Resources::Reuse);
-	const T& operator[](const std::string& key) const;
+	ResourceManager(const DataMap& dataMap, thor::Resources::KnownIdStrategy known = thor::Resources::Reuse);
+	T& operator[](const std::string id);
+	const T& operator[](const std::string id) const;
 	
-	const T& get(const std::string) const;
-	SystemStatus load(const std::string filepath, thor::Resources::KnownIdStrategy known = thor::Resources::Reuse);
-	SystemStatus load(const std::string, const std::string filepath, thor::Resources::KnownIdStrategy known = thor::Resources::Reuse);
+	const T& get(const std::string id) const;
+	SystemStatus load(const DataMap& dataMap, thor::Resources::KnownIdStrategy known = thor::Resources::Reuse);
+	SystemStatus load(const std::string id, const std::string filepath, thor::Resources::KnownIdStrategy known = thor::Resources::Reuse);
 	SystemStatus unload();
 	SystemStatus unload(const std::string);
 
@@ -22,42 +23,101 @@ private:
 };
 
 template<typename T>
-inline ResourceManager<T>::ResourceManager(const std::string& filepath, thor::Resources::KnownIdStrategy known)
+inline ResourceManager<T>::ResourceManager(const DataMap& dataMap, thor::Resources::KnownIdStrategy known)
 {
+	load(dataMap, known);
 }
 
 template<typename T>
-inline const T& ResourceManager<T>::operator[](const std::string& key) const
+inline T& ResourceManager<T>::operator[](const std::string id)
 {
-	// TODO: insert return statement here
+	return m_holder[id];
 }
 
 template<typename T>
-inline const T& ResourceManager<T>::get(const std::string) const
+inline const T& ResourceManager<T>::operator[](const std::string id) const
 {
-	// TODO: insert return statement here
+	return m_holder[id];
 }
 
 template<typename T>
-inline SystemStatus ResourceManager<T>::load(const std::string filepath, thor::Resources::KnownIdStrategy known)
+inline const T& ResourceManager<T>::get(const std::string id) const
 {
-	// TODO: insert return statement here
+	return m_holder[id];
 }
 
 template<typename T>
-inline SystemStatus ResourceManager<T>::load(const std::string, const std::string filepath, thor::Resources::KnownIdStrategy known)
+inline SystemStatus ResourceManager<T>::load(const DataMap& dataMap, thor::Resources::KnownIdStrategy known)
 {
-	// TODO: insert return statement here
+	const std::string cwd = std::filesystem::current_path().string();
+	for (const auto& [id, path] : dataMap)
+	{
+		try
+		{
+			m_holder.acquire
+			(
+				id,
+				thor::Resources::fromFile<T>(cwd + anyToString(path)),
+				known
+			);
+		}
+		catch (thor::ResourceLoadingException& e)
+		{
+			e.what();
+			return SystemStatus::RSRC_MNGR_FAIL_LOAD;
+		}
+	}
+	return SystemStatus::RSRC_MNGR_SUCCESS;
+}
+
+template<typename T>
+inline SystemStatus ResourceManager<T>::load(const std::string id, const std::string filepath, thor::Resources::KnownIdStrategy known)
+{
+	const std::string cwd = std::filesystem::current_path().string();
+	try
+	{
+		m_holder.acquire
+		(
+			id,
+			thor::Resources::fromFile<T>(cwd + anyToString(filepath)),
+			known
+		);
+	}
+	catch (thor::ResourceLoadingException& e)
+	{
+		e.what();
+		return SystemStatus::RSRC_MNGR_FAIL_LOAD;
+	}
+	return SystemStatus::RSRC_MNGR_SUCCESS;
 }
 
 template<typename T>
 inline SystemStatus ResourceManager<T>::unload()
 {
-	// TODO: insert return statement here
+	try
+	{
+		m_holder = thor::ResourceHolder<T, std::string>();
+	}
+	catch (thor::ResourceLoadingException& e)
+	{
+		e.what();
+		return SystemStatus::RSRC_MNGR_FAIL_LOAD;
+	}
+
+	return SystemStatus::RSRC_MNGR_SUCCESS;
 }
 
 template<typename T>
-inline SystemStatus ResourceManager<T>::unload(const std::string)
+inline SystemStatus ResourceManager<T>::unload(const std::string id)
 {
-	// TODO: insert return statement here
+	try
+	{
+		m_holder.release(id);
+	}
+	catch (thor::ResourceLoadingException& e)
+	{
+		e.what();
+	 	return SystemStatus::RSRC_MNGR_FAIL_LOAD;
+	}
+	return SystemStatus::RSRC_MNGR_SUCCESS;
 }
