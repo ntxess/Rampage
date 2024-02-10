@@ -25,35 +25,31 @@ public:
 
 	void quadTreeUpdate(entt::registry& reg)
 	{
-		//m_quadTree = std::make_unique<QuadTree>(sf::FloatRect(m_left, m_top, m_width, m_height));
-		//auto view = reg.view<Hitbox>();
+		m_quadTree = std::make_unique<QuadTree>(sf::FloatRect(m_left, m_top, m_width, m_height));
+		auto view = reg.view<Hitbox>();
 
-		//for (auto entity : view)
-		//	m_quadTree->Insert(reg, entity);
+		for (auto entity : view)
+			m_quadTree->insert(reg, entity);
 	}
 
 	void collisionUpdate(entt::registry& reg)
 	{
-		//auto view = reg.view<Hitbox>();
-		//for (auto collider : view)
-		//{
-		//	auto& colliderHitbox = reg.get<Sprite>(collider).sprite;
-		//	std::vector<entt::entity> entityCollidedWith = m_quadTree->QueryRange(reg, colliderHitbox.getGlobalBounds());
-		//	auto colliderTeamTag = reg.get<TeamTag>(collider).tag;
+		auto view = reg.view<Hitbox>();
+		for (auto source : view)
+		{
+			sf::FloatRect sourceHitbox = reg.get<Hitbox>(source).getBounds();
+			std::vector<entt::entity> receiverList = m_quadTree->queryRange(reg, sourceHitbox);
+			Team sourceTeamTag = reg.get<TeamTag>(source).tag;
 
-		//	for (auto collided : entityCollidedWith)
-		//	{
-		//		auto collidedTeamTag = reg.get<TeamTag>(collided).tag;
-		//		if (colliderTeamTag == collidedTeamTag)
-		//			continue;
+			for (auto receiver : receiverList)
+			{
+				Team receiverTeamTag = reg.get<TeamTag>(receiver).tag;
+				if (sourceTeamTag == receiverTeamTag)
+					continue;
 
-		//		// When an object hits another object it retains the id of the object it collided.
-		//		// However, this system in which emplacing/replacing collisions means that collisions are 
-		//		// resolved at a Last In First Out order.
-		//		reg.emplace_or_replace<CollidedTag>(collider, collided);
-		//		reg.emplace_or_replace<CollidedTag>(collided, collider);
-		//	}
-		//}
+				reg.get<ModPool>(receiver).add({});
+			}
+		}
 	}
 
 private:

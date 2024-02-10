@@ -173,7 +173,10 @@
     <ClCompile Include="test\Unittest-Suite.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\modifiers\Modifier.hpp" />
+    <ClInclude Include="src\components\ModPool.hpp" />
     <ClInclude Include="src\components\Hitbox.hpp" />
+    <ClInclude Include="src\components\TeamTag.hpp" />
     <ClInclude Include="src\managers\ResourceManager.hpp" />
     <ClInclude Include="src\common\Entity.hpp" />
     <ClInclude Include="src\common\CommonEnum.hpp" />
@@ -190,6 +193,7 @@
     <ClInclude Include="src\systems\CollisionSystem.hpp" />
     <ClInclude Include="src\systems\System.hpp" />
     <ClInclude Include="test\Unittest-SaveManager.hpp" />
+    <ClInclude Include="src\systems\WayPointSystem.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

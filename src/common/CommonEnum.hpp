@@ -71,6 +71,13 @@ enum ConfigKey
 	COLOR_BLIND
 };
 
+enum class Team
+{
+	UNAFFILIATED,
+	FRIENDLY,
+	ENEMY,
+};
+
 /**
  * @brief [FOR DEBUG] SystemStatus enum to string for debugging.
  * @param [IN] status 
