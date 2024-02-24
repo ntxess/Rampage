@@ -47,7 +47,7 @@ public:
 				if (sourceTeamTag == receiverTeamTag)
 					continue;
 
-				// reg.get<ModPool>(receiver).add({});
+				//std::any_cast<std::list<Modification>>(eventList).push_back(InstantDamage());
 			}
 		}
 	}

@@ -53,7 +53,6 @@ public:
             auto stop = std::chrono::high_resolution_clock::now();
 
             auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start).count();
-
             if (system->name() == "CollisionSystem")
             {
                 std::cout << GREEN << "[System] | CollisionSystem: " << duration << "ns\n" << RESET;

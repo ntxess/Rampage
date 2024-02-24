@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -169,12 +169,14 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\managers\SaveManager.cpp" />
     <ClCompile Include="src\managers\SceneManager.cpp" />
+    <ClCompile Include="src\common\modifiers\OvertimeDamage.hpp" />
     <ClCompile Include="src\scenes\Sandbox.cpp" />
     <ClCompile Include="test\Unittest-Suite.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\modifiers\Damage.hpp" />
-    <ClInclude Include="src\modifiers\Modification.hpp" />
+    <ClInclude Include="src\components\Health.hpp" />
+    <ClInclude Include="src\common\modifiers\InstantDamage.hpp" />
+    <ClInclude Include="src\common\modifiers\Modification.hpp" />
     <ClInclude Include="src\components\ModPool.hpp" />
     <ClInclude Include="src\components\Hitbox.hpp" />
     <ClInclude Include="src\components\TeamTag.hpp" />
@@ -189,7 +191,6 @@
     <ClInclude Include="src\managers\SaveManager.hpp" />
     <ClInclude Include="src\managers\SceneManager.hpp" />
     <ClInclude Include="src\managers\SystemManager.hpp" />
-    <ClInclude Include="src\modifiers\ModificationDecorator.hpp" />
     <ClInclude Include="src\scenes\Sandbox.hpp" />
     <ClInclude Include="src\scenes\Scene.hpp" />
     <ClInclude Include="src\systems\CollisionSystem.hpp" />

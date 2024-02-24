@@ -14,6 +14,10 @@ void Sandbox::init()
 
 	m_object = std::make_unique<Entity>(m_reg);
 	m_object->addComponent<Sprite>(m_data->textureManager["player"]);
+
+
+	//std::unique_ptr<Modification> specialAtk = std::make_unique<Heal>(std::make_unique<Damage>(std::make_unique<BaseModification>()));
+	//specialAtk->type();
 }
 
 void Sandbox::processEvent(const sf::Event& event)
