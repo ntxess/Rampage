@@ -4,8 +4,6 @@
 
 struct Hitbox
 {
-	sf::VertexArray hitbox;
-
 	Hitbox(const sf::VertexArray& verticies)
 		: hitbox(verticies)
 	{}
@@ -43,4 +41,6 @@ struct Hitbox
 	{
 		return hitbox.getBounds().getPosition();
 	}
+
+	sf::VertexArray hitbox;
 };

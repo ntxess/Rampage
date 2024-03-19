@@ -24,9 +24,9 @@ private:
     void resourceThread();
 
     std::shared_ptr<GlobalData> sysData;
-    std::unique_ptr<std::thread> physic;
-    std::unique_ptr<std::thread> render;
-    std::unique_ptr<std::thread> audio;
-    std::unique_ptr<std::thread> resource;
+    std::thread m_physicThread;
+    std::thread m_renderThread;
+    std::thread m_audioThread;
+    std::thread m_resourceThread;
 };
 

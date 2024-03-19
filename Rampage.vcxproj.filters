@@ -48,6 +48,9 @@
     <ClCompile Include="src\common\Entity.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\components\CollisionEvent.hpp">
+      <Filter>Header Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\systems\CollisionSystem.hpp">
@@ -126,6 +129,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\components\Hitbox.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\components\TeamTag.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\systems\WayPointSystem.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\systems\EventSystem.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

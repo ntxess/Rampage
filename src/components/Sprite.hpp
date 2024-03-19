@@ -5,8 +5,6 @@
 
 struct Sprite
 {
-	sf::Sprite sprite;
-
 	Sprite(sf::Texture& texture, bool repeat = false)
 	{
 		texture.setRepeated(repeat);
@@ -84,4 +82,6 @@ struct Sprite
 	{
 		sprite.setTextureRect(rectangle);
 	}
+
+	sf::Sprite sprite;
 };

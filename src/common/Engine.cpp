@@ -5,25 +5,21 @@
 */
 Engine::Engine()
     : sysData(std::make_shared<GlobalData>())
-    , physic(nullptr)
-    , render(nullptr)
-    , audio(nullptr)
-    , resource(nullptr)
 {
     // Start threads on successful init of the application configs
     if (init() == SystemStatus::OK)
     {
-        physic = std::make_unique<std::thread>(&Engine::physicThread, this);
-        physic->detach();
+        m_physicThread = std::thread(&Engine::physicThread, this);
+        m_physicThread.detach();
 
-        render = std::make_unique<std::thread>(&Engine::renderThread, this);
-        render->detach();
+        m_renderThread = std::thread(&Engine::renderThread, this);
+        m_renderThread.detach();
 
-        audio = std::make_unique<std::thread>(&Engine::audioThread, this);
-        audio->detach();
+        m_audioThread = std::thread(&Engine::audioThread, this);
+        m_audioThread.detach();
 
-        resource = std::make_unique<std::thread>(&Engine::resourceThread, this);
-        resource->detach();
+        m_resourceThread = std::thread(&Engine::resourceThread, this);
+        m_resourceThread.detach();
     }
 }
 

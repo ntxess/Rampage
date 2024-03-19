@@ -11,7 +11,9 @@ enum class Team
 
 struct TeamTag
 {
-	Team tag;
+	TeamTag(Team tag) 
+		: tag(tag) 
+	{}
 
-	TeamTag(Team tag) : tag(tag) {}
+	Team tag;
 };

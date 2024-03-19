@@ -58,6 +58,14 @@ public:
             {
                 std::cout << GREEN << "[System] | CollisionSystem: " << duration << "ns\n" << RESET;
             }
+            else if (system->name() == "EventSystem")
+            {
+                std::cout << GREEN << "[System] | EventSystem: " << duration << "ns\n" << RESET;
+            }
+            else if (system->name() == "WayPointSystem")
+            {
+                std::cout << GREEN << "[System] | WayPointSystem: " << duration << "ns\n" << RESET;
+            }
         }
     }
 
