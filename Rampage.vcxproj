@@ -171,10 +171,16 @@
     <ClCompile Include="src\managers\SaveManager.cpp" />
     <ClCompile Include="src\managers\SceneManager.cpp" />
     <ClCompile Include="src\scenes\Sandbox.cpp" />
+    <ClCompile Include="src\systems\CollisionSystem.cpp" />
+    <ClCompile Include="src\systems\EventSystem.cpp" />
+    <ClCompile Include="src\systems\WayPointSystem.cpp" />
     <ClCompile Include="test\Unittest-Suite.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\components\EntityStatus.hpp" />
     <ClInclude Include="src\components\Hitbox.hpp" />
+    <ClInclude Include="src\components\InstantDamage.hpp" />
+    <ClInclude Include="src\components\Modifier.hpp" />
     <ClInclude Include="src\components\TeamTag.hpp" />
     <ClInclude Include="src\managers\ResourceManager.hpp" />
     <ClInclude Include="src\common\Entity.hpp" />

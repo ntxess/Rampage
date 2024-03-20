@@ -9,8 +9,8 @@ void Sandbox::init()
     m_system.addSystem<CollisionSystem>(m_data->viewport.getCenter(), sf::Vector2f(m_data->window.getSize()));
 
 	DataMap resourcePath;
-	m_data->saveManager.load("/config/resource.json", resourcePath);
-	m_data->textureManager.load(resourcePath, thor::Resources::Reuse);
+	m_data->saveManager.load("/config/resource.json", resourcePath);   // Load config file
+	m_data->textureManager.load(resourcePath, thor::Resources::Reuse); // Load the resources from loaded resource paths
 
 	m_object = std::make_unique<Entity>(m_reg);
 	m_object->addComponent<Sprite>(m_data->textureManager["player"]);

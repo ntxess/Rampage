@@ -6,30 +6,11 @@
 class EventSystem : public System
 {
 public:
-	EventSystem() {}
+	EventSystem();
 
-	constexpr std::string_view name()
-	{
-		return "EventSystem";
-	}
-
-	void update(entt::registry& reg, const float& dt = 0.f, entt::entity ent = entt::null)
-	{
-		auto view = reg.view<CollisionEvent>();
-		for (auto event : view)
-		{
-			entt::entity source = reg.get<CollisionEvent>(event).sourceID;
-			entt::entity receiver = reg.get<CollisionEvent>(event).receiverID;
-			
-
-
-
-		}
-	}
+	constexpr std::string_view name();
+	void update(entt::registry& reg, const float& dt = 0.f, entt::entity ent = entt::null);
 
 private:
-	void resolveEffects()
-	{
-
-	}
+	void resolveEffects();
 };

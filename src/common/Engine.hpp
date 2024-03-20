@@ -23,6 +23,7 @@ private:
     void audioThread();
     void resourceThread();
 
+private:
     std::shared_ptr<GlobalData> sysData;
     std::thread m_physicThread;
     std::thread m_renderThread;

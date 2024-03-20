@@ -31,6 +31,7 @@ private:
 	bool createVal(rapidjson::Document& doc, rapidjson::Value& val, const std::string& key, const std::any& data);
 	SystemStatus creatConfig(const std::string& filename);
 
+private:
 	const std::string RELATIVE_PATH;
 	const std::string MAIN_CONFIG;
 	const std::string CONFIG_FOLDER_PATH;

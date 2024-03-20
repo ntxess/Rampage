@@ -5,10 +5,6 @@
 
 class Entity
 {
-private:
-	entt::entity m_entityId;
-	std::reference_wrapper<entt::registry> m_reg;
-
 public:
 	Entity(std::reference_wrapper<entt::registry> reg);
 	Entity(std::reference_wrapper<entt::registry> reg, const entt::entity entityId);
@@ -30,6 +26,10 @@ public:
 
 	template<typename T>
 	void removeComponent();
+
+private:
+	entt::entity m_entityId;
+	std::reference_wrapper<entt::registry> m_reg;
 };
 
 template<typename T, typename... Args>
