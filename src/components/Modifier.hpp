@@ -4,7 +4,11 @@
 
 enum class ModifierType
 {
-	BASE,
+	NULLTYPE,
+	INSTANT,
+	OVERTIME,
+	EFFECT,
+	DEBUFF,
 };
 
 struct Modifier
