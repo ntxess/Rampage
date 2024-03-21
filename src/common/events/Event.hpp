@@ -1,6 +1,6 @@
 #pragma once
 
-enum class ModifierType
+enum class EventType
 {
 	BASE,
 	INSTANT,
@@ -9,10 +9,10 @@ enum class ModifierType
 	AILMENT
 };
 
-struct Modification
+struct Event
 {
-	virtual ~Modification() = default;
-	virtual ModifierType type() const = 0;
+	virtual ~Event() = default;
+	virtual EventType type() const = 0;
 	virtual void update(/*EntityStatus& entityStatus*/) = 0;
 	virtual bool complete() = 0;
 };

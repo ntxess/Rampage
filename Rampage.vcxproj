@@ -169,15 +169,16 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\managers\SaveManager.cpp" />
     <ClCompile Include="src\managers\SceneManager.cpp" />
-    <ClCompile Include="src\common\modifiers\OvertimeDamage.hpp" />
+    <ClCompile Include="src\common\events\EventOvertimeDamage.hpp" />
     <ClCompile Include="src\scenes\Sandbox.cpp" />
     <ClCompile Include="test\Unittest-Suite.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\common\events\EventDispatcher.hpp" />
+    <ClInclude Include="src\common\events\EventHandler.hpp" />
     <ClInclude Include="src\components\Health.hpp" />
-    <ClInclude Include="src\common\modifiers\InstantDamage.hpp" />
-    <ClInclude Include="src\common\modifiers\Modification.hpp" />
-    <ClInclude Include="src\components\ModPool.hpp" />
+    <ClInclude Include="src\common\events\EventInstantDamage.hpp" />
+    <ClInclude Include="src\common\events\Event.hpp" />
     <ClInclude Include="src\components\Hitbox.hpp" />
     <ClInclude Include="src\components\TeamTag.hpp" />
     <ClInclude Include="src\managers\ResourceManager.hpp" />

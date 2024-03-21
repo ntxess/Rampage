@@ -2,14 +2,20 @@
 
 #include "System.hpp"
 #include "../common/QuadTree.hpp"
+#include "../common/events/Event.hpp"
 #include "../components/Component.hpp"
 #include <memory>
+#include <concurrent_queue.h>
 
 class CollisionSystem : public System
 {
 public:
-	CollisionSystem(const sf::Vector2f& center, const sf::Vector2f& size)
-		: m_left(center.x - (size.x / 2)), m_top(center.y - (size.y / 2)), m_width(size.x), m_height(size.y)
+	CollisionSystem(const sf::Vector2f& center, const sf::Vector2f& size, std::reference_wrapper<concurrency::concurrent_queue<std::shared_ptr<Event>>> queue)
+		: m_left(center.x - (size.x / 2))
+		, m_top(center.y - (size.y / 2))
+		, m_width(size.x)
+		, m_height(size.y)
+		, m_globalQueue(queue)
 	{}
 
 	constexpr std::string_view name()
@@ -17,7 +23,7 @@ public:
 		return "CollisionSystem";
 	}
 
-	void update(entt::registry& reg, const float& dt = 0.f, entt::entity ent = entt::null)
+	void update(entt::registry& reg, const float& dt = 0.f)
 	{
 		quadTreeUpdate(reg);  // Rebuild the quadtree for querying collisions
 		collisionUpdate(reg); // Find and mark all collided entity with a tag
@@ -46,8 +52,6 @@ public:
 				Team receiverTeamTag = reg.get<TeamTag>(receiver).tag;
 				if (sourceTeamTag == receiverTeamTag)
 					continue;
-
-				//std::any_cast<std::list<Modification>>(eventList).push_back(InstantDamage());
 			}
 		}
 	}
@@ -57,5 +61,6 @@ private:
 	float m_top;
 	float m_width;
 	float m_height;
+	std::reference_wrapper<concurrency::concurrent_queue<std::shared_ptr<Event>>> m_globalQueue;
 	std::unique_ptr<QuadTree> m_quadTree;
 };

@@ -14,7 +14,7 @@ public:
         return "WayPointSystem";
     }
 
-    void update(entt::registry& reg, const float& dt = 0.f, entt::entity ent = entt::null)
+    void update(entt::registry& reg, const float& dt = 0.f)
     {
         //auto group = reg.group<MovementPattern, Speed>(entt::get<AnimatedSprite>);
         //for (auto entity : group)

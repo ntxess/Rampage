@@ -44,12 +44,12 @@ public:
         }
     }
 
-    void update(entt::registry& reg, const float& dt = 0.f, entt::entity ent = entt::null)
+    void update(entt::registry& reg, const float& dt = 0.f)
     {
         for (auto& [id, system] : m_systems)
         {
             auto start = std::chrono::high_resolution_clock::now();
-            system->update(reg, dt, ent);
+            system->update(reg, dt);
             auto stop = std::chrono::high_resolution_clock::now();
 
             auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start).count();

@@ -6,14 +6,14 @@
 #include "../common/Entity.hpp"
 #include "../managers/SystemManager.hpp"
 #include <entt/entity/registry.hpp>
-#include <queue>
+#include <concurrent_queue.h>
 
 // Testing
 #include <thread>
 #include <chrono>
 #include <mutex>
 #include <filesystem>
-#include "../common/modifiers/Modification.hpp"
+#include "../common/events/Event.hpp"
 
 class Sandbox : public Scene
 {
@@ -34,7 +34,7 @@ private:
 	entt::registry m_reg;
 	SystemManager m_system;
 
-	std::queue<Modification> m_eventQueue;
+	concurrency::concurrent_queue<std::shared_ptr<Event>> m_eventQueue;
 
 	// Testing
 	int j = 0;
