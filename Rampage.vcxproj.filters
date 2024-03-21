@@ -158,5 +158,8 @@
     <ClInclude Include="src\components\InstantDamage.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\components\ModifierPool.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

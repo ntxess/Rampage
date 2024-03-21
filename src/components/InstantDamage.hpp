@@ -4,13 +4,16 @@
 
 struct InstantDamage : public Modifier
 {
-	inline const ModifierType type() const
+	inline ModifierType type() const override
 	{
 		return ModifierType::INSTANT;
 	}
 
-	inline void apply(std::any& status) override
+	inline void applyTo(EntityStatus* status, int val) override
 	{
-
+		if (status)
+		{
+			status->health -= 1;
+		}
 	}
 };

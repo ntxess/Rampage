@@ -6,4 +6,5 @@
 #include "EntityStatus.hpp"
 #include "InstantDamage.hpp"
 #include "Modifier.hpp"
+#include "ModifierPool.hpp"
 #include "CollisionEvent.hpp"

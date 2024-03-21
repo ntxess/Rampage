@@ -12,5 +12,5 @@ public:
 	void update(entt::registry& reg, const float& dt = 0.f, entt::entity ent = entt::null);
 
 private:
-	void resolveEffects();
+	std::unordered_map<ModifierType, std::unique_ptr<Modifier>> m_resolveModMap;
 };

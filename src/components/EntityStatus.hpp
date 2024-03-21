@@ -2,5 +2,5 @@
 
 struct EntityStatus
 {
-
+	float health;
 };
