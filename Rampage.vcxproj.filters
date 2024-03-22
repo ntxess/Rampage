@@ -60,6 +60,9 @@
     <ClCompile Include="src\systems\WayPointSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\components\Effects.hpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\systems\CollisionSystem.hpp">
@@ -71,7 +74,7 @@
     <ClInclude Include="src\scenes\Sandbox.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\scenes\Scene.hpp">
+    <ClInclude Include="src\scenes\IScene.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\managers\SaveManager.hpp">
@@ -119,9 +122,6 @@
     <ClInclude Include="src\scenes\Sandbox.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\scenes\Scene.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\systems\CollisionSystem.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -152,13 +152,19 @@
     <ClInclude Include="src\components\EntityStatus.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\components\Modifier.hpp">
+    <ClInclude Include="src\components\EffectsList.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\components\InstantDamage.hpp">
+    <ClInclude Include="src\components\InstantModifier.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\components\ModifierPool.hpp">
+    <ClInclude Include="src\components\OvertimeModifier.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\components\TimedModifier.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\components\IModifier.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

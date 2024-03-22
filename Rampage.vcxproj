@@ -167,6 +167,7 @@
     <ClCompile Include="src\common\Engine.cpp" />
     <ClCompile Include="src\common\QuadTree.cpp" />
     <ClCompile Include="src\components\CollisionEvent.hpp" />
+    <ClCompile Include="src\components\Effects.hpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\managers\SaveManager.cpp" />
     <ClCompile Include="src\managers\SceneManager.cpp" />
@@ -179,10 +180,12 @@
   <ItemGroup>
     <ClInclude Include="src\components\EntityStatus.hpp" />
     <ClInclude Include="src\components\Hitbox.hpp" />
-    <ClInclude Include="src\components\InstantDamage.hpp" />
-    <ClInclude Include="src\components\Modifier.hpp" />
-    <ClInclude Include="src\components\ModifierPool.hpp" />
+    <ClInclude Include="src\components\EffectsList.hpp" />
+    <ClInclude Include="src\components\IModifier.hpp" />
+    <ClInclude Include="src\components\InstantModifier.hpp" />
+    <ClInclude Include="src\components\OvertimeModifier.hpp" />
     <ClInclude Include="src\components\TeamTag.hpp" />
+    <ClInclude Include="src\components\TimedModifier.hpp" />
     <ClInclude Include="src\managers\ResourceManager.hpp" />
     <ClInclude Include="src\common\Entity.hpp" />
     <ClInclude Include="src\common\CommonEnum.hpp" />
@@ -195,7 +198,7 @@
     <ClInclude Include="src\managers\SceneManager.hpp" />
     <ClInclude Include="src\managers\SystemManager.hpp" />
     <ClInclude Include="src\scenes\Sandbox.hpp" />
-    <ClInclude Include="src\scenes\Scene.hpp" />
+    <ClInclude Include="src\scenes\IScene.hpp" />
     <ClInclude Include="src\systems\CollisionSystem.hpp" />
     <ClInclude Include="src\systems\EventSystem.hpp" />
     <ClInclude Include="src\systems\System.hpp" />

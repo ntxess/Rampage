@@ -7,6 +7,7 @@ Sandbox::Sandbox(GlobalData* sysData)
 void Sandbox::init()
 {
     m_system.addSystem<CollisionSystem>(m_data->viewport.getCenter(), sf::Vector2f(m_data->window.getSize()));
+	m_system.addSystem<EventSystem>();
 
 	DataMap resourcePath;
 	m_data->saveManager.load("/config/resource.json", resourcePath);   // Load config file

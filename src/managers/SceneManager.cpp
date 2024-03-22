@@ -13,7 +13,7 @@ SceneManager::SceneManager()
  * @param newScene 
  * @param isReplacing 
 */
-void SceneManager::addScene(std::unique_ptr<Scene> newScene, bool isReplacing)
+void SceneManager::addScene(std::unique_ptr<IScene> newScene, bool isReplacing)
 {
 	m_addFlag = true;
 	m_replaceFlag = isReplacing;
@@ -68,7 +68,7 @@ void SceneManager::processChange()
  * @brief [Public] Get current scene (Top scene of the stack).
  * @return Current scene pointer
 */
-Scene* SceneManager::getActiveScene()
+IScene* SceneManager::getActiveScene()
 {
 	return m_scenes.top().get();
 }

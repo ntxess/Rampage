@@ -2,6 +2,7 @@
 
 #include "../systems/System.hpp"
 #include "../systems/CollisionSystem.hpp"
+#include "../systems/EventSystem.hpp"
 #include <memory>
 #include <typeindex>
 #include <unordered_map>

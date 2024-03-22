@@ -1,8 +1,8 @@
 #pragma once 
 
+#include "../scenes/IScene.hpp"
 #include "../common/CommonEnum.hpp"
 #include "../common/GlobalData.hpp"
-#include "../scenes/Scene.hpp"
 #include "../common/Entity.hpp"
 #include "../managers/SystemManager.hpp"
 #include <entt/entity/registry.hpp>
@@ -13,7 +13,7 @@
 #include <mutex>
 #include <filesystem>
 
-class Sandbox : public Scene
+class Sandbox : public IScene
 {
 public:
 	Sandbox(GlobalData* sysData);

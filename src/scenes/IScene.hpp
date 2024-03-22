@@ -3,10 +3,10 @@
 #include <SFML/Window/Event.hpp>
 #include <entt/entity/registry.hpp>
 
-class Scene
+class IScene
 {
 public:
-	virtual ~Scene() = default;
+	virtual ~IScene() = default;
 	virtual void init() = 0;
 	virtual void processEvent(const sf::Event& event) = 0;
 	virtual void processInput() = 0;
