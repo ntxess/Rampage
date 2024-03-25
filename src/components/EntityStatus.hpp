@@ -1,6 +1,8 @@
 #pragma once
 
+#include <map>
+
 struct EntityStatus
 {
-	float health;
+	std::map<std::string, float> value;
 };

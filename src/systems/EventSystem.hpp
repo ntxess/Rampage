@@ -19,8 +19,8 @@ public:
 	constexpr std::string_view name();
 	void update(entt::registry& reg, const float& dt = 0.f, entt::entity ent = entt::null);
 
-	EventStatus apply(const EffectType modType, EntityStatus* stats, const Effects* effect);
-	EventStatus instantEvent();
-	EventStatus overTimeEvent();
-	EventStatus fixedTimeEvent();
+	EventStatus apply(const EffectType effectType, EntityStatus& stats, const Effects& effect, StatusModEvent* eventProgress = nullptr);
+	EventStatus instantEvent(EntityStatus& stats, const Effects& effect);
+	EventStatus overTimeEvent(EntityStatus& stats, const Effects& effect, StatusModEvent* eventProgress);
+	EventStatus fixedTimeEvent(EntityStatus& stats, const Effects& effect, StatusModEvent* eventProgress);
 };

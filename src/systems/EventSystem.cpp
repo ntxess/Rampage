@@ -16,12 +16,21 @@ void EventSystem::update(entt::registry& reg, const float& dt, entt::entity ent)
 		const entt::entity sourceID = reg.get<StatusModEvent>(event).sourceID;
 		const entt::entity receiverID = reg.get<StatusModEvent>(event).receiverID;
 		const EffectType effectType = reg.get<StatusModEvent>(event).effectType;
-		const Effects* effect = reg.get<StatusModEvent>(event).effect;
+		const Effects& effect = *reg.get<StatusModEvent>(event).effect;
 
-		EntityStatus* receiverStatus = &reg.get<EntityStatus>(receiverID);
-		if (apply(effectType, receiverStatus, effect) == EventStatus::COMPLETE)
+		if (reg.all_of<EntityStatus>(receiverID))
 		{
-			// Event completed processesing
+			EntityStatus& receiverStatus = reg.get<EntityStatus>(receiverID);
+			StatusModEvent* statusModEvent = &reg.get<StatusModEvent>(event);
+			if (apply(effectType, receiverStatus, effect, statusModEvent) == EventStatus::COMPLETE)
+			{
+				// Event completed processesing
+				reg.destroy(event);
+			}
+		}
+		else
+		{
+			// Destroy event if it becomes stale
 			reg.destroy(event);
 		}
 	}
@@ -36,20 +45,23 @@ void EventSystem::update(entt::registry& reg, const float& dt, entt::entity ent)
 		for (auto& [effectType, effect] : reg.get<EffectsList>(sourceID).effectsList)
 		{
 			// Get the receiver status and apply effects
-			EntityStatus* receiverStatus = &reg.get<EntityStatus>(receiverID);
-			if (apply(effectType, receiverStatus, &effect) == EventStatus::INCOMPLETE)
+			if (reg.all_of<EntityStatus>(receiverID))
 			{
-				Entity statusModEvent(reg);
-				statusModEvent.addComponent<StatusModEvent>(sourceID, receiverID, effectType, &effect);
+				EntityStatus& receiverStatus = reg.get<EntityStatus>(receiverID);
+				if (apply(effectType, receiverStatus, effect) == EventStatus::INCOMPLETE)
+				{
+					Entity statusModEvent(reg);
+					statusModEvent.addComponent<StatusModEvent>(sourceID, receiverID, effectType, &effect);
+				}
 			}
-			
+
 			// Event completed processesing
 			reg.destroy(event);
 		}
 	}
 }
 
-EventStatus EventSystem::apply(const EffectType effectType, EntityStatus* stats, const Effects* effect)
+EventStatus EventSystem::apply(const EffectType effectType, EntityStatus& stats, const Effects& effect, StatusModEvent* eventProgress)
 {
 	switch (effectType)
 	{
@@ -57,15 +69,15 @@ EventStatus EventSystem::apply(const EffectType effectType, EntityStatus* stats,
 		break;
 
 	case EffectType::INSTANT:
-		instantEvent();
+		instantEvent(stats, effect);
 		break;
 
 	case EffectType::OVERTIME:
-		overTimeEvent();
+		overTimeEvent(stats, effect, eventProgress);
 		break;
 
 	case EffectType::TIMED:
-		fixedTimeEvent();
+		fixedTimeEvent(stats, effect, eventProgress);
 		break;
 
 	default:
@@ -75,20 +87,39 @@ EventStatus EventSystem::apply(const EffectType effectType, EntityStatus* stats,
 	return EventStatus::FAILED;
 }
 
-EventStatus EventSystem::instantEvent()
+EventStatus EventSystem::instantEvent(EntityStatus& stats, const Effects& effect)
 {
+	if (stats.value.count(effect.statusToModify))
+		stats.value[effect.statusToModify] += effect.modificationVal;
 	return EventStatus::FAILED;
-
 }
 
-EventStatus EventSystem::overTimeEvent()
+EventStatus EventSystem::overTimeEvent(EntityStatus& stats, const Effects& effect, StatusModEvent* eventProgress)
 {
+	if (eventProgress)
+	{
+		if (stats.value.count(effect.statusToModify))
+			stats.value[effect.statusToModify] += effect.modificationVal;
+	}
+	else
+	{
+		if (stats.value.count(effect.statusToModify))
+			stats.value[effect.statusToModify] += effect.modificationVal;
+	}
 	return EventStatus::FAILED;
-
 }
 
-EventStatus EventSystem::fixedTimeEvent()
+EventStatus EventSystem::fixedTimeEvent(EntityStatus& stats, const Effects& effect, StatusModEvent* eventProgress)
 {
+	if (eventProgress)
+	{
+		if (stats.value.count(effect.statusToModify))
+			stats.value[effect.statusToModify] += effect.modificationVal;
+	}
+	else
+	{
+		if (stats.value.count(effect.statusToModify))
+			stats.value[effect.statusToModify] += effect.modificationVal;
+	}
 	return EventStatus::FAILED;
-
 }
