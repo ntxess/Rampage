@@ -181,11 +181,8 @@
     <ClInclude Include="src\components\EntityStatus.hpp" />
     <ClInclude Include="src\components\Hitbox.hpp" />
     <ClInclude Include="src\components\EffectsList.hpp" />
-    <ClInclude Include="src\components\IModifier.hpp" />
-    <ClInclude Include="src\components\InstantModifier.hpp" />
-    <ClInclude Include="src\components\OvertimeModifier.hpp" />
+    <ClInclude Include="src\components\StatusModEvent.hpp" />
     <ClInclude Include="src\components\TeamTag.hpp" />
-    <ClInclude Include="src\components\TimedModifier.hpp" />
     <ClInclude Include="src\managers\ResourceManager.hpp" />
     <ClInclude Include="src\common\Entity.hpp" />
     <ClInclude Include="src\common\CommonEnum.hpp" />
