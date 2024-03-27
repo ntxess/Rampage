@@ -10,6 +10,7 @@ constexpr std::string_view EventSystem::name()
 
 void EventSystem::update(entt::registry& reg, const float& dt, entt::entity ent)
 {
+	// For events that require further processing (aka non-INSTANT type events)
 	auto statusModGroup = reg.group<StatusModEvent>();
 	for (auto event : statusModGroup)
 	{

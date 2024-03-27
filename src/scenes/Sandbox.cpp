@@ -13,19 +13,20 @@ void Sandbox::init()
 	m_data->saveManager.load("/config/resource.json", resourcePath);   // Load config file
 	m_data->textureManager.load(resourcePath, thor::Resources::Reuse); // Load the resources from loaded resource paths
 
+	// Create the main player object
 	m_object = std::make_unique<Entity>(m_reg);
 	m_object->addComponent<Sprite>(m_data->textureManager["player"]);
 	m_object->addComponent<TeamTag>(Team::FRIENDLY);
 	m_object->addComponent<EffectsList>();
 
-	// Create event for collecting coins
+	// Create event effect for collecting coins
 	Effects collect;
 	collect.statusToModify = "HP";
 	collect.modificationVal = -10.f;
 	collect.duration = 0;
 	m_object->getComponent<EffectsList>().effectsList.push_back({ EffectType::INSTANT, collect });
 
-	// Generate a ton of sprite for testing
+	// Generate a ton of sprite for testing in random places within the boundary of the window
 	float height = m_data->Configuration<int>(HEIGHT);
 	float width = m_data->Configuration<int>(WIDTH);
 
@@ -35,6 +36,7 @@ void Sandbox::init()
 
 	for (size_t i = 0; i < 200; i++)
 	{
+		// Entity create and store into the scene's ENTT::entity registry
 		entt::entity mob = m_reg.create();
 		m_reg.emplace<TeamTag>(mob, Team::ENEMY);
 		m_reg.emplace<Sprite>(mob, m_data->textureManager["coin"]);
@@ -61,10 +63,18 @@ void Sandbox::update()
 	std::scoped_lock<std::mutex> guard(mtx);
 	if (m_object)
 	{
-		m_object->getComponent<Sprite>().move(30, 0);
+		m_object->getComponent<Sprite>().move(5, 0);
 		if (m_object->getComponent<Sprite>().getPosition().x > m_data->Configuration<int>(WIDTH))
 		{
-			m_object->getComponent<Sprite>().setTexture(m_data->textureManager["bg"]);
+			// Testing texture swapping!
+			static bool doOnce = true;
+			if (doOnce)
+			{
+				// Swap texture once after it reaches the WIDTH
+				m_object->getComponent<Sprite>().setTexture(m_data->textureManager["bg"]);
+				doOnce = false;
+			}
+			// Move Sprite down after reaching WIDTH
 			m_object->getComponent<Sprite>().setPosition(0, j++ * 20);
 		}
 	}
@@ -86,8 +96,8 @@ void Sandbox::render()
 	auto view = m_reg.view<Sprite>();
 	for (auto entity : view)
 	{
+		// Create the Sprite outline box
 		auto hitboxBound = view.get<Sprite>(entity).sprite.getGlobalBounds();
-
 		sf::RectangleShape box;
 		box.setOrigin(view.get<Sprite>(entity).getOrigin());
 		box.setSize(sf::Vector2f(hitboxBound.width, hitboxBound.height));
@@ -95,12 +105,11 @@ void Sandbox::render()
 		box.setOutlineThickness(1.0f);
 		box.setFillColor(sf::Color::Transparent);
 		box.setOutlineColor(sf::Color(0, 150, 100));
+
+		// Draw box and sprite
 		m_data->window.draw(box);
 		m_data->window.draw(view.get<Sprite>(entity).sprite);
 	}
-
-	if (m_object)
-		m_data->window.draw(m_object->getComponent<Sprite>().sprite);
 
 	//m_system.getSystem<CollisionSystem>()->render(m_data->window);
 }
