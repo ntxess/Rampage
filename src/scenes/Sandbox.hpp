@@ -8,10 +8,8 @@
 #include <entt/entity/registry.hpp>
 
 // Testing
-#include <thread>
-#include <chrono>
+#include <SFML/Graphics/RectangleShape.hpp>
 #include <mutex>
-#include <filesystem>
 #include <random>
 
 class Sandbox : public IScene

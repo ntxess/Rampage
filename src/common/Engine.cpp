@@ -148,6 +148,7 @@ void Engine::renderThread()
 {
     std::cout << YELLOW << "[Thread] | Render thread start\n" << RESET;
 
+    sysData->window.setActive(true);
     float newTime, frameTime;
     float currentTime = sysData->clock.getElapsedTime().asSeconds();
     float accumulator = 0.0f;

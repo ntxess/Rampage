@@ -25,4 +25,5 @@ private:
 	float m_width;
 	float m_height;
 	std::unique_ptr<QuadTree> m_quadTree;
+	sf::ConvexShape m_boundBox;
 };

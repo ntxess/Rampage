@@ -6,11 +6,21 @@ QuadTree::QuadTree(const sf::FloatRect& rect, const size_t depth)
 	, m_divided(false)
 {
 	// Init debug rectangle
+	// m_rectangle.setPosition(m_boundary.left, m_boundary.top);
+	// m_rectangle.setSize(sf::Vector2f(m_boundary.width, m_boundary.height));
+	// m_rectangle.setOutlineThickness(1.0f);
+	// m_rectangle.setFillColor(sf::Color::Transparent);
+	// m_rectangle.setOutlineColor(sf::Color(0, 150, 100));
 	m_rectangle.setPosition(m_boundary.left, m_boundary.top);
-	m_rectangle.setSize(sf::Vector2f(m_boundary.width, m_boundary.height));
+	m_rectangle.setPointCount(4);
+	m_rectangle.setPoint(0, sf::Vector2f(0, 0)); // Top-Left
+	m_rectangle.setPoint(1, sf::Vector2f(0, m_boundary.height)); // Bot-Left
+	m_rectangle.setPoint(2, sf::Vector2f(m_boundary.width, m_boundary.height)); // Bot-Right
+	m_rectangle.setPoint(3, sf::Vector2f(m_boundary.width, 0)); // Top-Right
 	m_rectangle.setOutlineThickness(1.0f);
 	m_rectangle.setFillColor(sf::Color::Transparent);
 	m_rectangle.setOutlineColor(sf::Color(0, 150, 100));
+
 }
 
 bool QuadTree::insert(const entt::registry& registry, const entt::entity entity)
@@ -147,4 +157,34 @@ void QuadTree::render(sf::RenderWindow& rw)
 		m_southWest->render(rw);
 		m_southEast->render(rw);
 	}
+}
+
+sf::ConvexShape QuadTree::outlineBoundary(size_t pointCount, sf::ConvexShape quadBoundary)
+{
+	sf::ConvexShape boundary = quadBoundary;
+	size_t boundaryPoints = pointCount;
+
+	boundary.setPosition(m_boundary.left, m_boundary.top);
+	boundary.setPointCount(boundaryPoints);
+	boundary.setPoint(0, sf::Vector2f(0, 0)); // Top-Left
+	boundary.setPoint(1, sf::Vector2f(0, m_boundary.height)); // Bot-Left
+	boundary.setPoint(2, sf::Vector2f(m_boundary.width, m_boundary.height)); // Bot-Right
+	boundary.setPoint(3, sf::Vector2f(m_boundary.width, 0)); // Top-Right
+	boundary.setOutlineThickness(1000.0f);
+	boundary.setFillColor(sf::Color::Transparent);
+	boundary.setOutlineColor(sf::Color(0, 150, 100));
+
+	if (m_divided)
+	{
+		pointCount += 4;
+		boundary = m_northWest->outlineBoundary(boundaryPoints, boundary);
+		pointCount += 4;
+		boundary = m_northEast->outlineBoundary(boundaryPoints, boundary);
+		pointCount += 4;
+		boundary = m_southWest->outlineBoundary(boundaryPoints, boundary);
+		pointCount += 4;
+		boundary = m_southEast->outlineBoundary(boundaryPoints, boundary);
+	}
+
+	return boundary;	
 }

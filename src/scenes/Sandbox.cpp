@@ -34,7 +34,7 @@ void Sandbox::init()
 	std::mt19937 rng(dev());
 	std::uniform_int_distribution<std::mt19937::result_type> dist6(0, width);
 
-	for (size_t i = 0; i < 200; i++)
+	for (size_t i = 0; i < 100; i++)
 	{
 		// Entity create and store into the scene's ENTT::entity registry
 		entt::entity mob = m_reg.create();
@@ -111,7 +111,7 @@ void Sandbox::render()
 		m_data->window.draw(view.get<Sprite>(entity).sprite);
 	}
 
-	//m_system.getSystem<CollisionSystem>()->render(m_data->window);
+	m_system.getSystem<CollisionSystem>()->render(m_data->window);
 }
 
 void Sandbox::pause()

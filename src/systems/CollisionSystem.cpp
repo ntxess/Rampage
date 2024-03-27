@@ -6,6 +6,7 @@ CollisionSystem::CollisionSystem(const sf::Vector2f& center, const sf::Vector2f&
 	, m_width(size.x)
 	, m_height(size.y)
 	, m_quadTree(nullptr)
+	, m_boundBox()
 {}
 
 constexpr std::string_view CollisionSystem::name()
@@ -17,6 +18,9 @@ void CollisionSystem::update(entt::registry& reg, const float& dt, entt::entity 
 {
 	quadTreeUpdate(reg);  // Rebuild the quadtree for querying collisions
 	collisionUpdate(reg); // Find and mark all collided entity with a tag
+
+	sf::ConvexShape boundBox;
+	m_boundBox = m_quadTree->outlineBoundary(4, boundBox);
 }
 
 void CollisionSystem::quadTreeUpdate(entt::registry& reg)
@@ -59,5 +63,8 @@ void CollisionSystem::collisionUpdate(entt::registry& reg)
 
 void CollisionSystem::render(sf::RenderWindow& rw)
 {
+	//rw.draw(m_boundBox);
+	//m_boundBox = sf::ConvexShape();
+
 	m_quadTree->render(rw);
 }

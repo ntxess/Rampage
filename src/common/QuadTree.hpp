@@ -2,7 +2,7 @@
 
 #include "../components/Sprite.hpp"
 #include <SFML/Graphics/RenderWindow.hpp>
-#include <SFML/Graphics/RectangleShape.hpp>
+#include <SFML/Graphics/ConvexShape.hpp>
 #include <entt/entity/registry.hpp>
 #include <vector>
 #include <memory>
@@ -21,6 +21,7 @@ public:
 	void remove(const entt::registry& registry, const entt::entity entity);
 	void clear();
 	void render(sf::RenderWindow& rw);
+	sf::ConvexShape outlineBoundary(size_t pointCount, sf::ConvexShape quadBoundary);
 
 private:
 	sf::FloatRect m_boundary;
@@ -31,6 +32,6 @@ private:
 	std::unique_ptr<QuadTree> m_northEast;
 	std::unique_ptr<QuadTree> m_southWest;
 	std::unique_ptr<QuadTree> m_southEast;
-	sf::RectangleShape m_rectangle;
+	sf::ConvexShape m_rectangle;
 };
 
