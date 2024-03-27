@@ -13,6 +13,7 @@ public:
 
 	constexpr std::string_view name();
 	void update(entt::registry& reg, const float& dt = 0.f, entt::entity ent = entt::null);
+	void render(sf::RenderWindow& rw);
 
 private:
 	void quadTreeUpdate(entt::registry& reg);

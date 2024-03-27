@@ -42,21 +42,24 @@ void EventSystem::update(entt::registry& reg, const float& dt, entt::entity ent)
 		const entt::entity receiverID = reg.get<CollisionEvent>(event).receiverID;
 
 		// For all of the source entity modifiers, apply effects to receiver
-		for (auto& [effectType, effect] : reg.get<EffectsList>(sourceID).effectsList)
+		if (reg.all_of<EffectsList>(sourceID))
 		{
-			// Get the receiver status and apply effects
-			if (reg.all_of<EntityStatus>(receiverID))
+			for (auto& [effectType, effect] : reg.get<EffectsList>(sourceID).effectsList)
 			{
-				EntityStatus& receiverStatus = reg.get<EntityStatus>(receiverID);
-				if (apply(effectType, receiverStatus, effect) == EventStatus::INCOMPLETE)
+				// Get the receiver status and apply effects
+				if (reg.all_of<EntityStatus>(receiverID))
 				{
-					Entity statusModEvent(reg);
-					statusModEvent.addComponent<StatusModEvent>(sourceID, receiverID, effectType, &effect);
+					EntityStatus& receiverStatus = reg.get<EntityStatus>(receiverID);
+					if (apply(effectType, receiverStatus, effect) == EventStatus::INCOMPLETE)
+					{
+						Entity statusModEvent(reg);
+						statusModEvent.addComponent<StatusModEvent>(sourceID, receiverID, effectType, &effect);
+					}
 				}
-			}
 
-			// Event completed processesing
-			reg.destroy(event);
+				// Event completed processesing
+				reg.destroy(event);
+			}
 		}
 	}
 }
@@ -69,16 +72,13 @@ EventStatus EventSystem::apply(const EffectType effectType, EntityStatus& stats,
 		break;
 
 	case EffectType::INSTANT:
-		instantEvent(stats, effect);
-		break;
+		return instantEvent(stats, effect);
 
 	case EffectType::OVERTIME:
-		overTimeEvent(stats, effect, eventProgress);
-		break;
+		return overTimeEvent(stats, effect, eventProgress);
 
 	case EffectType::TIMED:
-		fixedTimeEvent(stats, effect, eventProgress);
-		break;
+		return fixedTimeEvent(stats, effect, eventProgress);
 
 	default:
 		break;
@@ -91,6 +91,7 @@ EventStatus EventSystem::instantEvent(EntityStatus& stats, const Effects& effect
 {
 	if (stats.value.count(effect.statusToModify))
 		stats.value[effect.statusToModify] += effect.modificationVal;
+
 	return EventStatus::FAILED;
 }
 

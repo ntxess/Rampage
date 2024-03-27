@@ -1,8 +1,8 @@
 #include "CollisionSystem.hpp"
 
 CollisionSystem::CollisionSystem(const sf::Vector2f& center, const sf::Vector2f& size)
-	: m_left(center.x - (size.x / 2))
-	, m_top(center.y - (size.y / 2))
+	: m_left(0)
+	, m_top(0)
 	, m_width(size.x)
 	, m_height(size.y)
 	, m_quadTree(nullptr)
@@ -23,7 +23,9 @@ void CollisionSystem::quadTreeUpdate(entt::registry& reg)
 {
 	// Create/Update Quadtree with new entity positions
 	m_quadTree = std::make_unique<QuadTree>(sf::FloatRect(m_left, m_top, m_width, m_height));
-	auto view = reg.view<Hitbox>();
+
+	// auto view = reg.view<Hitbox>(); // For future use when we use HITBOX
+	auto view = reg.view<Sprite>();
 
 	for (auto entity : view)
 		m_quadTree->insert(reg, entity);
@@ -31,11 +33,13 @@ void CollisionSystem::quadTreeUpdate(entt::registry& reg)
 
 void CollisionSystem::collisionUpdate(entt::registry& reg)
 {
-	auto view = reg.view<Hitbox>();
+	// auto view = reg.view<Hitbox>(); // For future use when we use HITBOX
+	auto view = reg.view<Sprite>();
 	for (auto source : view)
 	{
 		// Query all neighboring entity for collision
-		sf::FloatRect sourceHitbox = reg.get<Hitbox>(source).getBounds();
+		// sf::FloatRect sourceHitbox = reg.get<Hitbox>(source).getBounds(); // For future use when we use HITBOX
+		sf::FloatRect sourceHitbox = reg.get<Sprite>(source).sprite.getGlobalBounds();
 		std::vector<entt::entity> receiverList = m_quadTree->queryRange(reg, sourceHitbox);
 		Team sourceTeamTag = reg.get<TeamTag>(source).tag;
 
@@ -47,8 +51,13 @@ void CollisionSystem::collisionUpdate(entt::registry& reg)
 				continue;
 
 			// If not on the same team, create new CollisionEvent for later processing
-			Entity collisionEvent(reg);
-			collisionEvent.addComponent<CollisionEvent>(source, receiver);
+			entt::entity collisionEvent = reg.create();
+			reg.emplace<CollisionEvent>(collisionEvent, source, receiver);
 		}
 	}
+}
+
+void CollisionSystem::render(sf::RenderWindow& rw)
+{
+	m_quadTree->render(rw);
 }

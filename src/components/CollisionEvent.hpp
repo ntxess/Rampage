@@ -9,6 +9,6 @@ struct CollisionEvent
 		, receiverID(reciever)
 	{}
 
-	const entt::entity sourceID;
-	const entt::entity receiverID;
+	entt::entity sourceID;
+	entt::entity receiverID;
 };
