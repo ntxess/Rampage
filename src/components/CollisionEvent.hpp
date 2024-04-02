@@ -4,11 +4,9 @@
 
 struct CollisionEvent
 {
-	CollisionEvent(entt::entity source, entt::entity reciever)
+	CollisionEvent(entt::entity source)
 		: sourceID(source)
-		, receiverID(reciever)
 	{}
 
 	entt::entity sourceID;
-	entt::entity receiverID;
 };

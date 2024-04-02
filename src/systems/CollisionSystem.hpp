@@ -5,6 +5,7 @@
 #include "../common/QuadTree.hpp"
 #include "../components/Component.hpp"
 #include <memory>
+#include <mutex>
 
 class CollisionSystem : public System
 {
@@ -25,5 +26,7 @@ private:
 	float m_width;
 	float m_height;
 	std::unique_ptr<QuadTree> m_quadTree;
-	sf::ConvexShape m_boundBox;
+	std::vector<sf::VertexArray> m_boundBox;
+	std::vector<sf::VertexArray> m_buffer;
+	std::mutex m_quadMutex;
 };

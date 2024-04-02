@@ -43,6 +43,8 @@ void Sandbox::init()
 		m_reg.emplace<EntityStatus>(mob);
 		m_reg.get<EntityStatus>(mob).value["health"] = 1.f;
 		m_reg.get<Sprite>(mob).setPosition(float(dist6(rng)), float(dist6(rng) % int(height)));
+		
+		//m_reg.get<Sprite>(mob).setPosition(float(i * 17), float((i * 3 * 15) % int(height)));
 	}
 }
 
@@ -111,7 +113,7 @@ void Sandbox::render()
 		m_data->window.draw(view.get<Sprite>(entity).sprite);
 	}
 
-	m_system.getSystem<CollisionSystem>()->render(m_data->window);
+	//m_system.getSystem<CollisionSystem>()->render(m_data->window);
 }
 
 void Sandbox::pause()

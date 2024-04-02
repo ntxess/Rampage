@@ -19,8 +19,18 @@ void CollisionSystem::update(entt::registry& reg, const float& dt, entt::entity 
 	quadTreeUpdate(reg);  // Rebuild the quadtree for querying collisions
 	collisionUpdate(reg); // Find and mark all collided entity with a tag
 
-	sf::ConvexShape boundBox;
-	m_boundBox = m_quadTree->outlineBoundary(4, boundBox);
+	//sf::VertexArray box(sf::LineStrip, 5);
+	//box[0].position = (sf::Vector2f(0, 0));
+	//box[1].position = (sf::Vector2f(m_width, 0));
+	//box[2].position = (sf::Vector2f(m_width, m_height));
+	//box[3].position = (sf::Vector2f(0, m_height));
+	//box[4].position = (sf::Vector2f(0, 0));
+
+	//m_quadMutex.lock();
+	//m_boundBox.clear();
+	//m_boundBox.push_back(box);
+	//m_quadTree->outlineBoundary(m_boundBox);
+	//m_quadMutex.unlock();
 }
 
 void CollisionSystem::quadTreeUpdate(entt::registry& reg)
@@ -54,17 +64,20 @@ void CollisionSystem::collisionUpdate(entt::registry& reg)
 			if (sourceTeamTag == receiverTeamTag)
 				continue;
 
-			// If not on the same team, create new CollisionEvent for later processing
-			entt::entity collisionEvent = reg.create();
-			reg.emplace<CollisionEvent>(collisionEvent, source, receiver);
+			// If not on the same team, emplace new CollisionEvent on reciever for later processing
+			reg.emplace<CollisionEvent>(receiver, source);
 		}
 	}
 }
 
 void CollisionSystem::render(sf::RenderWindow& rw)
 {
-	//rw.draw(m_boundBox);
-	//m_boundBox = sf::ConvexShape();
+	//m_quadMutex.lock();
+	//m_buffer = m_boundBox;
+	//m_quadMutex.unlock();
+
+	//for (const auto& quad : m_buffer)
+	//	rw.draw(quad);
 
 	m_quadTree->render(rw);
 }

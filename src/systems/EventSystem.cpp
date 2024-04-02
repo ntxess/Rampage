@@ -37,10 +37,9 @@ void EventSystem::update(entt::registry& reg, const float& dt, entt::entity ent)
 	}
 	
 	auto collisionGroup = reg.group<CollisionEvent>();
-	for (auto event : collisionGroup)
+	for (auto receiverID : collisionGroup)
 	{
-		const entt::entity sourceID = reg.get<CollisionEvent>(event).sourceID;
-		const entt::entity receiverID = reg.get<CollisionEvent>(event).receiverID;
+		const entt::entity sourceID = reg.get<CollisionEvent>(receiverID).sourceID;
 
 		// For all of the source entity modifiers, apply effects to receiver
 		if (reg.all_of<EffectsList>(sourceID))
@@ -59,7 +58,7 @@ void EventSystem::update(entt::registry& reg, const float& dt, entt::entity ent)
 				}
 
 				// Event completed processesing
-				reg.destroy(event);
+				reg.remove<CollisionEvent>(receiverID);
 			}
 		}
 	}
