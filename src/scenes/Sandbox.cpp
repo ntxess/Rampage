@@ -2,11 +2,15 @@
 
 Sandbox::Sandbox(GlobalData* sysData)
 	: m_data(sysData)
+	//, m_collisionSystem(std::make_unique<CollisionSystem>(m_data->viewport.getCenter(), sf::Vector2f(m_data->window.getSize())))
+	//, m_eventSystem(std::make_unique<EventSystem>())
 {}
 
 void Sandbox::init()
 {
-    m_system.addSystem<CollisionSystem>(m_data->viewport.getCenter(), sf::Vector2f(m_data->window.getSize()));
+	std::cout << "inside Sandbox" << std::endl;
+
+	m_system.addSystem<CollisionSystem>(m_data->viewport.getCenter(), sf::Vector2f(m_data->window.getSize()));
 	m_system.addSystem<EventSystem>();
 
 	DataMap resourcePath;
@@ -18,6 +22,15 @@ void Sandbox::init()
 	m_object->addComponent<Sprite>(m_data->textureManager["player"]);
 	m_object->addComponent<TeamTag>(Team::FRIENDLY);
 	m_object->addComponent<EffectsList>();
+	m_object->addComponent<PlayerInput>();
+	m_object->getComponent<PlayerInput>().input =
+	{
+		{ sf::Keyboard::W, new Movement( m_object->getId(), {0, -1} )},
+		{ sf::Keyboard::A, new Movement( m_object->getId(), {-1, 0} )},
+		{ sf::Keyboard::S, new Movement( m_object->getId(), {0,  1} )},
+		{ sf::Keyboard::D, new Movement( m_object->getId(), {1,  0} )}
+		// { sf::Keyboard::Enter, new Nuke(m_object->getId()) }
+	};
 
 	// Create event effect for collecting coins
 	Effects collect;
@@ -34,35 +47,43 @@ void Sandbox::init()
 	std::mt19937 rng(dev());
 	std::uniform_int_distribution<std::mt19937::result_type> dist6(0, width);
 
-	for (size_t i = 0; i < 100; i++)
+	for (size_t i = 0; i < 20000; i++)
 	{
 		// Entity create and store into the scene's ENTT::entity registry
 		entt::entity mob = m_reg.create();
 		m_reg.emplace<TeamTag>(mob, Team::ENEMY);
 		m_reg.emplace<Sprite>(mob, m_data->textureManager["coin"]);
 		m_reg.emplace<EntityStatus>(mob);
-		m_reg.get<EntityStatus>(mob).value["health"] = 1.f;
+		m_reg.get<EntityStatus>(mob).value["HP"] = 1.f;
 		m_reg.get<Sprite>(mob).setPosition(float(dist6(rng)), float(dist6(rng) % int(height)));
-		
-		//m_reg.get<Sprite>(mob).setPosition(float(i * 17), float((i * 3 * 15) % int(height)));
 	}
 }
 
 void Sandbox::processEvent(const sf::Event& event)
 {
-
+	if (event.type == sf::Event::KeyPressed)
+	{
+		if (event.key.code == sf::Keyboard::Escape)
+			m_data->sceneManager.addScene(std::make_unique<MainMenu>(m_data));
+	}
 }
 
 void Sandbox::processInput()
 {
+	auto& controller = m_object->getComponent<PlayerInput>();
 
+	for (auto& [key, action] : controller.input)
+		if (sf::Keyboard::isKeyPressed(key))
+			action->execute(m_reg);
 }
 
 void Sandbox::update()
 {
     m_system.update(m_reg, m_data->deltaTime);
+	//m_collisionSystem->update(m_reg, m_data->deltaTime);
+	//m_eventSystem->update(m_reg, m_data->deltaTime);
 
-	std::scoped_lock<std::mutex> guard(mtx);
+	// std::scoped_lock<std::mutex> guard(mtx);
 	if (m_object)
 	{
 		m_object->getComponent<Sprite>().move(5, 0);
@@ -94,7 +115,7 @@ void Sandbox::update()
 
 void Sandbox::render()
 {
-	std::scoped_lock<std::mutex> guard(mtx);
+	// std::scoped_lock<std::mutex> guard(mtx);
 	auto view = m_reg.view<Sprite>();
 	for (auto entity : view)
 	{
@@ -112,6 +133,7 @@ void Sandbox::render()
 		m_data->window.draw(box);
 		m_data->window.draw(view.get<Sprite>(entity).sprite);
 	}
+	m_data->window.draw(m_object->getComponent<Sprite>().sprite);
 
 	//m_system.getSystem<CollisionSystem>()->render(m_data->window);
 }

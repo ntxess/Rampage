@@ -9,17 +9,17 @@ Engine::Engine()
     // Start threads on successful init of the application configs
     if (init() == SystemStatus::OK)
     {
-        m_physicThread = std::thread(&Engine::physicThread, this);
-        m_physicThread.detach();
+        //m_physicThread = std::thread(&Engine::physicThread, this);
+        //m_physicThread.detach();
 
-        m_renderThread = std::thread(&Engine::renderThread, this);
-        m_renderThread.detach();
+        //m_renderThread = std::thread(&Engine::renderThread, this);
+        //m_renderThread.detach();
 
-        m_audioThread = std::thread(&Engine::audioThread, this);
-        m_audioThread.detach();
+        //m_audioThread = std::thread(&Engine::audioThread, this);
+        //m_audioThread.detach();
 
-        m_resourceThread = std::thread(&Engine::resourceThread, this);
-        m_resourceThread.detach();
+        //m_resourceThread = std::thread(&Engine::resourceThread, this);
+        //m_resourceThread.detach();
     }
 }
 
@@ -149,17 +149,9 @@ void Engine::renderThread()
     std::cout << YELLOW << "[Thread] | Render thread start\n" << RESET;
 
     sysData->window.setActive(true);
-    float newTime, frameTime;
-    float currentTime = sysData->clock.getElapsedTime().asSeconds();
-    float accumulator = 0.0f;
 
     while (sysData->window.isOpen())
     {
-        newTime = sysData->clock.getElapsedTime().asSeconds();
-        frameTime = newTime - currentTime;
-        currentTime = newTime;
-        accumulator += frameTime;
-
         sysData->window.clear();
         sysData->sceneManager.processChange();
         sysData->sceneManager.getActiveScene()->processInput();
@@ -191,5 +183,82 @@ void Engine::resourceThread()
     while (true)
     {
 
+    }
+}
+
+void Engine::runSingleThread()
+{
+    std::cout << BLUE << "[Thread] | Single thread start\n" << RESET;
+
+    sysData->window.setActive(true);
+
+    float newTime, frameTime;
+    float currentTime = sysData->clock.getElapsedTime().asSeconds();
+    float accumulator = 0.0f;
+
+    while (sysData->window.isOpen())
+    {
+        newTime = sysData->clock.getElapsedTime().asSeconds();
+        frameTime = newTime - currentTime;
+        currentTime = newTime;
+        accumulator += frameTime;
+
+        sysData->sceneManager.processChange();
+
+        // Input/Event Block
+        sf::Event event;
+        while (sysData->window.pollEvent(event))
+        {
+            switch (event.type)
+            {
+            case sf::Event::Closed:
+                sysData->window.close();
+                break;
+
+            case sf::Event::Resized:
+            {
+                float newWidth = static_cast<float>(event.size.width);
+                float newHeight = newWidth / sysData->aspectRatio;
+                if (newHeight > event.size.height)
+                {
+                    newHeight = static_cast<float>(event.size.height);
+                    newWidth = newHeight * sysData->aspectRatio;
+                }
+
+                sysData->window.setSize(sf::Vector2u(
+                    static_cast<unsigned int>(newWidth),
+                    static_cast<unsigned int>(newHeight))
+                );
+
+                sysData->viewport.setSize(newWidth, newHeight);
+                break;
+            }
+
+            case sf::Event::LostFocus:
+                // pause
+                break;
+
+            case sf::Event::GainedFocus:
+                // resume
+                break;
+
+            default:
+                sysData->sceneManager.getActiveScene()->processEvent(event);
+                break;
+            }
+        }
+        sysData->sceneManager.getActiveScene()->processInput();
+
+        // Update Block
+        while (accumulator >= sysData->deltaTime)
+        {
+            sysData->sceneManager.getActiveScene()->update();
+            accumulator -= sysData->deltaTime;
+        }
+
+        // Render Block
+        sysData->window.clear();
+        sysData->sceneManager.getActiveScene()->render();
+        sysData->window.display();
     }
 }

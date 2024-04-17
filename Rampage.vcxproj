@@ -163,6 +163,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\common\commands\Movement.cpp" />
     <ClCompile Include="src\common\Entity.cpp" />
     <ClCompile Include="src\common\Engine.cpp" />
     <ClCompile Include="src\common\QuadTree.cpp" />
@@ -171,6 +172,7 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\managers\SaveManager.cpp" />
     <ClCompile Include="src\managers\SceneManager.cpp" />
+    <ClCompile Include="src\scenes\MainMenu.cpp" />
     <ClCompile Include="src\scenes\Sandbox.cpp" />
     <ClCompile Include="src\systems\CollisionSystem.cpp" />
     <ClCompile Include="src\systems\EventSystem.cpp" />
@@ -178,9 +180,12 @@
     <ClCompile Include="test\Unittest-Suite.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\common\commands\ICommand.hpp" />
+    <ClInclude Include="src\common\commands\Movement.hpp" />
     <ClInclude Include="src\components\EntityStatus.hpp" />
     <ClInclude Include="src\components\Hitbox.hpp" />
     <ClInclude Include="src\components\EffectsList.hpp" />
+    <ClInclude Include="src\components\PlayerInput.hpp" />
     <ClInclude Include="src\components\StatusModEvent.hpp" />
     <ClInclude Include="src\components\TeamTag.hpp" />
     <ClInclude Include="src\managers\ResourceManager.hpp" />
@@ -194,6 +199,7 @@
     <ClInclude Include="src\managers\SaveManager.hpp" />
     <ClInclude Include="src\managers\SceneManager.hpp" />
     <ClInclude Include="src\managers\SystemManager.hpp" />
+    <ClInclude Include="src\scenes\MainMenu.hpp" />
     <ClInclude Include="src\scenes\Sandbox.hpp" />
     <ClInclude Include="src\scenes\IScene.hpp" />
     <ClInclude Include="src\systems\CollisionSystem.hpp" />

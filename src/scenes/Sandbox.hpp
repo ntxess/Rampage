@@ -11,6 +11,9 @@
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <mutex>
 #include <random>
+#include "../common/commands/ICommand.hpp"
+#include "../common/commands/Movement.hpp"
+#include "../scenes/MainMenu.hpp"
 
 class Sandbox : public IScene
 {
@@ -34,4 +37,8 @@ private:
 	int j = 0;
 	std::unique_ptr<Entity> m_object;
 	std::mutex mtx;
+
+	//std::unique_ptr<CollisionSystem> m_collisionSystem;
+	//std::unique_ptr<EventSystem> m_eventSystem;
+
 };

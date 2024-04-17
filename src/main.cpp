@@ -4,7 +4,8 @@
 int main()
 {
 	Engine engine;
-	engine.run();
+	// engine.run();
+	engine.runSingleThread();
 
 	return 0;
 }

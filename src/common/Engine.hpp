@@ -14,6 +14,7 @@ public:
     Engine();
 
     void run();
+    void runSingleThread();
 
 private:
     SystemStatus init();

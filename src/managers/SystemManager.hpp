@@ -53,20 +53,20 @@ public:
             system->update(reg, dt, ent);
             auto stop = std::chrono::high_resolution_clock::now();
 
-            auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start).count();
+            //auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start).count();
 
-            if (system->name() == "CollisionSystem")
-            {
-                std::cout << GREEN << "[System] | CollisionSystem: " << duration << "ns\n" << RESET;
-            }
-            else if (system->name() == "EventSystem")
-            {
-                std::cout << GREEN << "[System] | EventSystem: " << duration << "ns\n" << RESET;
-            }
-            else if (system->name() == "WayPointSystem")
-            {
-                std::cout << GREEN << "[System] | WayPointSystem: " << duration << "ns\n" << RESET;
-            }
+            //if (system->name() == "CollisionSystem")
+            //{
+            //    std::cout << GREEN << "[System] | CollisionSystem: " << duration << "ns\n" << RESET;
+            //}
+            //else if (system->name() == "EventSystem")
+            //{
+            //    std::cout << GREEN << "[System] | EventSystem: " << duration << "ns\n" << RESET;
+            //}
+            //else if (system->name() == "WayPointSystem")
+            //{
+            //    std::cout << GREEN << "[System] | WayPointSystem: " << duration << "ns\n" << RESET;
+            //}
         }
     }
 
