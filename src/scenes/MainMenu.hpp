@@ -4,21 +4,13 @@
 #include "../common/CommonEnum.hpp"
 #include "../common/GlobalData.hpp"
 #include "../common/Entity.hpp"
-#include "../managers/SystemManager.hpp"
 #include <entt/entity/registry.hpp>
+#include <iostream>
 
-// Testing
-#include <SFML/Graphics/RectangleShape.hpp>
-#include <mutex>
-#include <random>
-#include "../common/commands/ICommand.hpp"
-#include "../common/commands/Movement.hpp"
-#include "../scenes/MainMenu.hpp"
-
-class Sandbox : public IScene
+class MainMenu : public IScene
 {
 public:
-	Sandbox(GlobalData* sysData);
+	MainMenu(GlobalData* sysData);
 
 	void init();
 	void processEvent(const sf::Event& event);
@@ -32,9 +24,4 @@ public:
 private:
 	GlobalData* m_data;
 	entt::registry m_reg;
-	SystemManager m_system;
-
-	int j = 0;
-	std::unique_ptr<Entity> m_object;
-	std::mutex mtx;
 };

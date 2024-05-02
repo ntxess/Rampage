@@ -116,9 +116,9 @@ void QuadTree::clear()
 	{
 		m_nodes.clear();
 		return;
-	}
+}
 	else
-	{
+{
 		m_northWest->clear();
 		m_northEast->clear();
 		m_southEast->clear();

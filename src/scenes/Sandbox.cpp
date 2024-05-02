@@ -14,6 +14,16 @@ void Sandbox::init()
 	m_object = std::make_unique<Entity>(m_reg);
 	m_object->addComponent<Sprite>(m_data->textureManager["player"]);
 	m_object->addComponent<TeamTag>(Team::FRIENDLY);
+	m_object->addComponent<EffectsList>();
+	m_object->addComponent<PlayerInput>();
+	m_object->getComponent<PlayerInput>().input =
+	{
+		{ sf::Keyboard::W, new Movement( m_object->getId(), {0, -1} )},
+		{ sf::Keyboard::A, new Movement( m_object->getId(), {-1, 0} )},
+		{ sf::Keyboard::S, new Movement( m_object->getId(), {0,  1} )},
+		{ sf::Keyboard::D, new Movement( m_object->getId(), {1,  0} )}
+		// { sf::Keyboard::Enter, new Nuke(m_object->getId()) }
+	};
 
 	// Create event effect for collecting coins
 	m_object->addComponent<EffectsList>();
@@ -38,7 +48,7 @@ void Sandbox::init()
 		m_reg.emplace<TeamTag>(mob, Team::ENEMY);
 		m_reg.emplace<Sprite>(mob, m_data->textureManager["coin"]);
 		m_reg.emplace<EntityStatus>(mob);
-		m_reg.get<EntityStatus>(mob).value["health"] = 1.f;
+		m_reg.get<EntityStatus>(mob).value["HP"] = 1.f;
 		m_reg.get<Sprite>(mob).setPosition(float(dist6(rng)), float(dist6(rng) % int(height)));
 	}
 
@@ -48,12 +58,20 @@ void Sandbox::init()
 
 void Sandbox::processEvent(const sf::Event& event)
 {
-
+	if (event.type == sf::Event::KeyPressed)
+	{
+		if (event.key.code == sf::Keyboard::Escape)
+			m_data->sceneManager.addScene(std::make_unique<MainMenu>(m_data));
+	}
 }
 
 void Sandbox::processInput()
 {
+	auto& controller = m_object->getComponent<PlayerInput>();
 
+	for (auto& [key, action] : controller.input)
+		if (sf::Keyboard::isKeyPressed(key))
+			action->execute(m_reg);
 }
 
 void Sandbox::update()
@@ -112,6 +130,7 @@ void Sandbox::render()
 		//m_data->window.draw(box);
 		m_data->window.draw(view.get<Sprite>(entity).sprite);
 	}
+	m_data->window.draw(m_object->getComponent<Sprite>().sprite);
 
 	//m_system.getSystem<CollisionSystem>()->render(m_data->window);
 }

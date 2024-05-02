@@ -60,7 +60,7 @@ void CollisionSystem::collisionUpdate(entt::registry& reg)
 		{
 			// Check if entity is on the same team
 			Team receiverTeamTag = reg.get<TeamTag>(receiver).tag;
-			if (sourceTeamTag == receiverTeamTag)
+			if (sourceTeamTag == receiverTeamTag || int(receiver) == 0)
 				continue;
 
 			// If not on the same team, emplace new CollisionEvent on reciever for later processing

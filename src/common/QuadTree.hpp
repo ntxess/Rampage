@@ -2,8 +2,6 @@
 
 #include "../components/Sprite.hpp"
 #include <SFML/Graphics/RenderWindow.hpp>
-#include <SFML/Graphics/VertexArray.hpp>
-#include <SFML/Graphics/ConvexShape.hpp>
 #include <entt/entity/registry.hpp>
 #include <vector>
 #include <memory>

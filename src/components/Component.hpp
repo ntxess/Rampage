@@ -7,4 +7,5 @@
 #include "EffectsList.hpp"
 #include "CollisionEvent.hpp"
 #include "StatusModEvent.hpp"
+#include "PlayerInput.hpp"
 #include "DirtyFlags.hpp"
