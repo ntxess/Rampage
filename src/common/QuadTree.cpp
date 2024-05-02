@@ -6,16 +6,16 @@ QuadTree::QuadTree(const sf::FloatRect& rect, const int depth)
 	, m_divided(false)
 {}
 
-bool QuadTree::insert(entt::registry& reg, const entt::entity entity)
+bool QuadTree::insert(entt::registry& reg, const entt::entity ent)
 {
 	// Ignore objects that do not belong in this quad tree
-	if (!m_boundary.contains(reg.get<Sprite>(entity).sprite.getPosition()))
+	if (!m_boundary.contains(reg.get<Sprite>(ent).sprite.getPosition()))
 		return false;
 
 	// If there is space in this quad tree and if doesn't have subdivisions, add the object here
 	if (m_nodes.size() <= QT_NODE_CAPACITY)
 	{
-		m_nodes.push_back(entity);
+		m_nodes.push_back(ent);
 		return true;
 	}
 
@@ -27,14 +27,14 @@ bool QuadTree::insert(entt::registry& reg, const entt::entity entity)
 
 		// We have to add the points/data contained into this quad array to the new quads if we only want
 		// the last node to hold the data
-		if (m_northWest->insert(reg, entity)) return true;
-		if (m_northEast->insert(reg, entity)) return true;
-		if (m_southEast->insert(reg, entity)) return true;
-		if (m_southWest->insert(reg, entity)) return true;
+		if (m_northWest->insert(reg, ent)) return true;
+		if (m_northEast->insert(reg, ent)) return true;
+		if (m_southEast->insert(reg, ent)) return true;
+		if (m_southWest->insert(reg, ent)) return true;
 	}
 	else
 	{
-		m_nodes.push_back(entity);
+		m_nodes.push_back(ent);
 		return true;
 	}
 
@@ -90,24 +90,25 @@ std::vector<entt::entity> QuadTree::queryRange(entt::registry& reg, const sf::Fl
 	return entityFound;
 }
 
-void QuadTree::remove(entt::registry& reg, const entt::entity entity)
+bool QuadTree::remove(entt::registry& reg, const entt::entity ent)
 {
-	for (size_t i = 0; i < m_nodes.size(); i++)
+	for (size_t i = 0; i < m_nodes.size(); ++i)
 	{
-		if (m_nodes[i] == entity)
+		if (m_nodes[i] == ent)
 		{
 			m_nodes.erase(m_nodes.begin() + i);
-			return;
+			return true;
 		}
 	}
 
-	if (!m_divided)
-		return;
+	if (!m_divided) return false;
 
-	m_northWest->remove(reg, entity);
-	m_northEast->remove(reg, entity);
-	m_southEast->remove(reg, entity);
-	m_southWest->remove(reg, entity);
+	if (m_northWest->remove(reg, ent)) return true;
+	if (m_northEast->remove(reg, ent)) return true;
+	if (m_southEast->remove(reg, ent)) return true;
+	if (m_southWest->remove(reg, ent)) return true;
+
+	return false;
 }
 
 void QuadTree::clear()

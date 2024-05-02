@@ -8,7 +8,7 @@ constexpr std::string_view EventSystem::name()
 	return "EventSystem";
 }
 
-void EventSystem::update(entt::registry& reg, const float& dt, entt::entity ent)
+void EventSystem::update(entt::registry& reg, const float& dt, const entt::entity ent)
 {
 	// For events that require further processing (aka non-INSTANT type events)
 	auto statusModView = reg.view<StatusModEvent>();

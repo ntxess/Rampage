@@ -17,7 +17,7 @@ public:
 	EventSystem();
 
 	constexpr std::string_view name();
-	void update(entt::registry& reg, const float& dt = 0.f, entt::entity ent = entt::null);
+	void update(entt::registry& reg, const float& dt = 0.f, const entt::entity ent = entt::null);
 
 	EventStatus apply(const EffectType effectType, EntityStatus& stats, const Effects& effect, StatusModEvent* eventProgress = nullptr);
 	EventStatus instantEvent(EntityStatus& stats, const Effects& effect);

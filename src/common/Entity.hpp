@@ -7,7 +7,7 @@ class Entity
 {
 public:
 	Entity(std::reference_wrapper<entt::registry> reg);
-	Entity(std::reference_wrapper<entt::registry> reg, const entt::entity entityId);
+	Entity(std::reference_wrapper<entt::registry> reg, const entt::entity ent);
 	Entity(const Entity& other);
 	Entity& operator=(const Entity& other);
 	~Entity();

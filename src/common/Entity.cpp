@@ -6,9 +6,9 @@ Entity::Entity(std::reference_wrapper<entt::registry> reg)
 	m_entityId = m_reg.get().create();
 }
 
-Entity::Entity(std::reference_wrapper<entt::registry> reg, const entt::entity entityId)
+Entity::Entity(std::reference_wrapper<entt::registry> reg, const entt::entity ent)
 	: m_reg(reg)
-	, m_entityId(entityId)
+	, m_entityId(ent)
 {}
 
 Entity::Entity(const Entity& other) 

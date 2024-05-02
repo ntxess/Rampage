@@ -9,7 +9,7 @@ constexpr std::string_view WayPointSystem::name()
     return "WayPointSystem";
 }
 
-void WayPointSystem::update(entt::registry& reg, const float& dt, entt::entity ent)
+void WayPointSystem::update(entt::registry& reg, const float& dt, const entt::entity ent)
 {
     //auto group = reg.group<MovementPattern, Speed>(entt::get<AnimatedSprite>);
     //for (auto entity : group)
