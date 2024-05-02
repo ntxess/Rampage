@@ -19,6 +19,9 @@ public:
 	T& addComponent(Args&&... args);
 
 	template<typename T>
+	void addComponent();
+
+	template<typename T>
 	T& getComponent() const;
 
 	template<typename T>
@@ -36,6 +39,12 @@ template<typename T, typename... Args>
 inline T& Entity::addComponent(Args&&... args)
 {
 	return m_reg.get().emplace<T>(m_entityId, std::forward<Args>(args)...);
+}
+
+template<typename T>
+inline void Entity::addComponent()
+{
+	m_reg.get().emplace<T>(m_entityId);
 }
 
 template<typename T>

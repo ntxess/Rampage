@@ -96,7 +96,7 @@ void QuadTree::remove(entt::registry& reg, const entt::entity entity)
 	{
 		if (m_nodes[i] == entity)
 		{
-			m_nodes[i] = entt::null;
+			m_nodes.erase(m_nodes.begin() + i);
 			return;
 		}
 	}

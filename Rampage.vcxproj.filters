@@ -155,16 +155,10 @@
     <ClInclude Include="src\components\EffectsList.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\components\InstantModifier.hpp">
+    <ClInclude Include="src\components\StatusModEvent.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\components\OvertimeModifier.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\components\TimedModifier.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\components\IModifier.hpp">
+    <ClInclude Include="src\components\DirtyFlags.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

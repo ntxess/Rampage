@@ -178,6 +178,7 @@
     <ClCompile Include="test\Unittest-Suite.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\components\DirtyFlags.hpp" />
     <ClInclude Include="src\components\EntityStatus.hpp" />
     <ClInclude Include="src\components\Hitbox.hpp" />
     <ClInclude Include="src\components\EffectsList.hpp" />

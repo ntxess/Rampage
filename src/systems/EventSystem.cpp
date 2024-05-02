@@ -11,8 +11,8 @@ constexpr std::string_view EventSystem::name()
 void EventSystem::update(entt::registry& reg, const float& dt, entt::entity ent)
 {
 	// For events that require further processing (aka non-INSTANT type events)
-	auto statusModGroup = reg.group<StatusModEvent>();
-	for (auto event : statusModGroup)
+	auto statusModView = reg.view<StatusModEvent>();
+	for (auto event : statusModView)
 	{
 		const entt::entity sourceID = reg.get<StatusModEvent>(event).sourceID;
 		const entt::entity receiverID = reg.get<StatusModEvent>(event).receiverID;
@@ -36,8 +36,8 @@ void EventSystem::update(entt::registry& reg, const float& dt, entt::entity ent)
 		}
 	}
 	
-	auto collisionGroup = reg.group<CollisionEvent>();
-	for (auto receiverID : collisionGroup)
+	auto collisionView = reg.view<CollisionEvent>();
+	for (auto receiverID : collisionView)
 	{
 		const entt::entity sourceID = reg.get<CollisionEvent>(receiverID).sourceID;
 
