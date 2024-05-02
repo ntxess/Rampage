@@ -17,7 +17,7 @@ public:
 
 private:
     SystemStatus init();
-    SystemStatus configureWindow();
+    void configureWindow();
     void physicThread();
     void renderThread();
     void audioThread();

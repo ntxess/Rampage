@@ -5,8 +5,8 @@ Sandbox::Sandbox(GlobalData* sysData)
 {}
 
 void Sandbox::init()
-{
-    m_system.addSystem<CollisionSystem>(m_data->viewport.getCenter(), sf::Vector2f(m_data->window.getSize()));
+{	
+	m_system.addSystem<CollisionSystem>(sf::Vector2f{0.f, 0.f}, m_data->window.getSize());
 	m_system.addSystem<EventSystem>();
 
 	DataMap resourcePath;
@@ -34,7 +34,7 @@ void Sandbox::init()
 	std::mt19937 rng(dev());
 	std::uniform_int_distribution<std::mt19937::result_type> dist6(0, width);
 
-	for (size_t i = 0; i < 100; i++)
+	for (size_t i = 0; i < 20000; i++)
 	{
 		// Entity create and store into the scene's ENTT::entity registry
 		entt::entity mob = m_reg.create();
@@ -43,8 +43,6 @@ void Sandbox::init()
 		m_reg.emplace<EntityStatus>(mob);
 		m_reg.get<EntityStatus>(mob).value["health"] = 1.f;
 		m_reg.get<Sprite>(mob).setPosition(float(dist6(rng)), float(dist6(rng) % int(height)));
-		
-		//m_reg.get<Sprite>(mob).setPosition(float(i * 17), float((i * 3 * 15) % int(height)));
 	}
 }
 
@@ -62,7 +60,7 @@ void Sandbox::update()
 {
     m_system.update(m_reg, m_data->deltaTime);
 
-	std::scoped_lock<std::mutex> guard(mtx);
+	// std::scoped_lock<std::mutex> guard(mtx);
 	if (m_object)
 	{
 		m_object->getComponent<Sprite>().move(5, 0);
@@ -94,22 +92,22 @@ void Sandbox::update()
 
 void Sandbox::render()
 {
-	std::scoped_lock<std::mutex> guard(mtx);
+	// std::scoped_lock<std::mutex> guard(mtx);
 	auto view = m_reg.view<Sprite>();
 	for (auto entity : view)
 	{
-		// Create the Sprite outline box
-		auto hitboxBound = view.get<Sprite>(entity).sprite.getGlobalBounds();
-		sf::RectangleShape box;
-		box.setOrigin(view.get<Sprite>(entity).getOrigin());
-		box.setSize(sf::Vector2f(hitboxBound.width, hitboxBound.height));
-		box.setPosition(view.get<Sprite>(entity).sprite.getPosition());
-		box.setOutlineThickness(1.0f);
-		box.setFillColor(sf::Color::Transparent);
-		box.setOutlineColor(sf::Color(0, 150, 100));
+		//// Create the Sprite outline box
+		//auto hitboxBound = view.get<Sprite>(entity).sprite.getGlobalBounds();
+		//sf::RectangleShape box;
+		//box.setOrigin(view.get<Sprite>(entity).getOrigin());
+		//box.setSize(sf::Vector2f(hitboxBound.width, hitboxBound.height));
+		//box.setPosition(view.get<Sprite>(entity).sprite.getPosition());
+		//box.setOutlineThickness(1.0f);
+		//box.setFillColor(sf::Color::Transparent);
+		//box.setOutlineColor(sf::Color(0, 150, 100));
 
-		// Draw box and sprite
-		m_data->window.draw(box);
+		//// Draw box and sprite
+		//m_data->window.draw(box);
 		m_data->window.draw(view.get<Sprite>(entity).sprite);
 	}
 

@@ -1,34 +1,15 @@
 #include "QuadTree.hpp"
 
-QuadTree::QuadTree(const sf::FloatRect& rect, const size_t depth)
+QuadTree::QuadTree(const sf::FloatRect& rect, const int depth)
 	: m_boundary(rect)
 	, m_depth(depth)
 	, m_divided(false)
-{
-	// Init debug rectangle
-	m_rectangleShape.setPosition(m_boundary.left, m_boundary.top);
-	m_rectangleShape.setPointCount(4);
-	m_rectangleShape.setPoint(0, sf::Vector2f(sf::Vector2f(0, 0))); // Top-Left
-	m_rectangleShape.setPoint(1, sf::Vector2f(m_boundary.width, 0)); // Top-Right
-	m_rectangleShape.setPoint(2, sf::Vector2f(m_boundary.width, m_boundary.height)); // Bot-Right
-	m_rectangleShape.setPoint(3, sf::Vector2f(0, m_boundary.height)); // Bot-Left
-	m_rectangleShape.setOutlineThickness(1.0f);
-	m_rectangleShape.setFillColor(sf::Color::Transparent);
-	m_rectangleShape.setOutlineColor(sf::Color(0, 150, 100));
+{}
 
-	//sf::VertexArray boundary(sf::LineStrip, 5);
-	//boundary[0].position = (sf::Vector2f(m_boundary.left, m_boundary.top));
-	//boundary[1].position = (sf::Vector2f(m_boundary.width, m_boundary.top));
-	//boundary[2].position = (sf::Vector2f(m_boundary.width, m_boundary.height));
-	//boundary[3].position = (sf::Vector2f(m_boundary.left, m_boundary.height));
-	//boundary[4].position = (sf::Vector2f(m_boundary.left, m_boundary.top));
-	//m_rectangle = boundary;
-}
-
-bool QuadTree::insert(const entt::registry& registry, const entt::entity entity)
+bool QuadTree::insert(entt::registry& reg, const entt::entity entity)
 {
 	// Ignore objects that do not belong in this quad tree
-	if (!m_boundary.contains(registry.get<Sprite>(entity).sprite.getPosition()))
+	if (!m_boundary.contains(reg.get<Sprite>(entity).sprite.getPosition()))
 		return false;
 
 	// If there is space in this quad tree and if doesn't have subdivisions, add the object here
@@ -46,10 +27,10 @@ bool QuadTree::insert(const entt::registry& registry, const entt::entity entity)
 
 		// We have to add the points/data contained into this quad array to the new quads if we only want
 		// the last node to hold the data
-		if (m_northWest->insert(registry, entity)) return true;
-		if (m_northEast->insert(registry, entity)) return true;
-		if (m_southEast->insert(registry, entity)) return true;
-		if (m_southWest->insert(registry, entity)) return true;
+		if (m_northWest->insert(reg, entity)) return true;
+		if (m_northEast->insert(reg, entity)) return true;
+		if (m_southEast->insert(reg, entity)) return true;
+		if (m_southWest->insert(reg, entity)) return true;
 	}
 	else
 	{
@@ -69,14 +50,14 @@ void QuadTree::subdivide()
 	float height = m_boundary.height;
 
 	m_northWest = std::make_unique<QuadTree>(sf::FloatRect(left, top, (width / 2.f), (height / 2.f)), m_depth + 1);
-	m_northEast = std::make_unique<QuadTree>(sf::FloatRect((left + (width / 2.f)), top, width, (height / 2.f)), m_depth + 1);
-	m_southEast = std::make_unique<QuadTree>(sf::FloatRect((left + (width / 2.f)), (top + (height / 2.f)), width, height), m_depth + 1);
-	m_southWest = std::make_unique<QuadTree>(sf::FloatRect(left, (top + (height / 2.f)), (width / 2.f), height), m_depth + 1);
+	m_northEast = std::make_unique<QuadTree>(sf::FloatRect((left + (width / 2.f)), top, (width / 2.f), (height / 2.f)), m_depth + 1);
+	m_southEast = std::make_unique<QuadTree>(sf::FloatRect((left + (width / 2.f)), (top + (height / 2.f)), (width / 2.f), (height / 2.f)), m_depth + 1);
+	m_southWest = std::make_unique<QuadTree>(sf::FloatRect(left, (top + (height / 2.f)), (width / 2.f), (height / 2.f)), m_depth + 1);
 
 	m_divided = true;
 }
 
-std::vector<entt::entity> QuadTree::queryRange(const entt::registry& registry, const sf::FloatRect& range)
+std::vector<entt::entity> QuadTree::queryRange(entt::registry& reg, const sf::FloatRect& range)
 {
 	std::vector<entt::entity> entityFound;
 
@@ -85,7 +66,7 @@ std::vector<entt::entity> QuadTree::queryRange(const entt::registry& registry, c
 
 	for (auto entity : m_nodes)
 	{
-		if (range.intersects(registry.get<Sprite>(entity).sprite.getGlobalBounds()))
+		if (range.intersects(reg.get<Sprite>(entity).getGlobalBounds()))
 			entityFound.push_back(entity);
 	}
 
@@ -94,22 +75,22 @@ std::vector<entt::entity> QuadTree::queryRange(const entt::registry& registry, c
 
 	std::vector<entt::entity> entityVec;
 
-	entityVec = m_northWest->queryRange(registry, range);
+	entityVec = m_northWest->queryRange(reg, range);
 	entityFound.insert(entityFound.end(), entityVec.begin(), entityVec.end());
 
-	entityVec = m_northEast->queryRange(registry, range);
+	entityVec = m_northEast->queryRange(reg, range);
 	entityFound.insert(entityFound.end(), entityVec.begin(), entityVec.end());
 
-	entityVec = m_southEast->queryRange(registry, range);
+	entityVec = m_southEast->queryRange(reg, range);
 	entityFound.insert(entityFound.end(), entityVec.begin(), entityVec.end());
 
-	entityVec = m_southWest->queryRange(registry, range);
+	entityVec = m_southWest->queryRange(reg, range);
 	entityFound.insert(entityFound.end(), entityVec.begin(), entityVec.end());
 
 	return entityFound;
 }
 
-void QuadTree::remove(const entt::registry& registry, const entt::entity entity)
+void QuadTree::remove(entt::registry& reg, const entt::entity entity)
 {
 	for (size_t i = 0; i < m_nodes.size(); i++)
 	{
@@ -123,10 +104,10 @@ void QuadTree::remove(const entt::registry& registry, const entt::entity entity)
 	if (!m_divided)
 		return;
 
-	m_northWest->remove(registry, entity);
-	m_northEast->remove(registry, entity);
-	m_southEast->remove(registry, entity);
-	m_southWest->remove(registry, entity);
+	m_northWest->remove(reg, entity);
+	m_northEast->remove(reg, entity);
+	m_southEast->remove(reg, entity);
+	m_southWest->remove(reg, entity);
 }
 
 void QuadTree::clear()
@@ -146,87 +127,4 @@ void QuadTree::clear()
 
 	if (!m_nodes.empty())
 		m_nodes.clear();
-}
-
-void QuadTree::render(sf::RenderWindow& rw)
-{
-	rw.draw(m_rectangleShape);
-
-	if (m_divided)
-	{
-		m_northWest->render(rw);
-		m_northEast->render(rw);
-		m_southEast->render(rw);
-		m_southWest->render(rw);
-	}
-}
-
-void QuadTree::outlineBoundary(std::vector<sf::VertexArray>& quads, size_t pointCount)
-{
-	if (m_divided)
-	{
-		sf::VertexArray boundary(sf::LineStrip, pointCount);
-
-		boundary.resize(pointCount);
-		boundary[0] = sf::Vector2f(m_boundary.width / 2, m_boundary.top);
-		boundary[1] = sf::Vector2f(m_boundary.width / 2, m_boundary.height);
-		boundary[2] = sf::Vector2f(m_boundary.width / 2, m_boundary.height / 2);
-		boundary[3] = sf::Vector2f(m_boundary.left, m_boundary.height / 2);
-		boundary[4] = sf::Vector2f(m_boundary.width, m_boundary.height / 2);
-
-		quads.push_back(boundary);
-
-		if (m_northWest)
-			m_northWest->outlineBoundary(quads);
-
-		if (m_northEast)
-			m_northEast->outlineBoundary(quads);
-
-		if (m_southEast)
-			m_southEast->outlineBoundary(quads);
-
-		if (m_southWest)
-			m_southWest->outlineBoundary(quads);
-	}
-
-	//sf::VertexArray boundary = quadBoundary;
-	//boundary.resize(pointCount);
-	//boundary[pointCount - 5].position = (sf::Vector2f(m_boundary.left, m_boundary.top));
-	//boundary[pointCount - 4].position = (sf::Vector2f(m_boundary.width, m_boundary.top));
-	//boundary[pointCount - 3].position = (sf::Vector2f(m_boundary.width, m_boundary.height));
-	//boundary[pointCount - 2].position = (sf::Vector2f(m_boundary.left, m_boundary.height));
-	//boundary[pointCount - 1].position = (sf::Vector2f(m_boundary.left, m_boundary.top));
-
-	//if (m_divided)
-	//{
-	//	boundary = m_northWest->outlineBoundary(boundary, pointCount += 5);
-	//	boundary = m_northEast->outlineBoundary(boundary, pointCount += 5);
-	//	boundary = m_southEast->outlineBoundary(boundary, pointCount += 5);
-	//	boundary = m_southWest->outlineBoundary(boundary, pointCount += 5);
-	//}
-
-	//return boundary;
-
-	//sf::ConvexShape boundary = quadBoundary;
-	//size_t boundaryPoints = pointCount;
-
-	//boundary.setPosition(m_boundary.left, m_boundary.top);
-	//boundary.setPointCount(boundaryPoints);
-	//boundary.setPoint(pointCount - 4, sf::Vector2f(0, 0)); // Top-Left
-	//boundary.setPoint(pointCount - 3, sf::Vector2f(m_boundary.width, 0)); // Top-Right
-	//boundary.setPoint(pointCount - 2, sf::Vector2f(m_boundary.width, m_boundary.height)); // Bot-Right
-	//boundary.setPoint(pointCount - 1, sf::Vector2f(0, m_boundary.height)); // Bot-Left
-	//boundary.setOutlineThickness(1.f);
-	//boundary.setFillColor(sf::Color::Transparent);
-	//boundary.setOutlineColor(sf::Color(0, 150, 100));
-
-	//if (m_divided)
-	//{
-	//	boundary = m_northWest->outlineBoundary(boundary, pointCount += 4);
-	//	boundary = m_northEast->outlineBoundary(boundary, pointCount += 4);
-	//	boundary = m_southWest->outlineBoundary(boundary, pointCount += 4);
-	//	boundary = m_southEast->outlineBoundary(boundary, pointCount += 4);
-	//}
-
-	//return boundary;
 }

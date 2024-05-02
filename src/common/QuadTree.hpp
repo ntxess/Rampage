@@ -14,26 +14,22 @@ constexpr size_t QT_NODE_CAPACITY = 4;
 class QuadTree
 {
 public:
-	QuadTree(const sf::FloatRect& rect, const size_t depth = 0);
+	QuadTree(const sf::FloatRect& rect, const int depth = 0);
 
-	bool insert(const entt::registry& registry, const entt::entity entity);
+	bool insert(entt::registry& reg, const entt::entity entity);
 	void subdivide();
-	std::vector<entt::entity> queryRange(const entt::registry& registry, const sf::FloatRect& range);
-	void remove(const entt::registry& registry, const entt::entity entity);
+	std::vector<entt::entity> queryRange(entt::registry& reg, const sf::FloatRect& range);
+	void remove(entt::registry& reg, const entt::entity entity);
 	void clear();
-	void render(sf::RenderWindow& rw);
-	void outlineBoundary(std::vector<sf::VertexArray>& quads, size_t pointCount = 5);
 
 private:
-	sf::FloatRect m_boundary;
-	size_t m_depth;
+	const sf::FloatRect m_boundary;
+	const int m_depth;
 	bool m_divided;
 	std::vector<entt::entity> m_nodes;
 	std::unique_ptr<QuadTree> m_northWest;
 	std::unique_ptr<QuadTree> m_northEast;
 	std::unique_ptr<QuadTree> m_southEast;
 	std::unique_ptr<QuadTree> m_southWest;
-	sf::ConvexShape m_rectangleShape;
-	sf::VertexArray m_rectangle;
 };
 

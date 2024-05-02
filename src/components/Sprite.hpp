@@ -83,5 +83,10 @@ struct Sprite
 		sprite.setTextureRect(rectangle);
 	}
 
+	inline sf::FloatRect getGlobalBounds() const
+	{
+		return sprite.getGlobalBounds();
+	}
+
 	sf::Sprite sprite;
 };

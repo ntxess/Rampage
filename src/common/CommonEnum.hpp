@@ -20,7 +20,7 @@ constexpr std::string_view CYAN("\033[36m");	// Debug/Logging Thread
 */
 enum class SystemStatus
 {
-	OK,
+	SUCCESS,
 	ERROR,
 	SAVE_MNGR_SUCCESS,
 	SAVE_MNGR_CREATED_FILE,
@@ -80,8 +80,8 @@ inline constexpr std::string_view ssToStr(SystemStatus status)
 {
 	switch (status)
 	{
-	case SystemStatus::OK:
-		return "OK";
+	case SystemStatus::SUCCESS:
+		return "SUCCESS";
 	case SystemStatus::ERROR:
 		return "ERROR";
 	case SystemStatus::SAVE_MNGR_SUCCESS:

@@ -7,7 +7,7 @@ Engine::Engine()
     : sysData(std::make_shared<GlobalData>())
 {
     // Start threads on successful init of the application configs
-    if (init() == SystemStatus::OK)
+    if (init() == SystemStatus::SUCCESS)
     {
         m_physicThread = std::thread(&Engine::physicThread, this);
         m_physicThread.detach();
@@ -83,7 +83,7 @@ SystemStatus Engine::init()
     if (sysData->saveManager.init(sysData->configData) == SystemStatus::SAVE_MNGR_SUCCESS)
     {
         configureWindow();
-        return SystemStatus::OK;
+        return SystemStatus::SUCCESS;
     }
 
     return SystemStatus::ERROR;
@@ -91,9 +91,8 @@ SystemStatus Engine::init()
 
 /**
  * @brief [Private] Setup the SFML window and opengl context.
- * @return SystemStatus error code if failure; otherwise, SystemStatus::Success.
 */
-SystemStatus Engine::configureWindow()
+void Engine::configureWindow()
 {
     sf::ContextSettings settings;
     settings.depthBits = 24;
@@ -111,8 +110,6 @@ SystemStatus Engine::configureWindow()
     sysData->window.setActive(false);
     sysData->sceneManager.addScene(std::make_unique<Sandbox>(sysData.get()));
     sysData->sceneManager.processChange();
-
-    return SystemStatus::OK;
 }
 
 /**

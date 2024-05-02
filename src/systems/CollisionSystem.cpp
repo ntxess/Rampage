@@ -1,12 +1,11 @@
 #include "CollisionSystem.hpp"
 
-CollisionSystem::CollisionSystem(const sf::Vector2f& center, const sf::Vector2f& size)
-	: m_left(0)
-	, m_top(0)
+CollisionSystem::CollisionSystem(const sf::Vector2f& center, const sf::Vector2u& size)
+	: m_left(center.x)
+	, m_top(center.y)
 	, m_width(size.x)
 	, m_height(size.y)
 	, m_quadTree(nullptr)
-	, m_boundBox()
 {}
 
 constexpr std::string_view CollisionSystem::name()
@@ -16,21 +15,22 @@ constexpr std::string_view CollisionSystem::name()
 
 void CollisionSystem::update(entt::registry& reg, const float& dt, entt::entity ent)
 {
+	auto start = std::chrono::high_resolution_clock::now();
+
 	quadTreeUpdate(reg);  // Rebuild the quadtree for querying collisions
+
+	auto stop = std::chrono::high_resolution_clock::now();
+
+	auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start).count();
+	std::cout << RED << "[Update] | QuadTree Update: " << duration << "ns\n" << RESET;
+
+	start = std::chrono::high_resolution_clock::now();
+
 	collisionUpdate(reg); // Find and mark all collided entity with a tag
 
-	//sf::VertexArray box(sf::LineStrip, 5);
-	//box[0].position = (sf::Vector2f(0, 0));
-	//box[1].position = (sf::Vector2f(m_width, 0));
-	//box[2].position = (sf::Vector2f(m_width, m_height));
-	//box[3].position = (sf::Vector2f(0, m_height));
-	//box[4].position = (sf::Vector2f(0, 0));
-
-	//m_quadMutex.lock();
-	//m_boundBox.clear();
-	//m_boundBox.push_back(box);
-	//m_quadTree->outlineBoundary(m_boundBox);
-	//m_quadMutex.unlock();
+	stop = std::chrono::high_resolution_clock::now();
+	duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start).count();
+	std::cout << BLUE << "[Update] | Collision Update: " << duration << "ns\n" << RESET;
 }
 
 void CollisionSystem::quadTreeUpdate(entt::registry& reg)
@@ -53,9 +53,9 @@ void CollisionSystem::collisionUpdate(entt::registry& reg)
 	{
 		// Query all neighboring entity for collision
 		// sf::FloatRect sourceHitbox = reg.get<Hitbox>(source).getBounds(); // For future use when we use HITBOX
-		sf::FloatRect sourceHitbox = reg.get<Sprite>(source).sprite.getGlobalBounds();
+		const sf::FloatRect& sourceHitbox = reg.get<Sprite>(source).sprite.getGlobalBounds();
 		std::vector<entt::entity> receiverList = m_quadTree->queryRange(reg, sourceHitbox);
-		Team sourceTeamTag = reg.get<TeamTag>(source).tag;
+		const Team& sourceTeamTag = reg.get<TeamTag>(source).tag;
 
 		for (auto receiver : receiverList)
 		{
@@ -71,13 +71,4 @@ void CollisionSystem::collisionUpdate(entt::registry& reg)
 }
 
 void CollisionSystem::render(sf::RenderWindow& rw)
-{
-	//m_quadMutex.lock();
-	//m_buffer = m_boundBox;
-	//m_quadMutex.unlock();
-
-	//for (const auto& quad : m_buffer)
-	//	rw.draw(quad);
-
-	m_quadTree->render(rw);
-}
+{}

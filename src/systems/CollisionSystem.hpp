@@ -7,10 +7,13 @@
 #include <memory>
 #include <mutex>
 
+// Debug
+#include <iostream>
+
 class CollisionSystem : public System
 {
 public:
-	CollisionSystem(const sf::Vector2f& center, const sf::Vector2f& size);
+	CollisionSystem(const sf::Vector2f& center, const sf::Vector2u& size);
 
 	constexpr std::string_view name();
 	void update(entt::registry& reg, const float& dt = 0.f, entt::entity ent = entt::null);
@@ -23,10 +26,7 @@ private:
 private:
 	float m_left;
 	float m_top;
-	float m_width;
-	float m_height;
+	unsigned int m_width;
+	unsigned int m_height;
 	std::unique_ptr<QuadTree> m_quadTree;
-	std::vector<sf::VertexArray> m_boundBox;
-	std::vector<sf::VertexArray> m_buffer;
-	std::mutex m_quadMutex;
 };
