@@ -35,6 +35,6 @@ private:
 	SystemManager m_system;
 
 	int j = 0;
-	std::unique_ptr<Entity> m_object;
+	entt::entity m_player;
 	std::mutex mtx;
 };

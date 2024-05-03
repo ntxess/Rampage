@@ -2,7 +2,7 @@
 
 struct StatusModEvent
 {
-	StatusModEvent(const entt::entity source, const entt::entity receiver, const EffectType type, const Effects* effect)
+	StatusModEvent(const entt::entity source, const entt::entity receiver, const EffectType type, Effects* effect)
 		: sourceID(source)
 		, receiverID(receiver)
 		, effectType(type)
@@ -13,8 +13,8 @@ struct StatusModEvent
 
 	entt::entity sourceID;
 	entt::entity receiverID;
-	const EffectType effectType;
-	const Effects* effect;
-	const time_t timeStart;
+	EffectType effectType;
+	Effects* effect;
+	time_t timeStart;
 	time_t timeElapsed;
 };

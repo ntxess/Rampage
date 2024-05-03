@@ -52,8 +52,8 @@ void EventSystem::update(entt::registry& reg, const float& dt, const entt::entit
 					EntityStatus& receiverStatus = reg.get<EntityStatus>(receiverID);
 					if (apply(effectType, receiverStatus, effect) == EventStatus::INCOMPLETE)
 					{
-						Entity statusModEvent(reg);
-						statusModEvent.addComponent<StatusModEvent>(sourceID, receiverID, effectType, &effect);
+						entt::entity statusModEvent = reg.create();
+						reg.emplace_or_replace<StatusModEvent>(statusModEvent, sourceID, receiverID, effectType, &effect);
 					}
 				}
 

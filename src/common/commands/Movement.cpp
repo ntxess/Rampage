@@ -1,12 +1,13 @@
 #include "Movement.hpp"
 
-Movement::Movement(const entt::entity id, sf::Vector2f direction)
-	: entityId(id)
+Movement::Movement(const entt::entity ent, sf::Vector2f direction)
+	: entityId(ent)
 	, direction(direction)
 {}
 
 void Movement::execute(entt::registry& reg)
 {
-	std::cout << "Pressed key" << std::endl;
+	reg.get<Sprite>(entityId).sprite.move(direction.x, direction.y);
+	reg.emplace_or_replace<DirtyMovement>(entityId);
 }
 

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "System.hpp"
-#include "../common/Entity.hpp"
 #include "../components/Component.hpp"
+#include <entt/entity/entity.hpp>
 
 enum class EventStatus
 {

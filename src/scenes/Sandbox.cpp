@@ -11,38 +11,40 @@ void Sandbox::init()
 	m_data->textureManager.load(resourcePath, thor::Resources::Reuse); // Load the resources from loaded resource paths
 
 	// Create the main player object
-	m_object = std::make_unique<Entity>(m_reg);
-	m_object->addComponent<Sprite>(m_data->textureManager["player"]);
-	m_object->addComponent<TeamTag>(Team::FRIENDLY);
-	m_object->addComponent<EffectsList>();
-	m_object->addComponent<PlayerInput>();
-	m_object->getComponent<PlayerInput>().input =
+	m_player = m_reg.create();
+	m_reg.emplace<Sprite>(m_player, m_data->textureManager["player"]);
+	m_reg.emplace<TeamTag>(m_player, Team::FRIENDLY);
+	m_reg.emplace<PlayerInput>(m_player);
+	m_reg.emplace<EffectsList>(m_player);
+
+	m_reg.emplace_or_replace<DirtyMovement>(m_player);
+	m_reg.get<PlayerInput>(m_player).input =
 	{
-		{ sf::Keyboard::W, new Movement( m_object->getId(), {0, -1} )},
-		{ sf::Keyboard::A, new Movement( m_object->getId(), {-1, 0} )},
-		{ sf::Keyboard::S, new Movement( m_object->getId(), {0,  1} )},
-		{ sf::Keyboard::D, new Movement( m_object->getId(), {1,  0} )}
-		// { sf::Keyboard::Enter, new Nuke(m_object->getId()) }
+		{ sf::Keyboard::W, new Movement(m_player, {0, -1})},
+		{ sf::Keyboard::A, new Movement(m_player, {-1, 0})},
+		{ sf::Keyboard::S, new Movement(m_player, {0,  1})},
+		{ sf::Keyboard::D, new Movement(m_player, {1,  0})}
 	};
 
+	float width = m_data->Configuration<int>(WIDTH);
+	float height = m_data->Configuration<int>(HEIGHT);
+	
+	m_reg.get<Sprite>(m_player).setPosition(width / 2, height / 2);
+
 	// Create event effect for collecting coins
-	m_object->addComponent<EffectsList>();
 	Effects collect;
 	collect.statusToModify = "HP";
 	collect.modificationVal = -10.f;
 	collect.duration = 0;
-	m_object->getComponent<EffectsList>().effectsList.push_back({ EffectType::INSTANT, collect });
+	m_reg.get<EffectsList>(m_player).effectsList.push_back({ EffectType::INSTANT, collect });
 
 	// Generate a ton of sprite for testing in random places within the boundary of the window
-	float height = m_data->Configuration<int>(HEIGHT);
-	float width = m_data->Configuration<int>(WIDTH);
-
 	std::random_device dev;
 	std::mt19937 rng(dev());
 	std::uniform_int_distribution<std::mt19937::result_type> dist6(0, width);
 
 
-	for (size_t i = 0; i < 200000; i++)
+	for (size_t i = 0; i < 20000; i++)
 	{
 		// Entity create and store into the scene's ENTT::entity registry
 		entt::entity mob = m_reg.create();
@@ -68,8 +70,7 @@ void Sandbox::processEvent(const sf::Event& event)
 
 void Sandbox::processInput()
 {
-	auto& controller = m_object->getComponent<PlayerInput>();
-
+	auto& controller = m_reg.get<PlayerInput>(m_player);
 	for (auto& [key, action] : controller.input)
 		if (sf::Keyboard::isKeyPressed(key))
 			action->execute(m_reg);
@@ -80,24 +81,6 @@ void Sandbox::update()
     m_system.update(m_reg, m_data->deltaTime);
 
 	std::scoped_lock<std::mutex> guard(mtx);
-	if (m_object)
-	{
-		m_object->getComponent<Sprite>().move(5, 0);
-		if (m_object->getComponent<Sprite>().getPosition().x > m_data->Configuration<int>(WIDTH))
-		{
-			// Testing texture swapping!
-			static bool doOnce = true;
-			if (doOnce)
-			{
-				// Swap texture once after it reaches the WIDTH
-				m_object->getComponent<Sprite>().setTexture(m_data->textureManager["bg"]);
-				doOnce = false;
-			}
-			// Move Sprite down after reaching WIDTH
-			m_object->getComponent<Sprite>().setPosition(0, j++ * 20);
-		}
-		m_object->addComponent<DirtyMovement>();
-	}
 
 	// Delete anything that has zero or less HP
 	auto view = m_reg.view<EntityStatus>();
@@ -117,23 +100,8 @@ void Sandbox::render()
 	auto view = m_reg.view<Sprite>();
 	for (auto entity : view)
 	{
-		//// Create the Sprite outline box
-		//auto hitboxBound = view.get<Sprite>(entity).sprite.getGlobalBounds();
-		//sf::RectangleShape box;
-		//box.setOrigin(view.get<Sprite>(entity).getOrigin());
-		//box.setSize(sf::Vector2f(hitboxBound.width, hitboxBound.height));
-		//box.setPosition(view.get<Sprite>(entity).sprite.getPosition());
-		//box.setOutlineThickness(1.0f);
-		//box.setFillColor(sf::Color::Transparent);
-		//box.setOutlineColor(sf::Color(0, 150, 100));
-
-		//// Draw box and sprite
-		//m_data->window.draw(box);
 		m_data->window.draw(view.get<Sprite>(entity).sprite);
 	}
-	m_data->window.draw(m_object->getComponent<Sprite>().sprite);
-
-	//m_system.getSystem<CollisionSystem>()->render(m_data->window);
 }
 
 void Sandbox::pause()
