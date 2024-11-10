@@ -63,6 +63,15 @@
     <ClCompile Include="src\components\Effects.hpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\common\commands\Movement.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\scenes\MainMenu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\managers\AnimationManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\systems\CollisionSystem.hpp">
@@ -159,6 +168,24 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\components\DirtyFlags.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\common\commands\ICommand.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\common\commands\Movement.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\components\PlayerInput.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\scenes\MainMenu.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\managers\AnimationManager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\components\AnimatedSprite.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

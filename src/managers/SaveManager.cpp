@@ -4,7 +4,7 @@
  * @brief 
 */
 SaveManager::SaveManager()
-	: RELATIVE_PATH(std::filesystem::current_path().string())
+	: RELATIVE_PATH(std::filesystem::current_path())
     , MAIN_CONFIG("config.json")
     , CONFIG_FOLDER_PATH("/config/")
 {}
@@ -14,7 +14,7 @@ SaveManager::SaveManager()
  * @param [IN] filepath
 */
 SaveManager::SaveManager(const std::string filepath)
-    : RELATIVE_PATH(std::filesystem::current_path().string())
+    : RELATIVE_PATH(std::filesystem::current_path())
     , MAIN_CONFIG(filepath)
     , CONFIG_FOLDER_PATH("/config/")
 {}
@@ -34,7 +34,8 @@ SystemStatus SaveManager::init(ConfigData& configMap)
     // After loading the congigurations setup the folder system for the entire application
     try
     {
-        std::filesystem::create_directories(RELATIVE_PATH + CONFIG_FOLDER_PATH);
+        auto configPath = RELATIVE_PATH;
+        std::filesystem::create_directories(configPath.append(CONFIG_FOLDER_PATH));
 
         if (configMap.empty())
         {
@@ -45,7 +46,8 @@ SystemStatus SaveManager::init(ConfigData& configMap)
                 for (const auto& path : paths)
                 {
                     if (anyToString(configMap[path]).empty()) continue;
-                    std::filesystem::create_directories(RELATIVE_PATH + anyToString(configMap[path]));
+                    auto newDirPath = RELATIVE_PATH;
+                    std::filesystem::create_directories(newDirPath.append(anyToString(configMap[path])));
                 }
             }
         }
@@ -66,12 +68,13 @@ SystemStatus SaveManager::init(ConfigData& configMap)
 */
 SystemStatus SaveManager::load(const std::string& filename, ConfigData& configMap)
 {
-    std::ifstream ifs(RELATIVE_PATH + CONFIG_FOLDER_PATH + filename, std::fstream::app);
+    auto path = RELATIVE_PATH;
+    std::ifstream ifs(path.append(CONFIG_FOLDER_PATH).append(filename).string(), std::fstream::app);
 
     if (!ifs.good())
         return SystemStatus::SAVE_MNGR_FAIL_READ;
 
-    if (std::filesystem::is_empty(RELATIVE_PATH + CONFIG_FOLDER_PATH + filename))
+    if (std::filesystem::is_empty(path))
         return SystemStatus::SAVE_MNGR_FAIL_FILE_EMPTY;
 
     rapidjson::IStreamWrapper isw(ifs);
@@ -81,7 +84,7 @@ SystemStatus SaveManager::load(const std::string& filename, ConfigData& configMa
     ConfigKey configId = NAME;
     read(doc, configId, configMap);
 
-    return SystemStatus::SAVE_MNGR_SUCCESS;;
+    return SystemStatus::SAVE_MNGR_SUCCESS;
 }
 
 /**
@@ -92,12 +95,13 @@ SystemStatus SaveManager::load(const std::string& filename, ConfigData& configMa
 */
 SystemStatus SaveManager::load(const std::string& filename, DataMap& dataMap)
 {
-    std::ifstream ifs(RELATIVE_PATH + filename, std::fstream::app);
+    auto path = RELATIVE_PATH;
+    std::ifstream ifs(path.append(filename).string(), std::fstream::app);
 
     if (!ifs.good())
         return SystemStatus::SAVE_MNGR_FAIL_READ;
 
-    if (std::filesystem::is_empty(RELATIVE_PATH + filename))
+    if (std::filesystem::is_empty(path))
         return SystemStatus::SAVE_MNGR_FAIL_FILE_EMPTY;
 
     rapidjson::IStreamWrapper isw(ifs);
@@ -118,7 +122,8 @@ SystemStatus SaveManager::load(const std::string& filename, DataMap& dataMap)
 */
 SystemStatus SaveManager::save(const std::string& filename, const ConfigData& configMap)
 {
-    std::ifstream ifs(RELATIVE_PATH + CONFIG_FOLDER_PATH + filename, std::fstream::app);
+    auto path = RELATIVE_PATH;
+    std::ifstream ifs(path.append(CONFIG_FOLDER_PATH).append(filename).string(), std::fstream::app);
 
     if (!ifs.good())
         return SystemStatus::SAVE_MNGR_FAIL_READ;
@@ -127,7 +132,7 @@ SystemStatus SaveManager::save(const std::string& filename, const ConfigData& co
     {
         ifs.close();
         creatConfig(filename);
-        ifs.open(RELATIVE_PATH + CONFIG_FOLDER_PATH + filename, std::fstream::app);
+        ifs.open(path, std::fstream::app);
     }
 
     rapidjson::IStreamWrapper isw(ifs);
@@ -141,7 +146,7 @@ SystemStatus SaveManager::save(const std::string& filename, const ConfigData& co
     doc.Accept(writer);
     std::string json(buffer.GetString(), buffer.GetSize());
 
-    std::ofstream ofs(RELATIVE_PATH + CONFIG_FOLDER_PATH + filename);
+    std::ofstream ofs(path);
     if (!ofs.good()) return SystemStatus::SAVE_MNGR_FAIL_WRITE;
 
     ofs << json;
@@ -155,7 +160,8 @@ SystemStatus SaveManager::save(const std::string& filename, const ConfigData& co
 */
 SystemStatus SaveManager::save(const std::string& filename, const DataMap& dataMap)
 {
-    std::ifstream ifs(RELATIVE_PATH + filename, std::fstream::app);
+    auto path = RELATIVE_PATH;
+    std::ifstream ifs(path.append(filename).string(), std::fstream::app);
 
     if (!ifs.good())
         return SystemStatus::SAVE_MNGR_FAIL_READ;
@@ -169,7 +175,7 @@ SystemStatus SaveManager::save(const std::string& filename, const DataMap& dataM
     doc.Accept(writer);
     std::string json(buffer.GetString(), buffer.GetSize());
 
-    std::ofstream ofs(RELATIVE_PATH + filename);
+    std::ofstream ofs(path);
     if (!ofs.good()) return SystemStatus::SAVE_MNGR_FAIL_WRITE;
 
     ofs << json;
@@ -228,7 +234,14 @@ void SaveManager::read(rapidjson::Value& val, DataMap& dataMap, std::string key)
             std::vector<std::any> vec;
             for (rapidjson::SizeType i = 0; i < val.Size(); ++i)
             {
-                vec.push_back(anyCast(val[i]));
+                if (val[i].IsArray())
+                {
+                    vecParseHelper(val[i], dataMap, key, vec);
+                }
+                else
+                {
+                    vec.push_back(anyCast(val[i]));
+                }
             }
             dataMap[key] = vec;
         }
@@ -428,6 +441,23 @@ bool SaveManager::createVal(rapidjson::Document& doc, rapidjson::Value& val, con
     return false;
 }
 
+void SaveManager::vecParseHelper(rapidjson::Value& val, DataMap& dataMap, std::string key, std::vector<std::any>& vec)
+{
+    std::vector<std::any> newVec;
+    for (rapidjson::SizeType i = 0; i < val.Size(); ++i)
+    {
+        if (val[i].IsArray())
+        {
+            vecParseHelper(val[i], dataMap, key, vec);
+        }
+        else
+        {
+            newVec.push_back(anyCast(val[i]));
+        }
+    }
+    vec.push_back(newVec);
+}
+
 /**
  * @brief [Private] Generates a default config file with default settings.
  * @param [IN] filename
@@ -435,7 +465,8 @@ bool SaveManager::createVal(rapidjson::Document& doc, rapidjson::Value& val, con
 */
 SystemStatus SaveManager::creatConfig(const std::string& filename)
 {
-    std::fstream ifs(RELATIVE_PATH + CONFIG_FOLDER_PATH + filename, std::fstream::in | std::fstream::out | std::fstream::app);
+    auto path = RELATIVE_PATH;
+    std::fstream ifs(path.append(CONFIG_FOLDER_PATH).append(filename).string(), std::fstream::in | std::fstream::out | std::fstream::app);
 
     if (!ifs.good())
         return SystemStatus::SAVE_MNGR_FAIL_READ;

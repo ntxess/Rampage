@@ -29,10 +29,11 @@ private:
 	void write(rapidjson::Document& doc, const DataMap& dataMap);
 	std::any anyCast(rapidjson::Value& val);
 	bool createVal(rapidjson::Document& doc, rapidjson::Value& val, const std::string& key, const std::any& data);
+	void vecParseHelper(rapidjson::Value& val, DataMap& dataMap, std::string key, std::vector<std::any>& vec);
 	SystemStatus creatConfig(const std::string& filename);
 
 private:
-	const std::string RELATIVE_PATH;
+	const std::filesystem::path RELATIVE_PATH;
 	const std::string MAIN_CONFIG;
 	const std::string CONFIG_FOLDER_PATH;
 };

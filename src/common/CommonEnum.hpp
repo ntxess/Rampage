@@ -121,10 +121,10 @@ inline std::string anyToString(const std::any& val)
 	else if (auto x = std::any_cast<std::vector<std::any>>(&val))
 	{
 		std::string result = "[";
-		for (size_t i = 0; i < (*x).size(); ++i)
+		for (size_t i = 0; i < x->size(); ++i)
 		{
-			result += anyToString((*x)[i]);
-			if (i + 1 < (*x).size())
+			result += anyToString(x->at(i));
+			if (i + 1 < x->size())
 				result += ", ";
 		}
 		result.push_back(']');

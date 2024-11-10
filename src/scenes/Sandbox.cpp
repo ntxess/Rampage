@@ -7,7 +7,7 @@ Sandbox::Sandbox(GlobalData* sysData)
 void Sandbox::init()
 {	
 	DataMap resourcePath;
-	m_data->saveManager.load("/config/resource.json", resourcePath);   // Load config file
+	m_data->saveManager.load("config/resource.json", resourcePath);   // Load config file
 	m_data->textureManager.load(resourcePath, thor::Resources::Reuse); // Load the resources from loaded resource paths
 
 	// Create the main player object

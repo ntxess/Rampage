@@ -164,6 +164,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\managers\AnimationManager.cpp" />
     <ClCompile Include="src\common\commands\Movement.cpp" />
     <ClCompile Include="src\common\Entity.cpp" />
     <ClCompile Include="src\common\Engine.cpp" />
@@ -181,6 +182,8 @@
     <ClCompile Include="test\Unittest-Suite.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\components\AnimatedSprite.hpp" />
+    <ClInclude Include="src\managers\AnimationManager.hpp" />
     <ClInclude Include="src\components\DirtyFlags.hpp" />
     <ClInclude Include="src\common\commands\ICommand.hpp" />
     <ClInclude Include="src\common\commands\Movement.hpp" />
