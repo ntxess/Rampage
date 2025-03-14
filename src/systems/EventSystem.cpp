@@ -64,7 +64,7 @@ void EventSystem::update(entt::registry& reg, const float& dt, const entt::entit
 	}
 }
 
-EventStatus EventSystem::apply(const EffectType effectType, EntityStatus& stats, const Effects& effect, StatusModEvent* eventProgress)
+EventSystem::EventStatus EventSystem::apply(const EffectType effectType, EntityStatus& stats, const Effects& effect, StatusModEvent* eventProgress)
 {
 	switch (effectType)
 	{
@@ -87,7 +87,7 @@ EventStatus EventSystem::apply(const EffectType effectType, EntityStatus& stats,
 	return EventStatus::FAILED;
 }
 
-EventStatus EventSystem::instantEvent(EntityStatus& stats, const Effects& effect)
+EventSystem::EventStatus EventSystem::instantEvent(EntityStatus& stats, const Effects& effect)
 {
 	if (stats.value.count(effect.statusToModify))
 		stats.value[effect.statusToModify] += effect.modificationVal;
@@ -95,7 +95,7 @@ EventStatus EventSystem::instantEvent(EntityStatus& stats, const Effects& effect
 	return EventStatus::FAILED;
 }
 
-EventStatus EventSystem::overTimeEvent(EntityStatus& stats, const Effects& effect, StatusModEvent* eventProgress)
+EventSystem::EventStatus EventSystem::overTimeEvent(EntityStatus& stats, const Effects& effect, StatusModEvent* eventProgress)
 {
 	if (eventProgress)
 	{
@@ -110,7 +110,7 @@ EventStatus EventSystem::overTimeEvent(EntityStatus& stats, const Effects& effec
 	return EventStatus::FAILED;
 }
 
-EventStatus EventSystem::fixedTimeEvent(EntityStatus& stats, const Effects& effect, StatusModEvent* eventProgress)
+EventSystem::EventStatus EventSystem::fixedTimeEvent(EntityStatus& stats, const Effects& effect, StatusModEvent* eventProgress)
 {
 	if (eventProgress)
 	{

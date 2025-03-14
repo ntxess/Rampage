@@ -3,8 +3,8 @@
 CollisionSystem::CollisionSystem(entt::registry& reg, const sf::Vector2f& center, const sf::Vector2u& size)
 	: m_quadTree(std::make_unique<QuadTree>(sf::FloatRect(center.x, center.y, size.x, size.y)))
 {
-	auto view = reg.view<Sprite>();
-	for (auto entity : view)
+	const auto& view = reg.view<Sprite>();
+	for (const auto& entity : view)
 		m_quadTree->insert(reg, entity);
 }
 
@@ -35,8 +35,8 @@ void CollisionSystem::update(entt::registry& reg, const float& dt, const entt::e
 
 void CollisionSystem::quadTreeUpdate(entt::registry& reg)
 {
-	auto view = reg.view<Sprite, DirtyMovement>();
-	for (auto entity : view)
+	const auto& view = reg.view<Sprite, DirtyMovement>();
+	for (const auto& entity : view)
 	{
 		m_quadTree->remove(reg, entity);
 		m_quadTree->insert(reg, entity);
@@ -45,15 +45,15 @@ void CollisionSystem::quadTreeUpdate(entt::registry& reg)
 
 void CollisionSystem::collisionUpdate(entt::registry& reg)
 {
-	auto view = reg.view<Sprite, DirtyMovement>();
-	for (auto source : view)
+	const auto& view = reg.view<Sprite, DirtyMovement>();
+	for (const auto& source : view)
 	{
 		// Query all neighboring entity for collision
 		const sf::FloatRect& sourceHitbox = reg.get<Sprite>(source).getGlobalBounds();
 		std::vector<entt::entity> receiverList = m_quadTree->queryRange(reg, sourceHitbox);
 		const Team& sourceTeamTag = reg.get<TeamTag>(source).tag;
 
-		for (auto receiver : receiverList)
+		for (const auto& receiver : receiverList)
 		{
 			// Check if entity is on the same team
 			Team receiverTeamTag = reg.get<TeamTag>(receiver).tag;

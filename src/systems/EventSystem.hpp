@@ -4,15 +4,17 @@
 #include "../components/Component.hpp"
 #include <entt/entity/entity.hpp>
 
-enum class EventStatus
-{
-	FAILED,
-	INCOMPLETE,
-	COMPLETE,
-};
 
 class EventSystem : public System
 {
+private:
+	enum class EventStatus
+	{
+		FAILED,
+		INCOMPLETE,
+		COMPLETE,
+	};
+
 public:
 	EventSystem();
 
