@@ -132,9 +132,12 @@ void Engine::physicThread()
 
         while (accumulator >= sysData->deltaTime)
         {
+            m_inputConsumer.acquire();
             sysData->sceneManager.getActiveScene()->update();
+            m_inputProducer.release();
             accumulator -= sysData->deltaTime;
         }
+
     }
 }
 
@@ -151,8 +154,10 @@ void Engine::renderThread()
     {
         sysData->window.clear();
         sysData->sceneManager.processChange();
+        m_inputProducer.acquire();
         sysData->sceneManager.getActiveScene()->processInput();
         sysData->sceneManager.getActiveScene()->render();
+        m_inputConsumer.release();
         sysData->window.display();
     }
 }

@@ -16,8 +16,7 @@ void Sandbox::init()
 	m_reg.emplace<TeamTag>(m_player, Team::FRIENDLY);
 	m_reg.emplace<PlayerInput>(m_player);
 	m_reg.emplace<EffectsList>(m_player);
-
-	m_reg.emplace_or_replace<DirtyMovement>(m_player);
+	m_reg.emplace<EntityStatus>(m_player).value["HP"] = 100.f;
 	m_reg.get<PlayerInput>(m_player).input =
 	{
 		{ sf::Keyboard::W, new Movement(m_player, {0, -1})},
@@ -43,8 +42,7 @@ void Sandbox::init()
 	std::mt19937 rng(dev());
 	std::uniform_int_distribution<std::mt19937::result_type> dist6(0, width);
 
-
-	for (size_t i = 0; i < 20000; i++)
+	for (size_t i = 0; i < 100; i++)
 	{
 		// Entity create and store into the scene's ENTT::entity registry
 		entt::entity mob = m_reg.create();
@@ -83,8 +81,8 @@ void Sandbox::update()
 	std::scoped_lock<std::mutex> guard(mtx);
 
 	// Delete anything that has zero or less HP
-	auto view = m_reg.view<EntityStatus>();
-	for (auto entity : view)
+	const auto& view = m_reg.view<EntityStatus>();
+	for (const auto& entity : view)
 	{
 		if (m_reg.get<EntityStatus>(entity).value["HP"] < 0)
 		{
@@ -97,8 +95,8 @@ void Sandbox::update()
 void Sandbox::render()
 {
 	std::scoped_lock<std::mutex> guard(mtx);
-	auto view = m_reg.view<Sprite>();
-	for (auto entity : view)
+	const auto& view = m_reg.view<Sprite>();
+	for (const auto& entity : view)
 	{
 		m_data->window.draw(view.get<Sprite>(entity).sprite);
 	}

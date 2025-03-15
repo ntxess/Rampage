@@ -7,6 +7,7 @@
 #include <SFML/Audio.hpp>
 #include <thread>
 #include <memory>
+#include <semaphore>
 
 class Engine
 {
@@ -29,5 +30,7 @@ private:
     std::thread m_renderThread;
     std::thread m_audioThread;
     std::thread m_resourceThread;
+    std::binary_semaphore m_inputProducer{ 1 };
+    std::binary_semaphore m_inputConsumer{ 0 };
 };
 
