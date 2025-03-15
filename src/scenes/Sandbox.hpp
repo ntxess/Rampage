@@ -34,7 +34,6 @@ private:
 	entt::registry m_reg;
 	SystemManager m_system;
 
-	int j = 0;
 	entt::entity m_player;
-	std::mutex mtx;
+	sf::Font m_defaultFont;
 };

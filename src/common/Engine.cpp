@@ -156,8 +156,8 @@ void Engine::renderThread()
         sysData->sceneManager.processChange();
         m_inputProducer.acquire();
         sysData->sceneManager.getActiveScene()->processInput();
-        sysData->sceneManager.getActiveScene()->render();
         m_inputConsumer.release();
+        sysData->sceneManager.getActiveScene()->render();
         sysData->window.display();
     }
 }

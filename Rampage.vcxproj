@@ -213,6 +213,9 @@
     <ClInclude Include="test\Unittest-SaveManager.hpp" />
     <ClInclude Include="src\systems\WayPointSystem.hpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="config\font.json" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
