@@ -137,7 +137,6 @@ void Engine::physicThread()
             m_inputProducer.release();
             accumulator -= sysData->deltaTime;
         }
-
     }
 }
 

@@ -36,11 +36,16 @@ void Sandbox::init()
 	m_reg.get<Sprite>(m_player).setPosition(width / 2, height / 2);
 
 	// Create event effect for collecting coins
-	Effects collect;
-	collect.statusToModify = "HP";
-	collect.modificationVal = -10.f;
-	collect.duration = 5;
-	m_reg.get<EffectsList>(m_player).effectsList.push_back({ EffectType::OVERTIME, collect });
+	//Effects collect;
+	//collect.statusToModify = "HP";
+	//collect.modificationVal = -10.f;
+	//m_reg.get<EffectsList>(m_player).effectsList.push_back({ EffectType::INSTANT, collect });
+
+	Effects poison;
+	poison.statusToModify = "HP";
+	poison.modificationVal = -1.f;
+	poison.duration = 5;
+	m_reg.get<EffectsList>(m_player).effectsList.push_back({ EffectType::OVERTIME, poison });
 
 	// Generate a ton of sprite for testing in random places within the boundary of the window
 	std::random_device dev;
@@ -59,7 +64,7 @@ void Sandbox::init()
 	}
 
 	m_system.addSystem<CollisionSystem>(m_reg, sf::Vector2f{ 0.f, 0.f }, m_data->window.getSize());
-	m_system.addSystem<EventSystem>();
+	m_system.addSystem<EventSystem>(1, 10);
 }
 
 void Sandbox::processEvent(const sf::Event& event)
@@ -69,20 +74,20 @@ void Sandbox::processEvent(const sf::Event& event)
 		if (event.key.code == sf::Keyboard::Escape)
 			m_data->sceneManager.addScene(std::make_unique<MainMenu>(m_data));
 
-		auto& controller = m_reg.get<PlayerInput>(m_player);
-		for (auto& [key, action] : controller.input)
-			if (event.key.code == key)
-				action->execute(m_reg);
+		//auto& controller = m_reg.get<PlayerInput>(m_player);
+		//for (auto& [key, action] : controller.input)
+		//	if (event.key.code == key)
+		//		action->execute(m_reg);
 	}
 
 }
 
 void Sandbox::processInput()
 {
-	//auto& controller = m_reg.get<PlayerInput>(m_player);
-	//for (auto& [key, action] : controller.input)
-	//	if (sf::Keyboard::isKeyPressed(key))
-	//		action->execute(m_reg);
+	auto& controller = m_reg.get<PlayerInput>(m_player);
+	for (auto& [key, action] : controller.input)
+		if (sf::Keyboard::isKeyPressed(key))
+			action->execute(m_reg);
 
 	//m_reg.get<PlayerInput>(m_player).processInput(m_reg);
 }

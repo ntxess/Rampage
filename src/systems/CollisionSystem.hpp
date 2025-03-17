@@ -7,9 +7,6 @@
 #include <memory>
 #include <mutex>
 
-// Debug
-#include <iostream>
-
 class CollisionSystem : public System
 {
 public:
