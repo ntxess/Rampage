@@ -80,7 +80,7 @@ EventSystem::EventStatus EventSystem::apply(entt::registry& reg, const EffectTyp
 	case EffectType::OVERTIME:
 		return overTimeEvent(receiverStatus, statusModEvent);
 
-	case EffectType::TIMED:
+	case EffectType::TIMEDTEMP:
 		return fixedTimeEvent(receiverStatus, statusModEvent);
 
 	default:
@@ -102,9 +102,10 @@ EventSystem::EventStatus EventSystem::overTimeEvent(EntityStatus& receiverStatus
 {
 	double currentTime = difftime(time(NULL), statusModEvent.timeStart);
 
-	if (m_eventWatchdogTime < currentTime || statusModEvent.timeElapsed > statusModEvent.effect->duration)
+	if (m_eventWatchdogTime < currentTime || statusModEvent.timeElapsed >= statusModEvent.effect->duration)
 		return EventStatus::COMPLETE;
 
+	// Check every m_delayTime (greater than 0 sec) and modify status on the effect's event
 	if (currentTime > m_delayTime)
 	{
 		statusModEvent.timeStart = time(NULL);
@@ -121,15 +122,31 @@ EventSystem::EventStatus EventSystem::overTimeEvent(EntityStatus& receiverStatus
 
 EventSystem::EventStatus EventSystem::fixedTimeEvent(EntityStatus& receiverStatus, StatusModEvent& statusModEvent)
 {
-	//if (eventProgress)
-	//{
-	//	if (receiverStatus.value.count(effect.statusToModify))
-	//		receiverStatus.value[effect.statusToModify] += effect.modificationVal;
-	//}
-	//else
-	//{
-	//	if (receiverStatus.value.count(effect.statusToModify))
-	//		receiverStatus.value[effect.statusToModify] += effect.modificationVal;
-	//}
-	return EventStatus::COMPLETE;
+	double currentTime = difftime(time(NULL), statusModEvent.timeStart);
+
+	// If event some how lasts longer than it should, consider it complete and prep for destroy
+	if (m_eventWatchdogTime < currentTime)
+		return EventStatus::COMPLETE;
+
+	// Check every m_delayTime (greater than 0 sec) and modify status on the effect's event
+	if (statusModEvent.timeElapsed == 0 && currentTime > m_delayTime)
+	{
+		statusModEvent.timeStart = time(NULL);
+		statusModEvent.timeElapsed += static_cast<time_t>(currentTime);
+
+		if (receiverStatus.value.count(statusModEvent.effect->statusToModify))
+			receiverStatus.value[statusModEvent.effect->statusToModify] += statusModEvent.effect->modificationVal;
+
+		return EventStatus::INCOMPLETE;
+	}
+
+	if (currentTime > statusModEvent.effect->duration)
+	{
+		if (receiverStatus.value.count(statusModEvent.effect->statusToModify))
+			receiverStatus.value[statusModEvent.effect->statusToModify] += statusModEvent.effect->modificationVal * -1.f;
+
+		return EventStatus::COMPLETE;
+	}
+
+	return EventStatus::INCOMPLETE;
 }

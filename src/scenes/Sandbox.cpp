@@ -41,11 +41,17 @@ void Sandbox::init()
 	//collect.modificationVal = -10.f;
 	//m_reg.get<EffectsList>(m_player).effectsList.push_back({ EffectType::INSTANT, collect });
 
-	Effects poison;
-	poison.statusToModify = "HP";
-	poison.modificationVal = -1.f;
-	poison.duration = 5;
-	m_reg.get<EffectsList>(m_player).effectsList.push_back({ EffectType::OVERTIME, poison });
+	//Effects poison;
+	//poison.statusToModify = "HP";
+	//poison.modificationVal = -1.f;
+	//poison.duration = 5;
+	//m_reg.get<EffectsList>(m_player).effectsList.push_back({ EffectType::OVERTIME, poison });
+
+	Effects hpLimiter;
+	hpLimiter.statusToModify = "HP";
+	hpLimiter.modificationVal = -5.f;
+	hpLimiter.duration = 5;
+	m_reg.get<EffectsList>(m_player).effectsList.push_back({ EffectType::TIMEDTEMP, hpLimiter });
 
 	// Generate a ton of sprite for testing in random places within the boundary of the window
 	std::random_device dev;
@@ -59,12 +65,12 @@ void Sandbox::init()
 		m_reg.emplace<TeamTag>(mob, Team::ENEMY);
 		m_reg.emplace<Sprite>(mob, m_data->textureManager["coin"]);
 		m_reg.emplace<EntityStatus>(mob);
-		m_reg.get<EntityStatus>(mob).value["HP"] = 100.f;
+		m_reg.get<EntityStatus>(mob).value["HP"] = 1000.f;
 		m_reg.get<Sprite>(mob).setPosition(float(dist6(rng)), float(dist6(rng) % int(height)));
 	}
 
 	m_system.addSystem<CollisionSystem>(m_reg, sf::Vector2f{ 0.f, 0.f }, m_data->window.getSize());
-	m_system.addSystem<EventSystem>(1, 10);
+	m_system.addSystem<EventSystem>(0, 10);
 }
 
 void Sandbox::processEvent(const sf::Event& event)
@@ -74,20 +80,20 @@ void Sandbox::processEvent(const sf::Event& event)
 		if (event.key.code == sf::Keyboard::Escape)
 			m_data->sceneManager.addScene(std::make_unique<MainMenu>(m_data));
 
-		//auto& controller = m_reg.get<PlayerInput>(m_player);
-		//for (auto& [key, action] : controller.input)
-		//	if (event.key.code == key)
-		//		action->execute(m_reg);
+		auto& controller = m_reg.get<PlayerInput>(m_player);
+		for (auto& [key, action] : controller.input)
+			if (event.key.code == key)
+				action->execute(m_reg);
 	}
 
 }
 
 void Sandbox::processInput()
 {
-	auto& controller = m_reg.get<PlayerInput>(m_player);
-	for (auto& [key, action] : controller.input)
-		if (sf::Keyboard::isKeyPressed(key))
-			action->execute(m_reg);
+	//auto& controller = m_reg.get<PlayerInput>(m_player);
+	//for (auto& [key, action] : controller.input)
+	//	if (sf::Keyboard::isKeyPressed(key))
+	//		action->execute(m_reg);
 
 	//m_reg.get<PlayerInput>(m_player).processInput(m_reg);
 }
