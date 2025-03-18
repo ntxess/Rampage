@@ -72,6 +72,9 @@
     <ClCompile Include="src\managers\AnimationManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\common\Logger.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\systems\CollisionSystem.hpp">
@@ -188,8 +191,14 @@
     <ClInclude Include="src\components\AnimatedSprite.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\common\Logger.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="config\font.json" />
+    <None Include="config\config.json" />
+    <None Include="config\texture.json" />
+    <None Include="config\unittest-config.json" />
   </ItemGroup>
 </Project>

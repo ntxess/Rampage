@@ -29,7 +29,7 @@ Engine::Engine()
 */
 void Engine::run()
 {
-    std::cout << RED << "[Thread] | Main thread start\n";
+    LOG_TRACE(Logger::get()) << "----- Main thread started! -----";
 
     sf::Event event;
     while (sysData->window.waitEvent(event))
@@ -60,11 +60,11 @@ void Engine::run()
         }
 
         case sf::Event::LostFocus:
-            // pause
+            // Pause
             break;
 
         case sf::Event::GainedFocus:
-            // resume
+            // Resume
             break;
 
         default:
@@ -72,6 +72,8 @@ void Engine::run()
             break;
         }
     }
+
+    LOG_TRACE(Logger::get()) << "----- Main thread ended! -----";
 }
 
 /**
@@ -82,6 +84,10 @@ SystemStatus Engine::init()
 {
     if (sysData->saveManager.init(sysData->configData) == SystemStatus::SAVE_MNGR_SUCCESS)
     {
+        Logger::getInstance().toggleLogging(sysData->Configuration<bool>(DEBUG_MODE));
+        Logger::getInstance().setFilterSeverity(sysData->Configuration<std::string>(DEBUG_LOG_FILTER_SEVERITY));
+        Logger::getInstance().setLogPath(sysData->saveManager.resolvePath(sysData->Configuration<std::string>(DEBUG_LOG_FOLDER)).string());
+
         configureWindow();
         return SystemStatus::SUCCESS;
     }
@@ -117,7 +123,7 @@ void Engine::configureWindow()
 */
 void Engine::physicThread()
 {
-    std::cout << GREEN << "[Thread] | Physic thread start\n" << RESET;
+    LOG_TRACE(Logger::get()) << "----- Physic thread started! -----";
 
     float newTime, frameTime;
     float currentTime = sysData->clock.getElapsedTime().asSeconds();
@@ -138,6 +144,8 @@ void Engine::physicThread()
             accumulator -= sysData->deltaTime;
         }
     }
+
+    LOG_TRACE(Logger::get()) << "----- Physic thread ended! -----";
 }
 
 /**
@@ -145,7 +153,7 @@ void Engine::physicThread()
 */
 void Engine::renderThread()
 {
-    std::cout << YELLOW << "[Thread] | Render thread start\n" << RESET;
+    LOG_TRACE(Logger::get()) << "----- Render thread started! -----";
 
     sysData->window.setActive(true);
 
@@ -159,6 +167,8 @@ void Engine::renderThread()
         sysData->sceneManager.getActiveScene()->render();
         sysData->window.display();
     }
+
+    LOG_TRACE(Logger::get()) << "----- Render thread ended! -----";
 }
 
 /**
@@ -166,12 +176,14 @@ void Engine::renderThread()
 */
 void Engine::audioThread()
 {
-    std::cout << BLUE << "[Thread] | Audio thread start\n" << RESET;
+    LOG_TRACE(Logger::get()) << "----- Audio thread started! -----";
 
     while (true)
     {
 
     }
+
+    LOG_TRACE(Logger::get()) << "----- Audio thread ended! -----";
 }
 
 /**
@@ -179,10 +191,12 @@ void Engine::audioThread()
 */
 void Engine::resourceThread()
 {
-    std::cout << MAGENTA << "[Thread] | Resource thread start\n" << RESET;
+    LOG_TRACE(Logger::get()) << "----- Resource thread started! -----";
 
     while (true)
     {
 
     }
+
+    LOG_TRACE(Logger::get()) << "----- Resource thread ended! -----";
 }

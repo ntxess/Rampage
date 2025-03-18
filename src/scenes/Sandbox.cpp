@@ -24,10 +24,10 @@ void Sandbox::init()
 	m_reg.emplace<EntityStatus>(m_player).value["HP"] = 100.f;
 	m_reg.get<PlayerInput>(m_player).input =
 	{
-		{ sf::Keyboard::W, new Movement(m_player, {0, -1})},
-		{ sf::Keyboard::A, new Movement(m_player, {-1, 0})},
-		{ sf::Keyboard::S, new Movement(m_player, {0,  1})},
-		{ sf::Keyboard::D, new Movement(m_player, {1,  0})}
+		{ sf::Keyboard::W, new Movement(m_player, { 0, -1 }) },
+		{ sf::Keyboard::A, new Movement(m_player, { -1, 0 }) },
+		{ sf::Keyboard::S, new Movement(m_player, { 0,  1 }) },
+		{ sf::Keyboard::D, new Movement(m_player, { 1,  0 }) }
 	};
 
 	float width = static_cast<float>(m_data->Configuration<int>(WIDTH));

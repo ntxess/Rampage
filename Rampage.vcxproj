@@ -94,13 +94,13 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\EnTT\include\;$(SolutionDir)dep\Lua\include\;$(SolutionDir)dep\RapidJson\include\;$(SolutionDir)dep\SFML\include\;$(SolutionDir)dep\SFML-imgui\include\;$(SolutionDir)dep\Thor\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\EnTT\include\;$(SolutionDir)dep\Lua\include\;$(SolutionDir)dep\RapidJson\include\;$(SolutionDir)dep\SFML\include\;$(SolutionDir)dep\SFML-imgui\include\;$(SolutionDir)dep\Thor\include\;$(SolutionDir)dep\Boost_1_87_0\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>sfml-graphics-d.lib;sfml-window-d.lib;sfml-audio-d.lib;sfml-network-d.lib;sfml-system-d.lib;thor-d.lib;opengl32.lib;freetype.lib;winmm.lib;gdi32.lib;flac.lib;vorbisenc.lib;vorbisfile.lib;vorbis.lib;ogg.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)dep\Lua\lib;$(SolutionDir)dep\Thor\lib;$(SolutionDir)dep\SFML\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)dep\Lua\lib;$(SolutionDir)dep\Thor\lib;$(SolutionDir)dep\SFML\lib;$(SolutionDir)dep\Boost_1_87_0\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -113,7 +113,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\EnTT\include\;$(SolutionDir)dep\Lua\include\;$(SolutionDir)dep\RapidJson\include\;$(SolutionDir)dep\SFML\include\;$(SolutionDir)dep\SFML-imgui\include\;$(SolutionDir)dep\Thor\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\EnTT\include\;$(SolutionDir)dep\Lua\include\;$(SolutionDir)dep\RapidJson\include\;$(SolutionDir)dep\SFML\include\;$(SolutionDir)dep\SFML-imgui\include\;$(SolutionDir)dep\Thor\include\;$(SolutionDir)dep\Boost_1_87_0\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -121,7 +121,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>sfml-graphics.lib;sfml-window.lib;sfml-audio.lib;sfml-network.lib;sfml-system.lib;opengl32.lib;freetype.lib;winmm.lib;gdi32.lib;flac.lib;vorbisenc.lib;vorbisfile.lib;vorbis.lib;ogg.lib;ws2_32.lib;thor.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)dep\Lua\lib;$(SolutionDir)dep\Thor\lib;$(SolutionDir)dep\SFML\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)dep\Lua\lib;$(SolutionDir)dep\Thor\lib;$(SolutionDir)dep\SFML\lib;$(SolutionDir)dep\Boost_1_87_0\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -132,13 +132,13 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\EnTT\include\;$(SolutionDir)dep\Lua\include\;$(SolutionDir)dep\RapidJson\include\;$(SolutionDir)dep\SFML\include\;$(SolutionDir)dep\SFML-imgui\include\;$(SolutionDir)dep\Thor\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\EnTT\include\;$(SolutionDir)dep\Lua\include\;$(SolutionDir)dep\RapidJson\include\;$(SolutionDir)dep\SFML\include\;$(SolutionDir)dep\SFML-imgui\include\;$(SolutionDir)dep\Thor\include\;$(SolutionDir)dep\Boost_1_87_0\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>sfml-graphics-d.lib;sfml-window-d.lib;sfml-audio-d.lib;sfml-network-d.lib;sfml-system-d.lib;thor-d.lib;opengl32.lib;freetype.lib;winmm.lib;gdi32.lib;flac.lib;vorbisenc.lib;vorbisfile.lib;vorbis.lib;ogg.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)dep\Lua\lib;$(SolutionDir)dep\Thor\lib;$(SolutionDir)dep\SFML\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)dep\Lua\lib;$(SolutionDir)dep\Thor\lib;$(SolutionDir)dep\SFML\lib;$(SolutionDir)dep\Boost_1_87_0\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -151,7 +151,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>$(SolutionDir)dep\EnTT\include\;$(SolutionDir)dep\Lua\include\;$(SolutionDir)dep\RapidJson\include\;$(SolutionDir)dep\SFML\include\;$(SolutionDir)dep\SFML-imgui\include\;$(SolutionDir)dep\Thor\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dep\EnTT\include\;$(SolutionDir)dep\Lua\include\;$(SolutionDir)dep\RapidJson\include\;$(SolutionDir)dep\SFML\include\;$(SolutionDir)dep\SFML-imgui\include\;$(SolutionDir)dep\Thor\include\;$(SolutionDir)dep\Boost_1_87_0\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>MaxSpeed</Optimization>
     </ClCompile>
     <Link>
@@ -160,10 +160,11 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>sfml-graphics.lib;sfml-window.lib;sfml-audio.lib;sfml-network.lib;sfml-system.lib;opengl32.lib;freetype.lib;winmm.lib;gdi32.lib;flac.lib;vorbisenc.lib;vorbisfile.lib;vorbis.lib;ogg.lib;ws2_32.lib;thor.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)dep\Lua\lib;$(SolutionDir)dep\Thor\lib;$(SolutionDir)dep\SFML\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)dep\Lua\lib;$(SolutionDir)dep\Thor\lib;$(SolutionDir)dep\SFML\lib;$(SolutionDir)dep\Boost_1_87_0\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\common\Logger.cpp" />
     <ClCompile Include="src\managers\AnimationManager.cpp" />
     <ClCompile Include="src\common\commands\Movement.cpp" />
     <ClCompile Include="src\common\Entity.cpp" />
@@ -182,6 +183,7 @@
     <ClCompile Include="test\Unittest-Suite.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\common\Logger.hpp" />
     <ClInclude Include="src\components\AnimatedSprite.hpp" />
     <ClInclude Include="src\managers\AnimationManager.hpp" />
     <ClInclude Include="src\components\DirtyFlags.hpp" />
@@ -214,7 +216,10 @@
     <ClInclude Include="src\systems\WayPointSystem.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="config\config.json" />
     <None Include="config\font.json" />
+    <None Include="config\texture.json" />
+    <None Include="config\unittest-config.json" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,8 +1,9 @@
 #pragma once
 
-#include "../scenes/Sandbox.hpp"
+#include "Logger.hpp"
 #include "CommonEnum.hpp"
 #include "GlobalData.hpp"
+#include "../scenes/Sandbox.hpp"
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
 #include <thread>
