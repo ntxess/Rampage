@@ -5,7 +5,7 @@ EventSystem::EventSystem(time_t delayTime, time_t watchdogTime)
 	, m_eventWatchdogTime(watchdogTime)
 {}
 
-constexpr std::string_view EventSystem::name()
+constexpr std::string_view EventSystem::name() const
 {
 	return "EventSystem";
 }
@@ -65,7 +65,7 @@ void EventSystem::update(entt::registry& reg, const float& dt, const entt::entit
 	}
 }
 
-EventSystem::EventStatus EventSystem::apply(entt::registry& reg, const EffectType effectType, StatusModEvent& statusModEvent)
+EventSystem::EventStatus EventSystem::apply(entt::registry& reg, const EffectType effectType, StatusModEvent& statusModEvent) const
 {
 	EntityStatus& receiverStatus = reg.get<EntityStatus>(statusModEvent.receiverID);
 
@@ -80,8 +80,8 @@ EventSystem::EventStatus EventSystem::apply(entt::registry& reg, const EffectTyp
 	case EffectType::OVERTIME:
 		return overTimeEvent(receiverStatus, statusModEvent);
 
-	case EffectType::TIMEDTEMP:
-		return fixedTimeEvent(receiverStatus, statusModEvent);
+	case EffectType::TEMPTIMED:
+		return tempTimedEvent(receiverStatus, statusModEvent);
 
 	default:
 		break;
@@ -90,7 +90,7 @@ EventSystem::EventStatus EventSystem::apply(entt::registry& reg, const EffectTyp
 	return EventStatus::COMPLETE;
 }
 
-EventSystem::EventStatus EventSystem::instantEvent(EntityStatus& receiverStatus, StatusModEvent& statusModEvent)
+EventSystem::EventStatus EventSystem::instantEvent(EntityStatus& receiverStatus, StatusModEvent& statusModEvent) const
 {
 	if (receiverStatus.value.count(statusModEvent.effect->statusToModify))
 		receiverStatus.value[statusModEvent.effect->statusToModify] += statusModEvent.effect->modificationVal;
@@ -98,9 +98,9 @@ EventSystem::EventStatus EventSystem::instantEvent(EntityStatus& receiverStatus,
 	return EventStatus::COMPLETE;
 }
 
-EventSystem::EventStatus EventSystem::overTimeEvent(EntityStatus& receiverStatus, StatusModEvent& statusModEvent)
+EventSystem::EventStatus EventSystem::overTimeEvent(EntityStatus& receiverStatus, StatusModEvent& statusModEvent) const
 {
-	double currentTime = difftime(time(NULL), statusModEvent.timeStart);
+	const double currentTime = difftime(time(NULL), statusModEvent.timeStart);
 
 	if (m_eventWatchdogTime < currentTime || statusModEvent.timeElapsed >= statusModEvent.effect->duration)
 		return EventStatus::COMPLETE;
@@ -120,9 +120,9 @@ EventSystem::EventStatus EventSystem::overTimeEvent(EntityStatus& receiverStatus
 	return EventStatus::INCOMPLETE;
 }
 
-EventSystem::EventStatus EventSystem::fixedTimeEvent(EntityStatus& receiverStatus, StatusModEvent& statusModEvent)
+EventSystem::EventStatus EventSystem::tempTimedEvent(EntityStatus& receiverStatus, StatusModEvent& statusModEvent) const
 {
-	double currentTime = difftime(time(NULL), statusModEvent.timeStart);
+	const double currentTime = difftime(time(NULL), statusModEvent.timeStart);
 
 	// If event some how lasts longer than it should, consider it complete and prep for destroy
 	if (m_eventWatchdogTime < currentTime)
@@ -140,7 +140,7 @@ EventSystem::EventStatus EventSystem::fixedTimeEvent(EntityStatus& receiverStatu
 		return EventStatus::INCOMPLETE;
 	}
 
-	if (currentTime > statusModEvent.effect->duration)
+	if (currentTime >= statusModEvent.effect->duration)
 	{
 		if (receiverStatus.value.count(statusModEvent.effect->statusToModify))
 			receiverStatus.value[statusModEvent.effect->statusToModify] += statusModEvent.effect->modificationVal * -1.f;

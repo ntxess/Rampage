@@ -1,14 +1,14 @@
 #include "CollisionSystem.hpp"
 
 CollisionSystem::CollisionSystem(entt::registry& reg, const sf::Vector2f& center, const sf::Vector2u& size)
-	: m_quadTree(std::make_unique<QuadTree>(sf::FloatRect(center.x, center.y, size.x, size.y)))
+	: m_quadTree(std::make_unique<QuadTree>(sf::FloatRect(center.x, center.y, static_cast<float>(size.x), static_cast<float>(size.y))))
 {
 	const auto& view = reg.view<Sprite>();
 	for (const auto& entity : view)
 		m_quadTree->insert(reg, entity);
 }
 
-constexpr std::string_view CollisionSystem::name()
+constexpr std::string_view CollisionSystem::name() const
 {
 	return "CollisionSystem";
 }

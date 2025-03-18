@@ -30,16 +30,16 @@ void Sandbox::init()
 		{ sf::Keyboard::D, new Movement(m_player, {1,  0})}
 	};
 
-	float width = m_data->Configuration<int>(WIDTH);
-	float height = m_data->Configuration<int>(HEIGHT);
+	float width = static_cast<float>(m_data->Configuration<int>(WIDTH));
+	float height = static_cast<float>(m_data->Configuration<int>(HEIGHT));
 	
 	m_reg.get<Sprite>(m_player).setPosition(width / 2, height / 2);
 
 	// Create event effect for collecting coins
-	//Effects collect;
-	//collect.statusToModify = "HP";
-	//collect.modificationVal = -10.f;
-	//m_reg.get<EffectsList>(m_player).effectsList.push_back({ EffectType::INSTANT, collect });
+	Effects collect;
+	collect.statusToModify = "HP";
+	collect.modificationVal = -10.f;
+	m_reg.get<EffectsList>(m_player).effectsList.push_back({ EffectType::INSTANT, collect });
 
 	//Effects poison;
 	//poison.statusToModify = "HP";
@@ -47,16 +47,16 @@ void Sandbox::init()
 	//poison.duration = 5;
 	//m_reg.get<EffectsList>(m_player).effectsList.push_back({ EffectType::OVERTIME, poison });
 
-	Effects hpLimiter;
-	hpLimiter.statusToModify = "HP";
-	hpLimiter.modificationVal = -5.f;
-	hpLimiter.duration = 5;
-	m_reg.get<EffectsList>(m_player).effectsList.push_back({ EffectType::TIMEDTEMP, hpLimiter });
+	//Effects hpLimiter;
+	//hpLimiter.statusToModify = "HP";
+	//hpLimiter.modificationVal = -5.f;
+	//hpLimiter.duration = 5;
+	//m_reg.get<EffectsList>(m_player).effectsList.push_back({ EffectType::TIMEDTEMP, hpLimiter });
 
 	// Generate a ton of sprite for testing in random places within the boundary of the window
 	std::random_device dev;
 	std::mt19937 rng(dev());
-	std::uniform_int_distribution<std::mt19937::result_type> dist6(0, width);
+	std::uniform_int_distribution<std::mt19937::result_type> dist6(0, static_cast<unsigned int>(width));
 
 	for (size_t i = 0; i < 50; i++)
 	{
@@ -70,7 +70,7 @@ void Sandbox::init()
 	}
 
 	m_system.addSystem<CollisionSystem>(m_reg, sf::Vector2f{ 0.f, 0.f }, m_data->window.getSize());
-	m_system.addSystem<EventSystem>(0, 10);
+	m_system.addSystem<EventSystem>(0, 360);
 }
 
 void Sandbox::processEvent(const sf::Event& event)

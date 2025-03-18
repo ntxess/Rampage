@@ -28,7 +28,7 @@ SaveManager::SaveManager(const std::string filepath)
 */
 SystemStatus SaveManager::init(ConfigData& configMap)
 {
-    std::vector<ConfigKey> paths = { SAVE_FOLDER, SCRIPT_FOLDER };
+    std::vector<ConfigKey> paths = { DEBUG_LOG_FOLDER, SAVE_FOLDER, SCRIPT_FOLDER };
 
     // Try to create a new default config file if one does not exist
     // After loading the congigurations setup the folder system for the entire application
@@ -796,9 +796,12 @@ SystemStatus SaveManager::creatConfig(const std::string& filename)
             "    \"system\": {\n"
             "        \"name\": \"Rampage\",\n"
             "        \"version\": \"0.1b\"\n"
+            "        \"debug-mode\": true,\n"
+            "        \"debug-log-filter-severity\": \"info\"\n"
             "    },\n"
             "    \"system-paths\": {\n"
             "        \"config-folder\": \"/config/\",\n"
+            "        \"debug-log-folder\": \"/log/\",\n"
             "        \"save-folder\": \"/save/\",\n"
             "        \"script-folder\": \"/script/\"\n"
             "    },\n"
