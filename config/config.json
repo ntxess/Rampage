@@ -4,9 +4,9 @@
         "version": "0.1b"
     },
     "system-paths": {
-        "config-folder": "/config/",
-        "save-folder": "/save/",
-        "script-folder": "/script/"
+        "config-folder": "config/",
+        "save-folder": "save/",
+        "script-folder": "script/"
     },
     "video-settings": {
         "resolution": {

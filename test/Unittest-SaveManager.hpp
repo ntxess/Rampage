@@ -132,6 +132,16 @@ static int modifyConfig(GlobalData& m_data)
     return anyToString(m_data.configData[ConfigKey::NAME]) != anyToString(loadConfigData[ConfigKey::NAME]);
 }
 
+static void viewer(GlobalData& m_data)
+{
+    m_data.saveManager.load("config.json", m_data.configData);
+
+    for (const auto& [key, val] : m_data.configData)
+    {
+        std::cout << "Key: " << key << " | Val: " << anyToString(val) << " | Type: " << m_data.saveManager.getType(val) << "\n";
+    }
+}
+
 static int test_saveManager()
 {
     GlobalData m_data;
@@ -159,6 +169,9 @@ static int test_saveManager()
         std::cout << "Success\n\n";
     else
         std::cout << "Failed\n\n";
+
+    std::cout << "=== [Reading config file] ===\n";
+    viewer(m_data);
 
     return 0;
 }
