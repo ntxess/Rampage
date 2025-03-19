@@ -29,6 +29,8 @@ enum class SystemStatus
 	SAVE_MNGR_FAIL_FILE_EMPTY,
 	RSRC_MNGR_SUCCESS,
 	RSRC_MNGR_FAIL_LOAD,
+	RSRC_MNGR_FAIL_UNLOAD,
+
 };
 
 /**
@@ -140,3 +142,48 @@ typedef entt::hashed_string::hash_type HashKey;
 typedef std::unordered_map<ConfigKey, std::any> ConfigData;
 typedef std::unordered_map<std::string, std::any> DataMap;
 typedef std::unordered_map<HashKey, std::unique_ptr<DataMap>> SaveData;
+
+//friend std::ostream& operator<<(std::ostream& os, const ConfigData& cd);
+//friend std::ostream& operator<<(std::ostream& os, const DataMap& dm);
+//friend boost::log::formatting_ostream& operator<<(boost::log::formatting_ostream& os, const ConfigData& cd);
+//friend boost::log::formatting_ostream& operator<<(boost::log::formatting_ostream& os, const DataMap& dm);
+
+//inline std::ostream& operator<<(std::ostream& os, const ConfigData& cd)
+//{
+//    for (const auto& [key, val] : cd)
+//    {
+//        os << "{" << std::to_string(key) << ", " << SaveManager::getValue(val) << " } | Type: " << SaveManager::getType(val) << "\n";
+//    }
+//
+//    return os;
+//}
+
+//std::ostream& operator<<(std::ostream& os, const DataMap& dm)
+//{
+//    for (const auto& [key, val] : dm)
+//    {
+//        os << "{" << key << ", " << SaveManager::getValue(val) << " } | Type: " << SaveManager::getType(val) << "\n";
+//    }
+//
+//    return os;
+//}
+
+//boost::log::formatting_ostream& operator<<(boost::log::formatting_ostream& os, const ConfigData& cd)
+//{
+//    //for (const auto& [key, val] : cd)
+//    //{
+//    //    os << "{" << std::to_string(key) << ", " << SaveManager::getValue(val) << " } | Type: " << SaveManager::getType(val) << "\n";
+//    //}
+//    os << 10;
+//    return os;
+//}
+
+//boost::log::formatting_ostream& operator<<(boost::log::formatting_ostream& os, const DataMap& dm)
+//{
+//    for (const auto& [key, val] : dm)
+//    {
+//        os << "{" << key << ", " << SaveManager::getValue(val) << " } | Type: " << SaveManager::getType(val) << "\n";
+//    }
+//
+//    return os;
+//}

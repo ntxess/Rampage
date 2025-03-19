@@ -5,9 +5,7 @@ MainMenu::MainMenu(GlobalData* sysData)
 {}
 
 void MainMenu::init()
-{
-    std::cout << "inside MainMenu" << std::endl;
-}
+{}
 
 void MainMenu::processEvent(const sf::Event& event)
 {}

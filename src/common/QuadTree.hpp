@@ -5,7 +5,6 @@
 #include <entt/entity/registry.hpp>
 #include <vector>
 #include <memory>
-#include <iostream>
 
 constexpr size_t MAX_DEPTH = 6;
 constexpr size_t QT_NODE_CAPACITY = 4;

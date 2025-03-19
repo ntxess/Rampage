@@ -21,7 +21,23 @@ void Logger::toggleLogging(bool option)
 	m_enableLogging = option;
 }
 
-void Logger::setLogPath(const std::string logPath)
+void Logger::setupConsoleLog()
+{
+	boost::log::add_console_log
+	(
+		std::cout,
+		boost::log::keywords::format = boost::log::expressions::format("[%1%] %2%: [%3%:%4%] %5%")
+		% boost::log::expressions::max_size_decor<char>(26)[boost::log::expressions::stream << std::setw(26) << boost::log::expressions::format_date_time<boost::posix_time::ptime>("TimeStamp", "%Y-%m-%d %H:%M:%S.%f")]
+		% boost::log::expressions::max_size_decor<char>(7)[boost::log::expressions::stream << std::setw(7) << boost::log::trivial::severity]
+		% boost::log::expressions::attr<boost::log::attributes::current_process_id::value_type>("ProcessID")
+		% boost::log::expressions::attr<boost::log::attributes::current_thread_id::value_type>("ThreadID")
+		% boost::log::expressions::smessage,
+		boost::log::keywords::auto_flush = true
+	);
+	boost::log::add_common_attributes();
+}
+
+void Logger::setupFileLog(const std::string logPath)
 {
 	boost::log::add_file_log
 	(
@@ -40,6 +56,11 @@ void Logger::setLogPath(const std::string logPath)
 void Logger::setFilterSeverity(const std::string& severityLevel)
 {
 	boost::log::core::get()->set_filter(boost::log::trivial::severity >= getFilterSeverity(severityLevel));
+}
+
+void Logger::removeAllSinks()
+{
+	boost::log::core::get()->remove_all_sinks();
 }
 
 boost::log::trivial::severity_level Logger::getFilterSeverity(const std::string& severityLevel)

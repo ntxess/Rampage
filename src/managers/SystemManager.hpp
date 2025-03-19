@@ -6,9 +6,6 @@
 #include <memory>
 #include <typeindex>
 #include <unordered_map>
-
-//DEBUG
-#include <iostream>
 #include <chrono>
 
 class SystemManager
@@ -57,15 +54,15 @@ public:
 
             if (system->name() == "CollisionSystem")
             {
-                std::cout << GREEN << "[System] | CollisionSystem: " << duration << "ns\n" << RESET;
+                LOG_TRACE(Logger::get()) << "CollisionSystem: " << duration << "ns";
             }
             else if (system->name() == "EventSystem")
             {
-                std::cout << GREEN << "[System] | EventSystem: " << duration << "ns\n" << RESET;
+                LOG_TRACE(Logger::get()) << "EventSystem: " << duration << "ns";
             }
             else if (system->name() == "WayPointSystem")
             {
-                std::cout << GREEN << "[System] | WayPointSystem: " << duration << "ns\n" << RESET;
+                LOG_TRACE(Logger::get()) << "WayPointSystem: " << duration << "ns";
             }
         }
     }

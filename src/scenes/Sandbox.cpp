@@ -2,6 +2,7 @@
 
 Sandbox::Sandbox(GlobalData* sysData)
 	: m_data(sysData)
+	, m_player(entt::null)
 {}
 
 void Sandbox::init()
@@ -12,7 +13,7 @@ void Sandbox::init()
 
 	if (!m_defaultFont.loadFromFile("E:\\Dev\\Rampage\\assets\\font\\Prototype.ttf"))
 	{
-		std::cout << "Failed to load default font." << std::endl;
+		LOG_FATAL(Logger::get()) << "Failed to load default font.";
 	}
 
 	// Create the main player object

@@ -3,6 +3,7 @@
 #include "../scenes/IScene.hpp"
 #include "../common/CommonEnum.hpp"
 #include "../common/GlobalData.hpp"
+#include "../common/Logger.hpp"
 #include "../common/Entity.hpp"
 #include "../managers/SystemManager.hpp"
 #include <entt/entity/registry.hpp>

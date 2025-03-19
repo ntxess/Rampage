@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../common/CommonEnum.hpp"
+#include "../common/Logger.hpp"
 #include <rapidjson/document.h>
 #include <rapidjson/istreamwrapper.h>
 #include <rapidjson/prettywriter.h>
@@ -54,3 +55,23 @@ private:
 	const std::string MAIN_CONFIG;
 	const std::string CONFIG_FOLDER_PATH;
 };
+
+inline std::ostream& operator<<(std::ostream& os, const ConfigData& cd)
+{
+	for (const auto& [key, val] : cd)
+	{
+		os << "\t{ " << key << ", " << SaveManager::getValue(val) << " } | Type: " << SaveManager::getType(val) << "\n";
+	}
+
+	return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, const DataMap& dm)
+{
+	for (const auto& [key, val] : dm)
+	{
+		os << "\t{ " << key << ", " << SaveManager::getValue(val) << " } | Type: " << SaveManager::getType(val) << "\n";
+	}
+
+	return os;
+}

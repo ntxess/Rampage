@@ -43,19 +43,24 @@ SystemStatus SaveManager::init(ConfigData& configMap)
 
             if (load(MAIN_CONFIG, configMap) == SystemStatus::SAVE_MNGR_SUCCESS)
             {
+                LOG_INFO(Logger::get()) << "Successfully loaded main config file.";
+
                 for (const auto& path : paths)
                 {
                     if (anyToString(configMap[path]).empty()) continue;
 
                     auto newDirPath = resolvePath(anyToString(configMap[path]));
                     std::filesystem::create_directories(newDirPath);
+
+                    LOG_INFO(Logger::get()) << "Required folder located: " << newDirPath;
                 }
             }
         }
     }
-    catch (...)
+    catch (const std::filesystem::filesystem_error& e)
     {
-        return creatConfig(MAIN_CONFIG);
+        LOG_FATAL(Logger::get()) << "Failed to create required directories. Error: " << e.what();
+        return SystemStatus::ERROR;
     }
 
     return SystemStatus::SAVE_MNGR_SUCCESS;
@@ -245,8 +250,9 @@ std::string SaveManager::getValue(const std::any& data)
                 return result;
             }
         }
-        catch (const std::bad_any_cast&)
+        catch (const std::bad_any_cast& e)
         {
+            LOG_ERROR(Logger::get()) << e.what();
             return std::string();
         }
     }
@@ -275,8 +281,9 @@ int SaveManager::getInt(const std::any& data)
         {
             return std::any_cast<int>(data);
         }
-        catch (const std::bad_any_cast&)
+        catch (const std::bad_any_cast& e)
         {
+            LOG_ERROR(Logger::get()) << e.what();
             return int();
         }
     }
@@ -292,8 +299,9 @@ bool SaveManager::getInt(const std::any& data, int& retVal)
             retVal = std::any_cast<int>(data);
             return true;
         }
-        catch (const std::bad_any_cast&)
+        catch (const std::bad_any_cast& e)
         {
+            LOG_ERROR(Logger::get()) << e.what();
             return false;
         }
     }
@@ -308,8 +316,9 @@ long SaveManager::getLong(const std::any& data)
         {
             return static_cast<long>(std::any_cast<int>(data));
         }
-        catch (const std::bad_any_cast&)
+        catch (const std::bad_any_cast& e)
         {
+            LOG_ERROR(Logger::get()) << e.what();
             return long();
         }
     }
@@ -325,8 +334,9 @@ bool SaveManager::getLong(const std::any& data, long& retVal)
             retVal = static_cast<long>(std::any_cast<int>(data));
             return true;
         }
-        catch (const std::bad_any_cast&)
+        catch (const std::bad_any_cast& e)
         {
+            LOG_ERROR(Logger::get()) << e.what();
             return false;
         }
     }
@@ -341,8 +351,9 @@ bool SaveManager::getBool(const std::any& data)
         {
             return std::any_cast<bool>(data);
         }
-        catch (const std::bad_any_cast&)
+        catch (const std::bad_any_cast& e)
         {
+            LOG_ERROR(Logger::get()) << e.what();
             return bool();
         }
     }
@@ -358,8 +369,9 @@ bool SaveManager::getBool(const std::any& data, bool& retVal)
             retVal = std::any_cast<bool>(data);
             return true;
         }
-        catch (const std::bad_any_cast&)
+        catch (const std::bad_any_cast& e)
         {
+            LOG_ERROR(Logger::get()) << e.what();
             return false;
         }
     }
@@ -374,8 +386,9 @@ double SaveManager::getDouble(const std::any& data)
         {
             return std::any_cast<double>(data);
         }
-        catch (const std::bad_any_cast&)
+        catch (const std::bad_any_cast& e)
         {
+            LOG_ERROR(Logger::get()) << e.what();
             return double();
         }
     }
@@ -391,8 +404,9 @@ bool SaveManager::getDouble(const std::any& data, double& retVal)
             retVal = std::any_cast<double>(data);
             return true;
         }
-        catch (const std::bad_any_cast&)
+        catch (const std::bad_any_cast& e)
         {
+            LOG_ERROR(Logger::get()) << e.what();
             return false;
         }
     }
@@ -411,8 +425,9 @@ std::string SaveManager::getString(const std::any& data)
                 return *x;
             return std::string();
         }
-        catch (const std::bad_any_cast&)
+        catch (const std::bad_any_cast& e)
         {
+            LOG_ERROR(Logger::get()) << e.what();
             return std::string();
         }
     }
@@ -437,8 +452,9 @@ bool SaveManager::getString(const std::any& data, std::string& retVal)
             }
             return false;
         }
-        catch (const std::bad_any_cast&)
+        catch (const std::bad_any_cast& e)
         {
+            LOG_ERROR(Logger::get()) << e.what();
             return false;
         }
     }
@@ -453,8 +469,9 @@ std::vector<std::any> SaveManager::getVec(const std::any& data)
         {
             return std::any_cast<std::vector<std::any>>(data);
         }
-        catch (const std::bad_any_cast&)
+        catch (const std::bad_any_cast& e)
         {
+            LOG_ERROR(Logger::get()) << e.what();
             return std::vector<std::any>();
         }
     }
@@ -470,8 +487,9 @@ bool SaveManager::getVec(const std::any& data, std::vector<std::any>& retVal)
             retVal = std::any_cast<std::vector<std::any>>(data);
             return true;
         }
-        catch (const std::bad_any_cast&)
+        catch (const std::bad_any_cast& e)
         {
+            LOG_ERROR(Logger::get()) << e.what();
             return false;
         }
     }
@@ -791,6 +809,8 @@ SystemStatus SaveManager::creatConfig(const std::string& filename)
 
     if (json.empty())
     {
+        LOG_INFO(Logger::get()) << "Empty main config file found. Creating new default main config file.";
+
         const std::string data =
             "{\n"
             "    \"system\": {\n"

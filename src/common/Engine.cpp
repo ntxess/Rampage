@@ -82,11 +82,23 @@ void Engine::run()
 */
 SystemStatus Engine::init()
 {
+    // Start logging in the console until configuration file is read.
+    Logger::getInstance().setupConsoleLog();
+
+    LOG_INFO(Logger::get()) << "Initializing system. Reading main configuration file...";
+
     if (sysData->saveManager.init(sysData->configData) == SystemStatus::SAVE_MNGR_SUCCESS)
     {
+        LOG_INFO(Logger::get()) << "Successfully read config file.";
+
+        std::string logPath = sysData->saveManager.resolvePath(sysData->Configuration<std::string>(DEBUG_LOG_FOLDER)).string();
         Logger::getInstance().toggleLogging(sysData->Configuration<bool>(DEBUG_MODE));
         Logger::getInstance().setFilterSeverity(sysData->Configuration<std::string>(DEBUG_LOG_FILTER_SEVERITY));
-        Logger::getInstance().setLogPath(sysData->saveManager.resolvePath(sysData->Configuration<std::string>(DEBUG_LOG_FOLDER)).string());
+
+        LOG_INFO(Logger::get()) << "Now logging to file. Log file located at: " << logPath;
+
+        Logger::getInstance().removeAllSinks();
+        Logger::getInstance().setupFileLog(logPath);
 
         configureWindow();
         return SystemStatus::SUCCESS;
@@ -100,6 +112,8 @@ SystemStatus Engine::init()
 */
 void Engine::configureWindow()
 {
+    LOG_TRACE(Logger::get()) << "Configuring window...";
+
     sf::ContextSettings settings;
     settings.depthBits = 24;
     settings.stencilBits = 8;
@@ -116,6 +130,14 @@ void Engine::configureWindow()
     sysData->window.setActive(false);
     sysData->sceneManager.addScene(std::make_unique<Sandbox>(sysData.get()));
     sysData->sceneManager.processChange();
+
+    LOG_INFO(Logger::get()) << "System info: \n"
+        << "\tWindow name: " << name << "\n"
+        << "\tWindow width: " << width << "\n"
+        << "\tWindow height: " << height << "\n"
+        << "\tDelta time: " << sysData->deltaTime;
+
+    LOG_INFO(Logger::get()) << "Configuration data: \n" << sysData->configData;
 }
 
 /**
