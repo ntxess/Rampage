@@ -37,7 +37,9 @@ void EventSystem::update(entt::registry& reg, const float& dt, const entt::entit
 		else
 		{
 			// Destroy event if it receiver is invalid
-			LOG_WARNING(Logger::get()) << "Failed processing of Event ID [" << static_cast<unsigned int>(eventID) << "]";
+			LOG_WARNING(Logger::get()) 
+				<< "Failed processing of Event ID [" << static_cast<unsigned int>(eventID) 
+				<< "]. Entity [" << static_cast<unsigned int>(receiverID) << "] no longer valid";
 
 			reg.destroy(eventID);
 		}
@@ -75,9 +77,9 @@ EventSystem::EventStatus EventSystem::instantEvent(StatusModEvent& statusModEven
 		receiverStatus.value[statusModEvent.effect->statusToModify] += statusModEvent.effect->modificationVal;
 
 	LOG_DEBUG(Logger::get()) 
-		<< "Applying instant event. Modifying " << statusModEvent.effect->statusToModify 
-		<< " of entity " << static_cast<unsigned int>(statusModEvent.receiverID)
-		<< " by " << statusModEvent.effect->modificationVal
+		<< "Applying instant event. Modifying \"" << statusModEvent.effect->statusToModify 
+		<< "\" of entity [" << static_cast<unsigned int>(statusModEvent.receiverID)
+		<< "] by " << statusModEvent.effect->modificationVal
 		<< ". Current val: " << receiverStatus.value.at(statusModEvent.effect->statusToModify);
 
 	return EventStatus::COMPLETE;
@@ -97,16 +99,19 @@ EventSystem::EventStatus EventSystem::overTimeEvent(StatusModEvent& statusModEve
 			receiverStatus.value[statusModEvent.effect->statusToModify] += statusModEvent.effect->modificationVal;
 
 		LOG_DEBUG(Logger::get()) 
-			<< "Applying over-time event. Modifying " << statusModEvent.effect->statusToModify 
-			<< " by " << statusModEvent.effect->modificationVal 
+			<< "Applying over-time event. Modifying \"" << statusModEvent.effect->statusToModify
+			<< "\" of entity [" << static_cast<unsigned int>(statusModEvent.receiverID)
+			<< "] by " << statusModEvent.effect->modificationVal
 			<< ". Current val: " << receiverStatus.value.at(statusModEvent.effect->statusToModify);
 	}
 
 	if (m_eventWatchdogTime < currDuration || statusModEvent.timeElapsed >= statusModEvent.effect->maxDuration)
 	{
 		LOG_DEBUG(Logger::get())
-			<< "Completed over-time event. Time elapsed: " << statusModEvent.timeElapsed
-			<< " >= " << statusModEvent.effect->maxDuration;
+			<< "Completed over-time event. \"" << statusModEvent.effect->statusToModify
+			<< "\" stat of entity [" << static_cast<unsigned int>(statusModEvent.receiverID)
+			<< "] is " << receiverStatus.value.at(statusModEvent.effect->statusToModify)
+			<< ". Time elapsed: " << statusModEvent.timeElapsed << " >= " << statusModEvent.effect->maxDuration;
 
 		return EventStatus::COMPLETE;
 	}
@@ -132,8 +137,9 @@ EventSystem::EventStatus EventSystem::tempTimedEvent(StatusModEvent& statusModEv
 			receiverStatus.value[statusModEvent.effect->statusToModify] += statusModEvent.effect->modificationVal;
 
 		LOG_DEBUG(Logger::get())
-			<< "Applying temporary-timed event. Modifying " << statusModEvent.effect->statusToModify
-			<< " by " << statusModEvent.effect->modificationVal
+			<< "Applying temporary-timed event. Modifying \"" << statusModEvent.effect->statusToModify
+			<< "\" of entity [" << static_cast<unsigned int>(statusModEvent.receiverID)
+			<< "] by " << statusModEvent.effect->modificationVal
 			<< ". Current val: " << receiverStatus.value.at(statusModEvent.effect->statusToModify);
 	}
 
@@ -143,8 +149,9 @@ EventSystem::EventStatus EventSystem::tempTimedEvent(StatusModEvent& statusModEv
 			receiverStatus.value[statusModEvent.effect->statusToModify] += statusModEvent.effect->modificationVal * -1.f;
 
 		LOG_DEBUG(Logger::get()) 
-			<< "Completed temporary-timed event. Restoring " << statusModEvent.effect->statusToModify 
-			<< " by " << statusModEvent.effect->modificationVal
+			<< "Completed temporary-timed event. Restoring \"" << statusModEvent.effect->statusToModify
+			<< "\" of entity [" << static_cast<unsigned int>(statusModEvent.receiverID)
+			<< "] by " << statusModEvent.effect->modificationVal
 			<< ". Current val: " << receiverStatus.value.at(statusModEvent.effect->statusToModify);
 
 		return EventStatus::COMPLETE;

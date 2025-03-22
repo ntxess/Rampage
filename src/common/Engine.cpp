@@ -26,6 +26,8 @@ Engine::Engine()
 
         configureWindow();
     }
+
+    LOG_INFO(Logger::get()) << "System initialize. Starting main thread...";
 }
 
 /**
@@ -37,7 +39,7 @@ void Engine::run()
     LOG_TRACE(Logger::get()) << "----- Main thread started! -----";
 
     startThreads();
-    LOG_TRACE(Logger::get()) << "All threads started";
+    LOG_INFO(Logger::get()) << "All threads started";
 
     sf::Event event;
     while (sysData->window.waitEvent(event))
@@ -104,7 +106,7 @@ void Engine::startThreads()
 */
 void Engine::configureWindow()
 {
-    LOG_TRACE(Logger::get()) << "Configuring window...";
+    LOG_INFO(Logger::get()) << "Configuring window...";
 
     sf::ContextSettings settings;
     settings.depthBits = 24;
@@ -123,13 +125,13 @@ void Engine::configureWindow()
     sysData->sceneManager.addScene(std::make_unique<Sandbox>(sysData.get()));
     sysData->sceneManager.processChange();
 
-    LOG_INFO(Logger::get()) << "System info: \n"
+    LOG_DEBUG(Logger::get()) << "System info: \n"
         << "\tWindow name: " << name << "\n"
         << "\tWindow width: " << width << "\n"
         << "\tWindow height: " << height << "\n"
         << "\tDelta time: " << sysData->deltaTime;
 
-    LOG_INFO(Logger::get()) << "Configuration data: \n" << sysData->configData;
+    LOG_DEBUG(Logger::get()) << "Configuration data: \n" << sysData->configData;
 }
 
 /**

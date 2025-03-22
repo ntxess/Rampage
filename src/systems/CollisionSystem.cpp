@@ -112,8 +112,8 @@ void CollisionSystem::collisionUpdate(entt::registry& reg)
 
 						LOG_INFO(Logger::get())
 							<< "Collision Event ID [" << static_cast<unsigned int>(statusModEventID)
-							<< "]: Entity " << static_cast<unsigned int>(sourceID)
-							<< " collided with entity " << static_cast<unsigned int>(receiverID);
+							<< "]: Entity [" << static_cast<unsigned int>(sourceID)
+							<< "] collided with entity [" << static_cast<unsigned int>(receiverID) << "]";
 					}
 				}
 			}
