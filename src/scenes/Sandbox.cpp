@@ -23,7 +23,7 @@ void Sandbox::init()
 	m_reg.emplace<PlayerInput>(m_player);
 	m_reg.emplace<EffectsList>(m_player);
 	m_reg.emplace<EntityStatus>(m_player).value["HP"] = 100.f;
-	m_reg.emplace<UpdateEntityPolling>(m_player, std::chrono::milliseconds(0));
+	m_reg.emplace<UpdateEntityPolling>(m_player, std::chrono::milliseconds(1000));
 	m_reg.get<PlayerInput>(m_player).input =
 	{
 		{ sf::Keyboard::W, new Movement(m_player, { 0, -1 }) },

@@ -21,17 +21,17 @@
 #endif
 
 #define	LOG_TRACE(logger) \
-	BOOST_LOG_SEV(logger, boost::log::trivial::severity_level::trace) << __FILENAME__ << ":" << std::setiosflags(std::ios::left) << std::setw(5) << __LINE__ << " | "
+	BOOST_LOG_SEV(logger, boost::log::trivial::severity_level::trace) << std::setw(25) << __FILENAME__ << ":" << std::setiosflags(std::ios::left) << std::setw(5) << __LINE__ << " | "
 #define	LOG_DEBUG(logger) \
-	BOOST_LOG_SEV(logger, boost::log::trivial::severity_level::debug) << __FILENAME__ << ":" << std::setiosflags(std::ios::left) << std::setw(5) << __LINE__ << " | "
+	BOOST_LOG_SEV(logger, boost::log::trivial::severity_level::debug) << std::setw(25) << __FILENAME__ << ":" << std::setiosflags(std::ios::left) << std::setw(5) << __LINE__ << " | "
 #define	LOG_INFO(logger) \
-	BOOST_LOG_SEV(logger, boost::log::trivial::severity_level::info) << __FILENAME__ << ":" << std::setiosflags(std::ios::left) << std::setw(5) << __LINE__ << " | "
+	BOOST_LOG_SEV(logger, boost::log::trivial::severity_level::info) << std::setw(25) << __FILENAME__ << ":" << std::setiosflags(std::ios::left) << std::setw(5) << __LINE__ << " | "
 #define	LOG_WARNING(logger) \
-	BOOST_LOG_SEV(logger, boost::log::trivial::severity_level::warning) << __FILENAME__ << ":" << std::setiosflags(std::ios::left) << std::setw(5) << __LINE__ << " | "
+	BOOST_LOG_SEV(logger, boost::log::trivial::severity_level::warning) << std::setw(25) << __FILENAME__ << ":" << std::setiosflags(std::ios::left) << std::setw(5) << __LINE__ << " | "
 #define	LOG_ERROR(logger) \
-	BOOST_LOG_SEV(logger, boost::log::trivial::severity_level::error) << __FILENAME__ << ":" << std::setiosflags(std::ios::left) << std::setw(5) << __LINE__ << " | "
+	BOOST_LOG_SEV(logger, boost::log::trivial::severity_level::error) << std::setw(25) << __FILENAME__ << ":" << std::setiosflags(std::ios::left) << std::setw(5) << __LINE__ << " | "
 #define	LOG_FATAL(logger) \
-	BOOST_LOG_SEV(logger, boost::log::trivial::severity_level::fatal) << __FILENAME__ << ":" << std::setiosflags(std::ios::left) << std::setw(5) << __LINE__ << " | "
+	BOOST_LOG_SEV(logger, boost::log::trivial::severity_level::fatal) << std::setw(25) << __FILENAME__ << ":" << std::setiosflags(std::ios::left) << std::setw(5) << __LINE__ << " | "
 
 class Logger
 {
