@@ -6,7 +6,7 @@
 #include <vector>
 #include <memory>
 
-constexpr size_t MAX_DEPTH = 6;
+constexpr size_t MAX_DEPTH = 4;
 constexpr size_t QT_NODE_CAPACITY = 4;
 
 class QuadTree

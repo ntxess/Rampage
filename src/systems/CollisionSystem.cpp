@@ -35,7 +35,7 @@ void CollisionSystem::update(entt::registry& reg, const float& dt, const entt::e
 
 void CollisionSystem::quadTreeUpdate(entt::registry& reg)
 {
-	const auto& view = reg.view<Sprite, DirtyMovement>();
+	const auto& view = reg.view<Sprite, UpdateEntityEvent>();
 	for (const auto& entity : view)
 	{
 		m_quadTree->remove(reg, entity);
@@ -45,7 +45,8 @@ void CollisionSystem::quadTreeUpdate(entt::registry& reg)
 
 void CollisionSystem::collisionUpdate(entt::registry& reg)
 {
-	const auto& view = reg.view<Sprite, DirtyMovement>();
+	// Event-driven collision update
+	const auto& view = reg.view<Sprite, UpdateEntityEvent>();
 	for (const auto& source : view)
 	{
 		// Query all neighboring entity for collision
@@ -65,7 +66,28 @@ void CollisionSystem::collisionUpdate(entt::registry& reg)
 		}
 
 		// QuadTree update completed, delete dirty flags
-		reg.remove<DirtyMovement>(source);
+		reg.remove<UpdateEntityEvent>(source);
+	}
+
+	// Polling collision update
+	const auto& pollingView = reg.view<Sprite, UpdateEntityPolling>();
+	for (const auto& source : pollingView)
+	{
+		// Query all neighboring entity for collision
+		const sf::FloatRect& sourceHitbox = reg.get<Sprite>(source).getGlobalBounds();
+		std::vector<entt::entity> receiverList = m_quadTree->queryRange(reg, sourceHitbox);
+		const Team& sourceTeamTag = reg.get<TeamTag>(source).tag;
+
+		for (const auto& receiver : receiverList)
+		{
+			// Check if entity is on the same team
+			Team receiverTeamTag = reg.get<TeamTag>(receiver).tag;
+			if (sourceTeamTag == receiverTeamTag)
+				continue;
+
+			// If not on the same team, emplace new CollisionEvent on reciever for later processing
+			reg.emplace_or_replace<CollisionEvent>(receiver, source);
+		}
 	}
 }
 

@@ -15,7 +15,7 @@ private:
 
 public:
 	EventSystem() = default;
-	EventSystem(time_t delayTime, time_t watchdogTime);
+	EventSystem(time_t watchdogTime);
 
 	constexpr std::string_view name() const;
 	void update(entt::registry& reg, const float& dt = 0.f, const entt::entity ent = entt::null);
@@ -26,6 +26,5 @@ public:
 	EventStatus tempTimedEvent(EntityStatus& receiverStatus, StatusModEvent& statusModEvent) const;
 
 private:
-	const time_t m_delayTime;
 	const time_t m_eventWatchdogTime;
 };

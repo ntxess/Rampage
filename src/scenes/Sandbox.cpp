@@ -23,6 +23,7 @@ void Sandbox::init()
 	m_reg.emplace<PlayerInput>(m_player);
 	m_reg.emplace<EffectsList>(m_player);
 	m_reg.emplace<EntityStatus>(m_player).value["HP"] = 100.f;
+	//m_reg.emplace<UpdateEntityPolling>(m_player);
 	m_reg.get<PlayerInput>(m_player).input =
 	{
 		{ sf::Keyboard::W, new Movement(m_player, { 0, -1 }) },
@@ -37,10 +38,10 @@ void Sandbox::init()
 	m_reg.get<Sprite>(m_player).setPosition(width / 2, height / 2);
 
 	// Create event effect for collecting coins
-	Effects collect;
-	collect.statusToModify = "HP";
-	collect.modificationVal = -10.f;
-	m_reg.get<EffectsList>(m_player).effectsList.push_back({ EffectType::INSTANT, collect });
+	//Effects collect;
+	//collect.statusToModify = "HP";
+	//collect.modificationVal = -10.f;
+	//m_reg.get<EffectsList>(m_player).effectsList.push_back({ EffectType::INSTANT, collect });
 
 	//Effects poison;
 	//poison.statusToModify = "HP";
@@ -48,11 +49,11 @@ void Sandbox::init()
 	//poison.duration = 5;
 	//m_reg.get<EffectsList>(m_player).effectsList.push_back({ EffectType::OVERTIME, poison });
 
-	//Effects hpLimiter;
-	//hpLimiter.statusToModify = "HP";
-	//hpLimiter.modificationVal = -5.f;
-	//hpLimiter.duration = 5;
-	//m_reg.get<EffectsList>(m_player).effectsList.push_back({ EffectType::TIMEDTEMP, hpLimiter });
+	Effects hpLimiter;
+	hpLimiter.statusToModify = "HP";
+	hpLimiter.modificationVal = -5.f;
+	hpLimiter.duration = 5;
+	m_reg.get<EffectsList>(m_player).effectsList.push_back({ EffectType::TEMPTIMED, hpLimiter });
 
 	// Generate a ton of sprite for testing in random places within the boundary of the window
 	std::random_device dev;
@@ -71,7 +72,7 @@ void Sandbox::init()
 	}
 
 	m_system.addSystem<CollisionSystem>(m_reg, sf::Vector2f{ 0.f, 0.f }, m_data->window.getSize());
-	m_system.addSystem<EventSystem>(0, 360);
+	m_system.addSystem<EventSystem>(360);
 }
 
 void Sandbox::processEvent(const sf::Event& event)

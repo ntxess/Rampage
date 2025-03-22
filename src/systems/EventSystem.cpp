@@ -1,8 +1,7 @@
 #include "EventSystem.hpp"
 
-EventSystem::EventSystem(time_t delayTime, time_t watchdogTime)
-	: m_delayTime(delayTime)
-	, m_eventWatchdogTime(watchdogTime)
+EventSystem::EventSystem(time_t watchdogTime)
+	: m_eventWatchdogTime(watchdogTime)
 {}
 
 constexpr std::string_view EventSystem::name() const
@@ -105,8 +104,8 @@ EventSystem::EventStatus EventSystem::overTimeEvent(EntityStatus& receiverStatus
 	if (m_eventWatchdogTime < currentTime || statusModEvent.timeElapsed >= statusModEvent.effect->duration)
 		return EventStatus::COMPLETE;
 
-	// Check every m_delayTime (greater than 0 sec) and modify status on the effect's event
-	if (currentTime > m_delayTime)
+	// TODO: ADD TICK RATE LIMITER	
+	if (currentTime > 0)
 	{
 		statusModEvent.timeStart = time(NULL);
 		statusModEvent.timeElapsed += static_cast<time_t>(currentTime);
@@ -128,8 +127,8 @@ EventSystem::EventStatus EventSystem::tempTimedEvent(EntityStatus& receiverStatu
 	if (m_eventWatchdogTime < currentTime)
 		return EventStatus::COMPLETE;
 
-	// Check every m_delayTime (greater than 0 sec) and modify status on the effect's event
-	if (statusModEvent.timeElapsed == 0 && currentTime > m_delayTime)
+	// TODO: ADD TICK RATE LIMITER
+	if (statusModEvent.timeElapsed == 0 && currentTime > 0)
 	{
 		statusModEvent.timeStart = time(NULL);
 		statusModEvent.timeElapsed += static_cast<time_t>(currentTime);
