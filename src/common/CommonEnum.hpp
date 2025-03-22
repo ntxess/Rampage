@@ -29,6 +29,8 @@ enum class SystemStatus
 	SAVE_MNGR_FAIL_FILE_EMPTY,
 	RSRC_MNGR_SUCCESS,
 	RSRC_MNGR_FAIL_LOAD,
+	RSRC_MNGR_FAIL_UNLOAD,
+
 };
 
 /**
@@ -38,7 +40,10 @@ enum ConfigKey
 {
 	NAME,
 	VERSION,
+	DEBUG_MODE,
+	DEBUG_LOG_FILTER_SEVERITY,
 	CONFIG_FOLDER,
+	DEBUG_LOG_FOLDER,
 	SAVE_FOLDER,
 	SCRIPT_FOLDER,
 	WIDTH,
@@ -121,10 +126,10 @@ inline std::string anyToString(const std::any& val)
 	else if (auto x = std::any_cast<std::vector<std::any>>(&val))
 	{
 		std::string result = "[";
-		for (size_t i = 0; i < (*x).size(); ++i)
+		for (size_t i = 0; i < x->size(); ++i)
 		{
-			result += anyToString((*x)[i]);
-			if (i + 1 < (*x).size())
+			result += anyToString(x->at(i));
+			if (i + 1 < x->size())
 				result += ", ";
 		}
 		result.push_back(']');

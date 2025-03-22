@@ -5,7 +5,6 @@
 #include "../common/GlobalData.hpp"
 #include "../common/Entity.hpp"
 #include <entt/entity/registry.hpp>
-#include <iostream>
 
 class MainMenu : public IScene
 {

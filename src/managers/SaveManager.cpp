@@ -4,9 +4,9 @@
  * @brief 
 */
 SaveManager::SaveManager()
-	: RELATIVE_PATH(std::filesystem::current_path().string())
+	: RELATIVE_PATH(std::filesystem::current_path())
     , MAIN_CONFIG("config.json")
-    , CONFIG_FOLDER_PATH("/config/")
+    , CONFIG_FOLDER_PATH("config")
 {}
 
 /**
@@ -14,9 +14,9 @@ SaveManager::SaveManager()
  * @param [IN] filepath
 */
 SaveManager::SaveManager(const std::string filepath)
-    : RELATIVE_PATH(std::filesystem::current_path().string())
+    : RELATIVE_PATH(std::filesystem::current_path())
     , MAIN_CONFIG(filepath)
-    , CONFIG_FOLDER_PATH("/config/")
+    , CONFIG_FOLDER_PATH("config")
 {}
 
 /**
@@ -28,13 +28,14 @@ SaveManager::SaveManager(const std::string filepath)
 */
 SystemStatus SaveManager::init(ConfigData& configMap)
 {
-    std::vector<ConfigKey> paths = { SAVE_FOLDER, SCRIPT_FOLDER };
+    std::vector<ConfigKey> paths = { DEBUG_LOG_FOLDER, SAVE_FOLDER, SCRIPT_FOLDER };
 
     // Try to create a new default config file if one does not exist
     // After loading the congigurations setup the folder system for the entire application
     try
     {
-        std::filesystem::create_directories(RELATIVE_PATH + CONFIG_FOLDER_PATH);
+        auto configPath = resolvePath(CONFIG_FOLDER_PATH);
+        std::filesystem::create_directories(configPath);
 
         if (configMap.empty())
         {
@@ -42,17 +43,24 @@ SystemStatus SaveManager::init(ConfigData& configMap)
 
             if (load(MAIN_CONFIG, configMap) == SystemStatus::SAVE_MNGR_SUCCESS)
             {
+                LOG_INFO(Logger::get()) << "Successfully loaded main config file.";
+
                 for (const auto& path : paths)
                 {
                     if (anyToString(configMap[path]).empty()) continue;
-                    std::filesystem::create_directories(RELATIVE_PATH + anyToString(configMap[path]));
+
+                    auto newDirPath = resolvePath(anyToString(configMap[path]));
+                    std::filesystem::create_directories(newDirPath);
+
+                    LOG_INFO(Logger::get()) << "Required folder located: " << newDirPath;
                 }
             }
         }
     }
-    catch (...)
+    catch (const std::filesystem::filesystem_error& e)
     {
-        return creatConfig(MAIN_CONFIG);
+        LOG_FATAL(Logger::get()) << "Failed to create required directories. Error: " << e.what();
+        return SystemStatus::ERROR;
     }
 
     return SystemStatus::SAVE_MNGR_SUCCESS;
@@ -66,12 +74,14 @@ SystemStatus SaveManager::init(ConfigData& configMap)
 */
 SystemStatus SaveManager::load(const std::string& filename, ConfigData& configMap)
 {
-    std::ifstream ifs(RELATIVE_PATH + CONFIG_FOLDER_PATH + filename, std::fstream::app);
+    auto path = RELATIVE_PATH;
+    path.append(CONFIG_FOLDER_PATH).append(filename);
+    std::ifstream ifs(path.string(), std::fstream::app);
 
     if (!ifs.good())
         return SystemStatus::SAVE_MNGR_FAIL_READ;
 
-    if (std::filesystem::is_empty(RELATIVE_PATH + CONFIG_FOLDER_PATH + filename))
+    if (std::filesystem::is_empty(path))
         return SystemStatus::SAVE_MNGR_FAIL_FILE_EMPTY;
 
     rapidjson::IStreamWrapper isw(ifs);
@@ -81,7 +91,7 @@ SystemStatus SaveManager::load(const std::string& filename, ConfigData& configMa
     ConfigKey configId = NAME;
     read(doc, configId, configMap);
 
-    return SystemStatus::SAVE_MNGR_SUCCESS;;
+    return SystemStatus::SAVE_MNGR_SUCCESS;
 }
 
 /**
@@ -92,12 +102,13 @@ SystemStatus SaveManager::load(const std::string& filename, ConfigData& configMa
 */
 SystemStatus SaveManager::load(const std::string& filename, DataMap& dataMap)
 {
-    std::ifstream ifs(RELATIVE_PATH + filename, std::fstream::app);
+    auto path = resolvePath(filename);
+    std::ifstream ifs(path, std::fstream::app);
 
     if (!ifs.good())
         return SystemStatus::SAVE_MNGR_FAIL_READ;
 
-    if (std::filesystem::is_empty(RELATIVE_PATH + filename))
+    if (std::filesystem::is_empty(path))
         return SystemStatus::SAVE_MNGR_FAIL_FILE_EMPTY;
 
     rapidjson::IStreamWrapper isw(ifs);
@@ -118,7 +129,8 @@ SystemStatus SaveManager::load(const std::string& filename, DataMap& dataMap)
 */
 SystemStatus SaveManager::save(const std::string& filename, const ConfigData& configMap)
 {
-    std::ifstream ifs(RELATIVE_PATH + CONFIG_FOLDER_PATH + filename, std::fstream::app);
+    auto path = RELATIVE_PATH;
+    std::ifstream ifs(path.append(CONFIG_FOLDER_PATH).append(filename).string(), std::fstream::app);
 
     if (!ifs.good())
         return SystemStatus::SAVE_MNGR_FAIL_READ;
@@ -127,7 +139,7 @@ SystemStatus SaveManager::save(const std::string& filename, const ConfigData& co
     {
         ifs.close();
         creatConfig(filename);
-        ifs.open(RELATIVE_PATH + CONFIG_FOLDER_PATH + filename, std::fstream::app);
+        ifs.open(path, std::fstream::app);
     }
 
     rapidjson::IStreamWrapper isw(ifs);
@@ -141,7 +153,7 @@ SystemStatus SaveManager::save(const std::string& filename, const ConfigData& co
     doc.Accept(writer);
     std::string json(buffer.GetString(), buffer.GetSize());
 
-    std::ofstream ofs(RELATIVE_PATH + CONFIG_FOLDER_PATH + filename);
+    std::ofstream ofs(path);
     if (!ofs.good()) return SystemStatus::SAVE_MNGR_FAIL_WRITE;
 
     ofs << json;
@@ -155,7 +167,8 @@ SystemStatus SaveManager::save(const std::string& filename, const ConfigData& co
 */
 SystemStatus SaveManager::save(const std::string& filename, const DataMap& dataMap)
 {
-    std::ifstream ifs(RELATIVE_PATH + filename, std::fstream::app);
+    auto path = resolvePath(filename);
+    std::ifstream ifs(path, std::fstream::app);
 
     if (!ifs.good())
         return SystemStatus::SAVE_MNGR_FAIL_READ;
@@ -169,12 +182,331 @@ SystemStatus SaveManager::save(const std::string& filename, const DataMap& dataM
     doc.Accept(writer);
     std::string json(buffer.GetString(), buffer.GetSize());
 
-    std::ofstream ofs(RELATIVE_PATH + filename);
+    std::ofstream ofs(path);
     if (!ofs.good()) return SystemStatus::SAVE_MNGR_FAIL_WRITE;
 
     ofs << json;
 
     return SystemStatus::SAVE_MNGR_SUCCESS;
+}
+
+std::string SaveManager::getType(const std::any& data)
+{
+    if (std::any_cast<std::string>(&data))
+        return "string";
+    else if (std::any_cast<const char*>(&data))
+        return "cstring";
+    else if (std::any_cast<bool>(&data))
+        return "bool";
+    else if (std::any_cast<int>(&data))
+        return "int";
+    else if (std::any_cast<float>(&data))
+        return "float";
+    else if (std::any_cast<double>(&data))
+        return "double";
+    else if (auto x = std::any_cast<std::vector<std::any>>(&data))
+    {
+        std::string result = "[";
+        for (size_t i = 0; i < (*x).size(); ++i)
+        {
+            result += getType((*x)[i]);
+            if (i + 1 < (*x).size())
+                result += ", ";
+        }
+        result.push_back(']');
+        return result;
+    }
+    return std::string();
+}
+
+std::string SaveManager::getValue(const std::any& data)
+{
+    if (data.has_value())
+    {
+        try
+        {
+            if (auto x = std::any_cast<std::string>(&data))
+                return *x;
+            else if (auto x = std::any_cast<const char*>(&data))
+                return *x;
+            else if (auto x = std::any_cast<bool>(&data))
+                return (std::to_string(*x) == "1") ? "true" : "false";
+            else if (auto x = std::any_cast<int>(&data))
+                return std::to_string(*x);
+            else if (auto x = std::any_cast<float>(&data))
+                return std::to_string(*x);
+            else if (auto x = std::any_cast<double>(&data))
+                return std::to_string(*x);
+            else if (auto x = std::any_cast<std::vector<std::any>>(&data))
+            {
+                std::string result = "[";
+                for (size_t i = 0; i < (*x).size(); ++i)
+                {
+                    result += getValue((*x)[i]);
+                    if (i + 1 < (*x).size())
+                        result += ", ";
+                }
+                result.push_back(']');
+                return result;
+            }
+        }
+        catch (const std::bad_any_cast& e)
+        {
+            LOG_ERROR(Logger::get()) << e.what();
+            return std::string();
+        }
+    }
+    return std::string();
+}
+
+bool SaveManager::getValue(const std::any& data, std::string& retVal)
+{
+    if (data.has_value())
+    {
+        retVal = getValue(data);
+        if (retVal.empty())
+        {
+            return false;
+        }
+        return true;
+    }
+    return false;
+}
+
+int SaveManager::getInt(const std::any& data)
+{
+    if (data.has_value())
+    {
+        try
+        {
+            return std::any_cast<int>(data);
+        }
+        catch (const std::bad_any_cast& e)
+        {
+            LOG_ERROR(Logger::get()) << e.what();
+            return int();
+        }
+    }
+    return int();
+}
+
+bool SaveManager::getInt(const std::any& data, int& retVal)
+{
+    if (data.has_value())
+    {
+        try
+        {
+            retVal = std::any_cast<int>(data);
+            return true;
+        }
+        catch (const std::bad_any_cast& e)
+        {
+            LOG_ERROR(Logger::get()) << e.what();
+            return false;
+        }
+    }
+    return false;
+}
+
+long SaveManager::getLong(const std::any& data)
+{
+    if (data.has_value())
+    {
+        try
+        {
+            return static_cast<long>(std::any_cast<int>(data));
+        }
+        catch (const std::bad_any_cast& e)
+        {
+            LOG_ERROR(Logger::get()) << e.what();
+            return long();
+        }
+    }
+    return long();
+}
+
+bool SaveManager::getLong(const std::any& data, long& retVal)
+{
+    if (data.has_value())
+    {
+        try
+        {
+            retVal = static_cast<long>(std::any_cast<int>(data));
+            return true;
+        }
+        catch (const std::bad_any_cast& e)
+        {
+            LOG_ERROR(Logger::get()) << e.what();
+            return false;
+        }
+    }
+    return false;
+}
+
+bool SaveManager::getBool(const std::any& data)
+{
+    if (data.has_value())
+    {
+        try
+        {
+            return std::any_cast<bool>(data);
+        }
+        catch (const std::bad_any_cast& e)
+        {
+            LOG_ERROR(Logger::get()) << e.what();
+            return bool();
+        }
+    }
+    return bool();
+}
+
+bool SaveManager::getBool(const std::any& data, bool& retVal)
+{
+    if (data.has_value())
+    {
+        try
+        {
+            retVal = std::any_cast<bool>(data);
+            return true;
+        }
+        catch (const std::bad_any_cast& e)
+        {
+            LOG_ERROR(Logger::get()) << e.what();
+            return false;
+        }
+    }
+    return false;
+}
+
+double SaveManager::getDouble(const std::any& data)
+{
+    if (data.has_value())
+    {
+        try
+        {
+            return std::any_cast<double>(data);
+        }
+        catch (const std::bad_any_cast& e)
+        {
+            LOG_ERROR(Logger::get()) << e.what();
+            return double();
+        }
+    }
+    return double();
+}
+
+bool SaveManager::getDouble(const std::any& data, double& retVal)
+{
+    if (data.has_value())
+    {
+        try
+        {
+            retVal = std::any_cast<double>(data);
+            return true;
+        }
+        catch (const std::bad_any_cast& e)
+        {
+            LOG_ERROR(Logger::get()) << e.what();
+            return false;
+        }
+    }
+    return false;
+}
+
+std::string SaveManager::getString(const std::any& data)
+{
+    if (data.has_value())
+    {
+        try
+        {
+            if (auto x = std::any_cast<std::string>(&data))
+                return *x;
+            else if (auto x = std::any_cast<const char*>(&data))
+                return *x;
+            return std::string();
+        }
+        catch (const std::bad_any_cast& e)
+        {
+            LOG_ERROR(Logger::get()) << e.what();
+            return std::string();
+        }
+    }
+    return std::string();
+}
+
+bool SaveManager::getString(const std::any& data, std::string& retVal)
+{
+    if (data.has_value())
+    {
+        try
+        {
+            if (auto x = std::any_cast<std::string>(&data))
+            {
+                retVal = *x;
+                return true;
+            }
+            else if (auto x = std::any_cast<const char*>(&data))
+            {
+                retVal = *x;
+                return true;
+            }
+            return false;
+        }
+        catch (const std::bad_any_cast& e)
+        {
+            LOG_ERROR(Logger::get()) << e.what();
+            return false;
+        }
+    }
+    return false;
+}
+
+std::vector<std::any> SaveManager::getVec(const std::any& data)
+{
+    if (data.has_value())
+    {
+        try
+        {
+            return std::any_cast<std::vector<std::any>>(data);
+        }
+        catch (const std::bad_any_cast& e)
+        {
+            LOG_ERROR(Logger::get()) << e.what();
+            return std::vector<std::any>();
+        }
+    }
+    return std::vector<std::any>();
+}
+
+bool SaveManager::getVec(const std::any& data, std::vector<std::any>& retVal)
+{
+    if (data.has_value())
+    {
+        try
+        {
+            retVal = std::any_cast<std::vector<std::any>>(data);
+            return true;
+        }
+        catch (const std::bad_any_cast& e)
+        {
+            LOG_ERROR(Logger::get()) << e.what();
+            return false;
+        }
+    }
+    return false;
+}
+
+std::filesystem::path SaveManager::resolvePath(std::string path)
+{
+    std::filesystem::path finalPath = RELATIVE_PATH;
+
+    while (path.substr(0, 3) == "../")
+    {
+        finalPath = finalPath.parent_path();
+        path = path.substr(3);
+    }
+
+    return finalPath.append(path);
 }
 
 /**
@@ -228,7 +560,14 @@ void SaveManager::read(rapidjson::Value& val, DataMap& dataMap, std::string key)
             std::vector<std::any> vec;
             for (rapidjson::SizeType i = 0; i < val.Size(); ++i)
             {
-                vec.push_back(anyCast(val[i]));
+                if (val[i].IsArray())
+                {
+                    vecParseHelper(val[i], dataMap, key, vec);
+                }
+                else
+                {
+                    vec.push_back(anyCast(val[i]));
+                }
             }
             dataMap[key] = vec;
         }
@@ -306,10 +645,10 @@ void SaveManager::write(rapidjson::Document& doc, const DataMap& dataMap)
     for (const auto& [key, data] : dataMap)
     {
         rapidjson::Value val;
-        if (createVal(doc, val, key, data))
+        if (createVal(doc, val, data))
         {
             rapidjson::Value index(key.c_str(), static_cast<rapidjson::SizeType>(key.size()), doc.GetAllocator());
-            doc.AddMember(index, val, doc.GetAllocator());        
+            doc.AddMember(index, val, doc.GetAllocator());
         }
     }
 }
@@ -353,7 +692,7 @@ std::any SaveManager::anyCast(rapidjson::Value& val)
  * @param data
  * @return
 */
-bool SaveManager::createVal(rapidjson::Document& doc, rapidjson::Value& val, const std::string& key, const std::any& data)
+bool SaveManager::createVal(rapidjson::Document& doc, rapidjson::Value& val, const std::any& data)
 {
     if (data.type() == typeid(const char*))
     {
@@ -370,7 +709,7 @@ bool SaveManager::createVal(rapidjson::Document& doc, rapidjson::Value& val, con
         val.SetBool(std::any_cast<bool>(data));
         return true;
     }
-    else if (data.type()== typeid(int))
+    else if (data.type() == typeid(int))
     {
         val.SetInt(std::any_cast<int>(data));
         return true;
@@ -422,10 +761,33 @@ bool SaveManager::createVal(rapidjson::Document& doc, rapidjson::Value& val, con
             {
                 val.PushBack(std::any_cast<double>(dataIndex), doc.GetAllocator());
             }
+            else if (dataIndex.type() == typeid(std::vector<std::any>))
+            {
+                rapidjson::Value arr;
+                createVal(doc, arr, dataIndex);
+                val.PushBack(arr, doc.GetAllocator());
+            }
         }
         return true;
     }
     return false;
+}
+
+void SaveManager::vecParseHelper(rapidjson::Value& val, DataMap& dataMap, std::string key, std::vector<std::any>& vec)
+{
+    std::vector<std::any> newVec;
+    for (rapidjson::SizeType i = 0; i < val.Size(); ++i)
+    {
+        if (val[i].IsArray())
+        {
+            vecParseHelper(val[i], dataMap, key, vec);
+        }
+        else
+        {
+            newVec.push_back(anyCast(val[i]));
+        }
+    }
+    vec.push_back(newVec);
 }
 
 /**
@@ -435,7 +797,8 @@ bool SaveManager::createVal(rapidjson::Document& doc, rapidjson::Value& val, con
 */
 SystemStatus SaveManager::creatConfig(const std::string& filename)
 {
-    std::fstream ifs(RELATIVE_PATH + CONFIG_FOLDER_PATH + filename, std::fstream::in | std::fstream::out | std::fstream::app);
+    auto path = RELATIVE_PATH;
+    std::fstream ifs(path.append(CONFIG_FOLDER_PATH).append(filename).string(), std::fstream::in | std::fstream::out | std::fstream::app);
 
     if (!ifs.good())
         return SystemStatus::SAVE_MNGR_FAIL_READ;
@@ -446,14 +809,19 @@ SystemStatus SaveManager::creatConfig(const std::string& filename)
 
     if (json.empty())
     {
+        LOG_INFO(Logger::get()) << "Empty main config file found. Creating new default main config file.";
+
         const std::string data =
             "{\n"
             "    \"system\": {\n"
             "        \"name\": \"Rampage\",\n"
             "        \"version\": \"0.1b\"\n"
+            "        \"debug-mode\": true,\n"
+            "        \"debug-log-filter-severity\": \"info\"\n"
             "    },\n"
             "    \"system-paths\": {\n"
             "        \"config-folder\": \"/config/\",\n"
+            "        \"debug-log-folder\": \"/log/\",\n"
             "        \"save-folder\": \"/save/\",\n"
             "        \"script-folder\": \"/script/\"\n"
             "    },\n"

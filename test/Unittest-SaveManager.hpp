@@ -13,14 +13,30 @@ static int saveData(GlobalData& m_data)
     m_data.saveData[entt::hashed_string("unittest-save")]->emplace("DAT04", std::vector<std::any>{"num1", "num2", "num3"});
     m_data.saveData[entt::hashed_string("unittest-save")]->emplace("DAT05", std::vector<std::any>{100, 200, 300});
     m_data.saveData[entt::hashed_string("unittest-save")]->emplace("DAT06", std::vector<std::any>{511.2, 611.3, 711.4});
-    m_data.saveManager.save("unittest-save.sav", *(m_data.saveData[entt::hashed_string("unittest-save")]));
+    m_data.saveManager.save("save/unittest-save.sav", *(m_data.saveData[entt::hashed_string("unittest-save")]));
 
+    DataMap loadedSaveData;
+    m_data.saveManager.load("save/unittest-save.sav", loadedSaveData);
+
+    int size = 0;
     for (const auto& [key, val] : *(m_data.saveData[entt::hashed_string("unittest-save")]))
     {
-        std::cout << "Key: " << key << " | Val: " << anyToString(val) << "\n";
+        auto saved = anyToString(val);
+        auto loaded = anyToString(loadedSaveData.at(key));
+        std::cout << key << "[" << saved << "]";
+        if (saved == loaded)
+        {
+            std::cout << " == ";
+            ++size;
+        }
+        else
+        {
+            std::cout << " != ";
+        }
+        std::cout << key << "[" << loaded << "]\n";
     }
 
-    return 1;
+    return size == loadedSaveData.size();
 }
 
 static int saveData2(GlobalData& m_data)
@@ -34,33 +50,30 @@ static int saveData2(GlobalData& m_data)
         {"DAT05", std::vector<std::any>{32120, 2000, 3000}},
         {"DAT06", std::vector<std::any>{5110.2, 6110.3, 7110.4}},
     };
-    m_data.saveManager.save("unittest-save2.sav", newSaveData);
+    m_data.saveManager.save("save/unittest-save2.sav", newSaveData);
 
+    DataMap loadedSaveData;
+    m_data.saveManager.load("save/unittest-save2.sav", loadedSaveData);
+
+    int size = 0;
     for (const auto& [key, val] : newSaveData)
     {
-        std::cout << "Key: " << key << " | Val: " << anyToString(val) << "\n";
+        auto saved = anyToString(val);
+        auto loaded = anyToString(loadedSaveData.at(key));
+        std::cout << key << "[" << saved << "]";
+        if (saved == loaded)
+        {
+            std::cout << " == ";
+            ++size;
+        }
+        else
+        {
+            std::cout << " != ";
+        }
+        std::cout << key << "[" << loaded << "]\n";
     }
 
-    return 1;
-}
-
-static int loadSave(GlobalData& m_data)
-{
-    DataMap newLoadData;
-    m_data.saveManager.load("unittest-save.sav", newLoadData);
-    for (const auto& [key, val] : newLoadData)
-    {
-        std::cout << "Key: " << key << " | Val: " << anyToString(val) << "\n";
-    }
-
-    DataMap newLoadData2;
-    m_data.saveManager.load("unittest-save2.sav", newLoadData2);
-    for (const auto& [key, val] : newLoadData2)
-    {
-        std::cout << "Key: " << key << " | Val: " << anyToString(val) << "\n";
-    }
-
-    return 1;
+    return size == loadedSaveData.size();
 }
 
 static int saveConfig(GlobalData& m_data)
@@ -68,18 +81,34 @@ static int saveConfig(GlobalData& m_data)
     m_data.saveManager.load("config.json", m_data.configData);
     m_data.saveManager.save("unittest-config.json", m_data.configData);
 
+    ConfigData loadConfigData;
+    m_data.saveManager.load("unittest-config.json", loadConfigData);
+
+    int size = 0;
     for (const auto& [key, val] : m_data.configData)
     {
-        std::cout << "Key: " << key << " | Val: " << anyToString(val) << "\n";
+        auto saved = anyToString(val);
+        auto loaded = anyToString(loadConfigData.at(key));
+        std::cout << key << "[" << saved << "]";
+        if (saved == loaded)
+        {
+            std::cout << " == ";
+            ++size;
+        }
+        else
+        {
+            std::cout << " != ";
+        }
+        std::cout << key << "[" << loaded << "]\n";
     }
 
-    return 1;
+    return size == loadConfigData.size();
 }
 
 static int modifyConfig(GlobalData& m_data)
 {
-    ConfigData configData;
-    m_data.saveManager.load("unittest-config.json", m_data.configData);
+    m_data.saveManager.load("config.json", m_data.configData);
+    m_data.saveManager.save("unittest-config.json", m_data.configData);
 
     std::cout << "Before config file modification\n";
     for (const auto& [key, val] : m_data.configData)
@@ -89,26 +118,28 @@ static int modifyConfig(GlobalData& m_data)
 
     m_data.configData[ConfigKey::NAME] = "unittest-config";
     m_data.saveManager.save("unittest-config.json", m_data.configData);
-    m_data.saveManager.load("unittest-config.json", m_data.configData);
+    m_data.saveManager.load("config.json", m_data.configData);
+
+    ConfigData loadConfigData;
+    m_data.saveManager.load("unittest-config.json", loadConfigData);
 
     std::cout << "\nAfter config file modification\n";
-    for (const auto& [key, val] : m_data.configData)
+    for (const auto& [key, val] : loadConfigData)
     {
         std::cout << "Key: " << key << " | Val: " << anyToString(val) << "\n";
     }
 
-    return 1;
+    return anyToString(m_data.configData[ConfigKey::NAME]) != anyToString(loadConfigData[ConfigKey::NAME]);
 }
 
-static int loadConfig(GlobalData& m_data)
+static void viewer(GlobalData& m_data)
 {
-    m_data.saveManager.load("unittest-config.json", m_data.configData);
+    m_data.saveManager.load("config.json", m_data.configData);
+
     for (const auto& [key, val] : m_data.configData)
     {
-        std::cout << "Key: " << key << " | Val: " << anyToString(val) << "\n";
+        std::cout << "Key: " << key << " | Val: " << anyToString(val) << " | Type: " << m_data.saveManager.getType(val) << "\n";
     }
-
-    return 1;
 }
 
 static int test_saveManager()
@@ -118,26 +149,29 @@ static int test_saveManager()
     std::cout << "=== [Saving data to file] ===\n";
     if (saveData(m_data))
         std::cout << "Success\n\n";
+    else
+        std::cout << "Failed\n\n";
 
     std::cout << "=== [Saving data to file 2] ===\n";
     if (saveData2(m_data))
         std::cout << "Success\n\n";
-
-    std::cout << "=== [Loading data into memory] ===\n";
-    if (loadSave(m_data))
-        std::cout << "Success\n\n";
+    else
+        std::cout << "Failed\n\n";
 
     std::cout << "=== [Saving config to file] ===\n";
     if (saveConfig(m_data))
         std::cout << "Success\n\n";
+    else
+        std::cout << "Failed\n\n";
 
     std::cout << "=== [Modifying config and saving to file] ===\n";
     if (modifyConfig(m_data))
         std::cout << "Success\n\n";
+    else
+        std::cout << "Failed\n\n";
 
-    std::cout << "=== [Loading config into memory] ===\n";
-    if (loadConfig(m_data))
-        std::cout << "Success\n\n";
+    std::cout << "=== [Reading config file] ===\n";
+    viewer(m_data);
 
     return 0;
 }

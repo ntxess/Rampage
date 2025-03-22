@@ -4,7 +4,7 @@ WayPointSystem::WayPointSystem()
 {
 }
 
-constexpr std::string_view WayPointSystem::name()
+constexpr std::string_view WayPointSystem::name() const
 {
     return "WayPointSystem";
 }

@@ -1,70 +1,54 @@
 #include "EventSystem.hpp"
 
-EventSystem::EventSystem()
+EventSystem::EventSystem(std::chrono::milliseconds watchdogTime)
+	: m_eventWatchdogTime(watchdogTime)
 {}
 
-constexpr std::string_view EventSystem::name()
+constexpr std::string_view EventSystem::name() const
 {
 	return "EventSystem";
 }
 
 void EventSystem::update(entt::registry& reg, const float& dt, const entt::entity ent)
 {
-	// For events that require further processing (aka non-INSTANT type events)
-	auto statusModView = reg.view<StatusModEvent>();
-	for (auto event : statusModView)
-	{
-		const entt::entity sourceID = reg.get<StatusModEvent>(event).sourceID;
-		const entt::entity receiverID = reg.get<StatusModEvent>(event).receiverID;
-		const EffectType effectType = reg.get<StatusModEvent>(event).effectType;
-		const Effects& effect = *reg.get<StatusModEvent>(event).effect;
+	LOG_TRACE(Logger::get()) << "Entering EventSystem::update()";
 
-		if (reg.all_of<EntityStatus>(receiverID))
+	auto statusModView = reg.view<StatusModEvent>();
+	for (const auto& eventID : statusModView)
+	{
+		const entt::entity receiverID = reg.get<StatusModEvent>(eventID).receiverID;
+
+		if (reg.valid(receiverID) && reg.all_of<EntityStatus>(receiverID))
 		{
-			EntityStatus& receiverStatus = reg.get<EntityStatus>(receiverID);
-			StatusModEvent* statusModEvent = &reg.get<StatusModEvent>(event);
-			if (apply(effectType, receiverStatus, effect, statusModEvent) == EventStatus::COMPLETE)
+			const EffectType& effectType = reg.get<StatusModEvent>(eventID).effectType;
+			StatusModEvent& statusModEvent = reg.get<StatusModEvent>(eventID);
+			EntityStatus& receiverStatus = reg.get<EntityStatus>(statusModEvent.receiverID);
+
+			LOG_TRACE(Logger::get()) << "Processing Event ID [" << static_cast<unsigned int>(eventID) << "]";
+
+			if (apply(effectType, statusModEvent, receiverStatus) == EventStatus::COMPLETE)
 			{
 				// Event completed processesing
-				reg.destroy(event);
+				LOG_INFO(Logger::get()) << "Completed processing of Event ID [" << static_cast<unsigned int>(eventID) << "]";
+
+				reg.destroy(eventID);
 			}
 		}
 		else
 		{
-			// Destroy event if it becomes stale
-			reg.destroy(event);
+			// Destroy event if it receiver is invalid
+			LOG_WARNING(Logger::get()) 
+				<< "Failed processing of Event ID [" << static_cast<unsigned int>(eventID) 
+				<< "]. Entity [" << static_cast<unsigned int>(receiverID) << "] no longer valid";
+
+			reg.destroy(eventID);
 		}
 	}
-	
-	auto collisionView = reg.view<CollisionEvent>();
-	for (auto receiverID : collisionView)
-	{
-		const entt::entity sourceID = reg.get<CollisionEvent>(receiverID).sourceID;
 
-		// For all of the source entity modifiers, apply effects to receiver
-		if (reg.all_of<EffectsList>(sourceID))
-		{
-			for (auto& [effectType, effect] : reg.get<EffectsList>(sourceID).effectsList)
-			{
-				// Get the receiver status and apply effects
-				if (reg.all_of<EntityStatus>(receiverID))
-				{
-					EntityStatus& receiverStatus = reg.get<EntityStatus>(receiverID);
-					if (apply(effectType, receiverStatus, effect) == EventStatus::INCOMPLETE)
-					{
-						entt::entity statusModEvent = reg.create();
-						reg.emplace_or_replace<StatusModEvent>(statusModEvent, sourceID, receiverID, effectType, &effect);
-					}
-				}
-
-				// Event completed processesing
-				reg.remove<CollisionEvent>(receiverID);
-			}
-		}
-	}
+	LOG_TRACE(Logger::get()) << "Leaving EventSystem::update()";
 }
 
-EventStatus EventSystem::apply(const EffectType effectType, EntityStatus& stats, const Effects& effect, StatusModEvent* eventProgress)
+EventSystem::EventStatus EventSystem::apply(const EffectType effectType, StatusModEvent& statusModEvent, EntityStatus& receiverStatus) const
 {
 	switch (effectType)
 	{
@@ -72,55 +56,106 @@ EventStatus EventSystem::apply(const EffectType effectType, EntityStatus& stats,
 		break;
 
 	case EffectType::INSTANT:
-		return instantEvent(stats, effect);
+		return instantEvent(statusModEvent, receiverStatus);
 
 	case EffectType::OVERTIME:
-		return overTimeEvent(stats, effect, eventProgress);
+		return overTimeEvent(statusModEvent, receiverStatus);
 
-	case EffectType::TIMED:
-		return fixedTimeEvent(stats, effect, eventProgress);
+	case EffectType::TEMPTIMED:
+		return tempTimedEvent(statusModEvent, receiverStatus);
 
 	default:
 		break;
 	}
 
-	return EventStatus::FAILED;
+	return EventStatus::COMPLETE;
 }
 
-EventStatus EventSystem::instantEvent(EntityStatus& stats, const Effects& effect)
+EventSystem::EventStatus EventSystem::instantEvent(StatusModEvent& statusModEvent, EntityStatus& receiverStatus) const
 {
-	if (stats.value.count(effect.statusToModify))
-		stats.value[effect.statusToModify] += effect.modificationVal;
+	if (receiverStatus.value.count(statusModEvent.effect->statusToModify))
+		receiverStatus.value[statusModEvent.effect->statusToModify] += statusModEvent.effect->modificationVal;
 
-	return EventStatus::FAILED;
+	LOG_DEBUG(Logger::get()) 
+		<< "Applying instant event. Modifying \"" << statusModEvent.effect->statusToModify 
+		<< "\" of entity [" << static_cast<unsigned int>(statusModEvent.receiverID)
+		<< "] by " << statusModEvent.effect->modificationVal
+		<< ". Current val: " << receiverStatus.value.at(statusModEvent.effect->statusToModify);
+
+	return EventStatus::COMPLETE;
 }
 
-EventStatus EventSystem::overTimeEvent(EntityStatus& stats, const Effects& effect, StatusModEvent* eventProgress)
+EventSystem::EventStatus EventSystem::overTimeEvent(StatusModEvent& statusModEvent, EntityStatus& receiverStatus) const
 {
-	if (eventProgress)
+	const auto currDuration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - statusModEvent.timeStart);
+
+	// TickRate controls the rate at which the effects applies its modification to the receivers stats
+	if (currDuration > statusModEvent.effect->tickRate)
 	{
-		if (stats.value.count(effect.statusToModify))
-			stats.value[effect.statusToModify] += effect.modificationVal;
+		statusModEvent.timeStart = std::chrono::steady_clock::now();
+		statusModEvent.timeElapsed += currDuration;
+
+		if (receiverStatus.value.count(statusModEvent.effect->statusToModify))
+			receiverStatus.value[statusModEvent.effect->statusToModify] += statusModEvent.effect->modificationVal;
+
+		LOG_DEBUG(Logger::get()) 
+			<< "Applying over-time event. Modifying \"" << statusModEvent.effect->statusToModify
+			<< "\" of entity [" << static_cast<unsigned int>(statusModEvent.receiverID)
+			<< "] by " << statusModEvent.effect->modificationVal
+			<< ". Current val: " << receiverStatus.value.at(statusModEvent.effect->statusToModify);
 	}
-	else
+
+	if (m_eventWatchdogTime < currDuration || statusModEvent.timeElapsed >= statusModEvent.effect->maxDuration)
 	{
-		if (stats.value.count(effect.statusToModify))
-			stats.value[effect.statusToModify] += effect.modificationVal;
+		LOG_DEBUG(Logger::get())
+			<< "Completed over-time event. \"" << statusModEvent.effect->statusToModify
+			<< "\" stat of entity [" << static_cast<unsigned int>(statusModEvent.receiverID)
+			<< "] is " << receiverStatus.value.at(statusModEvent.effect->statusToModify)
+			<< ". Time elapsed: " << statusModEvent.timeElapsed << " >= " << statusModEvent.effect->maxDuration;
+
+		return EventStatus::COMPLETE;
 	}
-	return EventStatus::FAILED;
+
+	return EventStatus::INCOMPLETE;
 }
 
-EventStatus EventSystem::fixedTimeEvent(EntityStatus& stats, const Effects& effect, StatusModEvent* eventProgress)
+EventSystem::EventStatus EventSystem::tempTimedEvent(StatusModEvent& statusModEvent, EntityStatus& receiverStatus) const
 {
-	if (eventProgress)
+	const auto currDuration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - statusModEvent.timeStart);
+
+	// If event some how lasts longer than it should, consider it complete and prep for destroy
+	if (m_eventWatchdogTime < currDuration)
+		return EventStatus::COMPLETE;
+
+	// Only modify the receiverStatus once in this type of event. We can use the timeElapsed variable as a bool to prevent reaccessing this logic
+	if (statusModEvent.timeElapsed == std::chrono::milliseconds(0))
 	{
-		if (stats.value.count(effect.statusToModify))
-			stats.value[effect.statusToModify] += effect.modificationVal;
+		statusModEvent.timeStart = std::chrono::steady_clock::now();
+		statusModEvent.timeElapsed += std::chrono::milliseconds(1); // Disable this logic block with this variable
+
+		if (receiverStatus.value.count(statusModEvent.effect->statusToModify))
+			receiverStatus.value[statusModEvent.effect->statusToModify] += statusModEvent.effect->modificationVal;
+
+		LOG_DEBUG(Logger::get())
+			<< "Applying temporary-timed event. Modifying \"" << statusModEvent.effect->statusToModify
+			<< "\" of entity [" << static_cast<unsigned int>(statusModEvent.receiverID)
+			<< "] by " << statusModEvent.effect->modificationVal
+			<< ". Current val: " << receiverStatus.value.at(statusModEvent.effect->statusToModify);
 	}
-	else
+
+	if (currDuration >= statusModEvent.effect->maxDuration)
 	{
-		if (stats.value.count(effect.statusToModify))
-			stats.value[effect.statusToModify] += effect.modificationVal;
+		if (receiverStatus.value.count(statusModEvent.effect->statusToModify))
+			receiverStatus.value[statusModEvent.effect->statusToModify] += statusModEvent.effect->modificationVal * -1.f;
+
+		LOG_DEBUG(Logger::get()) 
+			<< "Completed temporary-timed event. Restoring \"" << statusModEvent.effect->statusToModify
+			<< "\" of entity [" << static_cast<unsigned int>(statusModEvent.receiverID)
+			<< "] by " << statusModEvent.effect->modificationVal
+			<< ". Current val: " << receiverStatus.value.at(statusModEvent.effect->statusToModify);
+
+		return EventStatus::COMPLETE;
 	}
-	return EventStatus::FAILED;
+
+	return EventStatus::INCOMPLETE;
 }

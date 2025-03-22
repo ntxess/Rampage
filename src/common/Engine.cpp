@@ -6,21 +6,28 @@
 Engine::Engine()
     : sysData(std::make_shared<GlobalData>())
 {
-    // Start threads on successful init of the application configs
-    if (init() == SystemStatus::SUCCESS)
+    // Start logging in the console until configuration file is read.
+    Logger::getInstance().setupConsoleLog();
+
+    LOG_INFO(Logger::get()) << "Initializing system. Reading main configuration file...";
+
+    if (sysData->saveManager.init(sysData->configData) == SystemStatus::SAVE_MNGR_SUCCESS)
     {
-        m_physicThread = std::thread(&Engine::physicThread, this);
-        m_physicThread.detach();
+        LOG_INFO(Logger::get()) << "Successfully read config file.";
 
-        m_renderThread = std::thread(&Engine::renderThread, this);
-        m_renderThread.detach();
+        std::string logPath = sysData->saveManager.resolvePath(sysData->Configuration<std::string>(DEBUG_LOG_FOLDER)).string();
+        Logger::getInstance().toggleLogging(sysData->Configuration<bool>(DEBUG_MODE));
+        Logger::getInstance().setFilterSeverity(sysData->Configuration<std::string>(DEBUG_LOG_FILTER_SEVERITY));
 
-        m_audioThread = std::thread(&Engine::audioThread, this);
-        m_audioThread.detach();
+        LOG_INFO(Logger::get()) << "Now logging to file. Log file located at: " << logPath;
 
-        m_resourceThread = std::thread(&Engine::resourceThread, this);
-        m_resourceThread.detach();
+        Logger::getInstance().removeAllSinks();
+        Logger::getInstance().setupFileLog(logPath);
+
+        configureWindow();
     }
+
+    LOG_INFO(Logger::get()) << "System initialize. Starting main thread...";
 }
 
 /**
@@ -29,7 +36,10 @@ Engine::Engine()
 */
 void Engine::run()
 {
-    std::cout << RED << "[Thread] | Main thread start\n";
+    LOG_TRACE(Logger::get()) << "----- Main thread started! -----";
+
+    startThreads();
+    LOG_INFO(Logger::get()) << "All threads started";
 
     sf::Event event;
     while (sysData->window.waitEvent(event))
@@ -60,11 +70,11 @@ void Engine::run()
         }
 
         case sf::Event::LostFocus:
-            // pause
+            // Pause
             break;
 
         case sf::Event::GainedFocus:
-            // resume
+            // Resume
             break;
 
         default:
@@ -72,21 +82,23 @@ void Engine::run()
             break;
         }
     }
+
+    LOG_TRACE(Logger::get()) << "----- Main thread ended! -----";
 }
 
-/**
- * @brief [Private] Initialize the application configurations. Success depends on loading and main config file.
- * @return SystemStatus error code if failure; otherwise, SystemStatus::Success.
-*/
-SystemStatus Engine::init()
+void Engine::startThreads()
 {
-    if (sysData->saveManager.init(sysData->configData) == SystemStatus::SAVE_MNGR_SUCCESS)
-    {
-        configureWindow();
-        return SystemStatus::SUCCESS;
-    }
+    m_physicThread = std::thread(&Engine::physicThread, this);
+    m_physicThread.detach();
 
-    return SystemStatus::ERROR;
+    m_renderThread = std::thread(&Engine::renderThread, this);
+    m_renderThread.detach();
+
+    m_audioThread = std::thread(&Engine::audioThread, this);
+    m_audioThread.detach();
+
+    m_resourceThread = std::thread(&Engine::resourceThread, this);
+    m_resourceThread.detach();
 }
 
 /**
@@ -94,6 +106,8 @@ SystemStatus Engine::init()
 */
 void Engine::configureWindow()
 {
+    LOG_INFO(Logger::get()) << "Configuring window...";
+
     sf::ContextSettings settings;
     settings.depthBits = 24;
     settings.stencilBits = 8;
@@ -110,6 +124,14 @@ void Engine::configureWindow()
     sysData->window.setActive(false);
     sysData->sceneManager.addScene(std::make_unique<Sandbox>(sysData.get()));
     sysData->sceneManager.processChange();
+
+    LOG_DEBUG(Logger::get()) << "System info: \n"
+        << "\tWindow name: " << name << "\n"
+        << "\tWindow width: " << width << "\n"
+        << "\tWindow height: " << height << "\n"
+        << "\tDelta time: " << sysData->deltaTime;
+
+    LOG_DEBUG(Logger::get()) << "Configuration data: \n" << sysData->configData;
 }
 
 /**
@@ -117,7 +139,7 @@ void Engine::configureWindow()
 */
 void Engine::physicThread()
 {
-    std::cout << GREEN << "[Thread] | Physic thread start\n" << RESET;
+    LOG_TRACE(Logger::get()) << "----- Physic thread started! -----";
 
     float newTime, frameTime;
     float currentTime = sysData->clock.getElapsedTime().asSeconds();
@@ -132,10 +154,14 @@ void Engine::physicThread()
 
         while (accumulator >= sysData->deltaTime)
         {
+            m_inputConsumer.acquire();
             sysData->sceneManager.getActiveScene()->update();
+            m_inputProducer.release();
             accumulator -= sysData->deltaTime;
         }
     }
+
+    LOG_TRACE(Logger::get()) << "----- Physic thread ended! -----";
 }
 
 /**
@@ -143,7 +169,7 @@ void Engine::physicThread()
 */
 void Engine::renderThread()
 {
-    std::cout << YELLOW << "[Thread] | Render thread start\n" << RESET;
+    LOG_TRACE(Logger::get()) << "----- Render thread started! -----";
 
     sysData->window.setActive(true);
 
@@ -151,10 +177,14 @@ void Engine::renderThread()
     {
         sysData->window.clear();
         sysData->sceneManager.processChange();
+        m_inputProducer.acquire();
         sysData->sceneManager.getActiveScene()->processInput();
+        m_inputConsumer.release();
         sysData->sceneManager.getActiveScene()->render();
         sysData->window.display();
     }
+
+    LOG_TRACE(Logger::get()) << "----- Render thread ended! -----";
 }
 
 /**
@@ -162,12 +192,14 @@ void Engine::renderThread()
 */
 void Engine::audioThread()
 {
-    std::cout << BLUE << "[Thread] | Audio thread start\n" << RESET;
+    LOG_TRACE(Logger::get()) << "----- Audio thread started! -----";
 
     while (true)
     {
 
     }
+
+    LOG_TRACE(Logger::get()) << "----- Audio thread ended! -----";
 }
 
 /**
@@ -175,10 +207,12 @@ void Engine::audioThread()
 */
 void Engine::resourceThread()
 {
-    std::cout << MAGENTA << "[Thread] | Resource thread start\n" << RESET;
+    LOG_TRACE(Logger::get()) << "----- Resource thread started! -----";
 
     while (true)
     {
 
     }
+
+    LOG_TRACE(Logger::get()) << "----- Resource thread ended! -----";
 }

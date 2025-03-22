@@ -4,14 +4,14 @@
         "version": "0.1b"
     },
     "system-paths": {
-        "config-folder": "/config/",
-        "save-folder": "/save/",
-        "script-folder": "/script/"
+        "config-folder": "config/",
+        "save-folder": "save/",
+        "script-folder": "script/"
     },
     "video-settings": {
         "resolution": {
-            "width": 1280,
-            "height": 720
+            "width": 1920,
+            "height": 1080
         },
         "frame-rate": 165.0,
         "fullscreen": false,

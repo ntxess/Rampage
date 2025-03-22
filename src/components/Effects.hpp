@@ -1,10 +1,12 @@
 #pragma once
 
 #include <string>
+#include <chrono>
 
 struct Effects
 {
 	std::string statusToModify;
 	float modificationVal;
-	time_t duration;
+	std::chrono::milliseconds maxDuration;
+	std::chrono::milliseconds tickRate;
 };

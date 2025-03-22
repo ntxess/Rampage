@@ -3,6 +3,7 @@
 #include "../scenes/IScene.hpp"
 #include "../common/CommonEnum.hpp"
 #include "../common/GlobalData.hpp"
+#include "../common/Logger.hpp"
 #include "../common/Entity.hpp"
 #include "../managers/SystemManager.hpp"
 #include <entt/entity/registry.hpp>
@@ -34,7 +35,6 @@ private:
 	entt::registry m_reg;
 	SystemManager m_system;
 
-	int j = 0;
 	entt::entity m_player;
-	std::mutex mtx;
+	sf::Font m_defaultFont;
 };

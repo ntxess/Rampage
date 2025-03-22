@@ -61,9 +61,9 @@ inline SystemStatus ResourceManager<T>::load(const DataMap& dataMap, thor::Resou
 				known
 			);
 		}
-		catch (thor::ResourceLoadingException& e)
+		catch (const thor::ResourceLoadingException& e)
 		{
-			e.what();
+			LOG_ERROR(Logger::get()) << "Failed to aquire resource at: " << cwd + anyToString(path) << ". Error: " << e.what();
 			return SystemStatus::RSRC_MNGR_FAIL_LOAD;
 		}
 	}
@@ -83,9 +83,9 @@ inline SystemStatus ResourceManager<T>::load(const std::string id, const std::st
 			known
 		);
 	}
-	catch (thor::ResourceLoadingException& e)
+	catch (const thor::ResourceLoadingException& e)
 	{
-		e.what();
+		LOG_ERROR(Logger::get()) << "Failed to aquire resource at: " << cwd + anyToString(filepath) << ". Error: " << e.what();
 		return SystemStatus::RSRC_MNGR_FAIL_LOAD;
 	}
 	return SystemStatus::RSRC_MNGR_SUCCESS;
@@ -100,8 +100,8 @@ inline SystemStatus ResourceManager<T>::unload()
 	}
 	catch (thor::ResourceLoadingException& e)
 	{
-		e.what();
-		return SystemStatus::RSRC_MNGR_FAIL_LOAD;
+		LOG_ERROR(Logger::get()) << "Failed to release all resource. Error:" << e.what();
+		return SystemStatus::RSRC_MNGR_FAIL_UNLOAD;
 	}
 
 	return SystemStatus::RSRC_MNGR_SUCCESS;
@@ -116,8 +116,8 @@ inline SystemStatus ResourceManager<T>::unload(const std::string id)
 	}
 	catch (thor::ResourceLoadingException& e)
 	{
-		e.what();
-	 	return SystemStatus::RSRC_MNGR_FAIL_LOAD;
+		LOG_ERROR(Logger::get()) << "Failed to release resource id: " << id << ". Error:" << e.what();
+	 	return SystemStatus::RSRC_MNGR_FAIL_UNLOAD;
 	}
 	return SystemStatus::RSRC_MNGR_SUCCESS;
 }

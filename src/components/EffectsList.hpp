@@ -8,7 +8,7 @@ enum class EffectType
 	NULLTYPE,
 	INSTANT,
 	OVERTIME,
-	TIMED,
+	TEMPTIMED,
 };
 
 struct EffectsList
