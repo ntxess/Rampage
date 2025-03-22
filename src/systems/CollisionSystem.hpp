@@ -1,6 +1,7 @@
 #pragma once
 
 #include "System.hpp"
+#include "../common/Logger.hpp"
 #include "../common/Entity.hpp"
 #include "../common/QuadTree.hpp"
 #include "../components/Component.hpp"

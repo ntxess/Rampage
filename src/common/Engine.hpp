@@ -18,7 +18,7 @@ public:
     void run();
 
 private:
-    SystemStatus init();
+    void startThreads();
     void configureWindow();
     void physicThread();
     void renderThread();
@@ -31,7 +31,7 @@ private:
     std::thread m_renderThread;
     std::thread m_audioThread;
     std::thread m_resourceThread;
-    std::binary_semaphore m_inputProducer{ 1 };
-    std::binary_semaphore m_inputConsumer{ 0 };
+    std::binary_semaphore m_inputProducer{ 0 };
+    std::binary_semaphore m_inputConsumer{ 1 };
 };
 

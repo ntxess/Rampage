@@ -15,22 +15,12 @@ constexpr std::string_view CollisionSystem::name() const
 
 void CollisionSystem::update(entt::registry& reg, const float& dt, const entt::entity ent)
 {
-	//auto start = std::chrono::high_resolution_clock::now();
+	LOG_TRACE(Logger::get()) << "Entering CollisionSystem::update()";
 
 	quadTreeUpdate(reg);  // Rebuild the quadtree for querying collisions
-
-	//auto stop = std::chrono::high_resolution_clock::now();
-
-	//auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start).count();
-	//std::cout << RED << "[Update] | QuadTree Update: " << duration << "ns\n" << RESET;
-
-	//start = std::chrono::high_resolution_clock::now();
-
 	collisionUpdate(reg); // Find and mark all collided entity with a tag
 
-	//stop = std::chrono::high_resolution_clock::now();
-	//duration = std::chrono::duration_cast<std::chrono::nanoseconds>(stop - start).count();
-	//std::cout << BLUE << "[Update] | Collision Update: " << duration << "ns\n" << RESET;
+	LOG_TRACE(Logger::get()) << "Leaving CollisionSystem::update()";
 }
 
 void CollisionSystem::quadTreeUpdate(entt::registry& reg)
@@ -47,46 +37,86 @@ void CollisionSystem::collisionUpdate(entt::registry& reg)
 {
 	// Event-driven collision update
 	const auto& view = reg.view<Sprite, UpdateEntityEvent>();
-	for (const auto& source : view)
+	for (const auto& sourceID : view)
 	{
 		// Query all neighboring entity for collision
-		const sf::FloatRect& sourceHitbox = reg.get<Sprite>(source).getGlobalBounds();
+		const sf::FloatRect& sourceHitbox = reg.get<Sprite>(sourceID).getGlobalBounds();
 		std::vector<entt::entity> receiverList = m_quadTree->queryRange(reg, sourceHitbox);
-		const Team& sourceTeamTag = reg.get<TeamTag>(source).tag;
+		const Team& sourceTeamTag = reg.get<TeamTag>(sourceID).tag;
 
-		for (const auto& receiver : receiverList)
+		for (const auto& receiverID : receiverList)
 		{
+			if (!reg.get<UpdateEntityEvent>(sourceID).isReady()) continue;
+
 			// Check if entity is on the same team
-			Team receiverTeamTag = reg.get<TeamTag>(receiver).tag;
+			Team receiverTeamTag = reg.get<TeamTag>(receiverID).tag;
 			if (sourceTeamTag == receiverTeamTag)
 				continue;
 
-			// If not on the same team, emplace new CollisionEvent on reciever for later processing
-			reg.emplace_or_replace<CollisionEvent>(receiver, source);
+			// For all of the source entity modifiers, apply effects to receiver
+			if (reg.valid(sourceID) && reg.all_of<EffectsList>(sourceID))
+			{
+				for (auto& [effectType, effect] : reg.get<EffectsList>(sourceID).effectsList)
+				{
+					// Get the receiver status and apply effects
+					if (reg.valid(receiverID) && reg.all_of<EntityStatus>(receiverID))
+					{
+						StatusModEvent statusModEvent(sourceID, receiverID, effectType, &effect);
+						entt::entity statusModEventID = reg.create();
+
+						reg.emplace_or_replace<StatusModEvent>(statusModEventID, statusModEvent);
+
+						LOG_INFO(Logger::get())
+							<< "Collision Event ID [" << static_cast<unsigned int>(statusModEventID)
+							<< "]: Entity " << static_cast<unsigned int>(sourceID)
+							<< " collided with entity " << static_cast<unsigned int>(receiverID);
+					}
+				}
+			}
 		}
 
 		// QuadTree update completed, delete dirty flags
-		reg.remove<UpdateEntityEvent>(source);
+		reg.remove<UpdateEntityEvent>(sourceID);
 	}
 
 	// Polling collision update
 	const auto& pollingView = reg.view<Sprite, UpdateEntityPolling>();
-	for (const auto& source : pollingView)
+	for (const auto& sourceID : pollingView)
 	{
 		// Query all neighboring entity for collision
-		const sf::FloatRect& sourceHitbox = reg.get<Sprite>(source).getGlobalBounds();
+		const sf::FloatRect& sourceHitbox = reg.get<Sprite>(sourceID).getGlobalBounds();
 		std::vector<entt::entity> receiverList = m_quadTree->queryRange(reg, sourceHitbox);
-		const Team& sourceTeamTag = reg.get<TeamTag>(source).tag;
+		const Team& sourceTeamTag = reg.get<TeamTag>(sourceID).tag;
 
-		for (const auto& receiver : receiverList)
+		for (const auto& receiverID : receiverList)
 		{
+			if (!reg.get<UpdateEntityPolling>(sourceID).isReady()) continue;
+
 			// Check if entity is on the same team
-			Team receiverTeamTag = reg.get<TeamTag>(receiver).tag;
+			Team receiverTeamTag = reg.get<TeamTag>(receiverID).tag;
 			if (sourceTeamTag == receiverTeamTag)
 				continue;
 
-			// If not on the same team, emplace new CollisionEvent on reciever for later processing
-			reg.emplace_or_replace<CollisionEvent>(receiver, source);
+			// For all of the source entity modifiers, apply effects to receiver
+			if (reg.valid(sourceID) && reg.all_of<EffectsList>(sourceID))
+			{
+				for (auto& [effectType, effect] : reg.get<EffectsList>(sourceID).effectsList)
+				{
+					// Get the receiver status and apply effects
+					if (reg.valid(receiverID) && reg.all_of<EntityStatus>(receiverID))
+					{
+						StatusModEvent statusModEvent(sourceID, receiverID, effectType, &effect);
+						entt::entity statusModEventID = reg.create();
+
+						reg.emplace_or_replace<StatusModEvent>(statusModEventID, statusModEvent);
+
+						LOG_INFO(Logger::get())
+							<< "Collision Event ID [" << static_cast<unsigned int>(statusModEventID)
+							<< "]: Entity " << static_cast<unsigned int>(sourceID)
+							<< " collided with entity " << static_cast<unsigned int>(receiverID);
+					}
+				}
+			}
 		}
 	}
 }

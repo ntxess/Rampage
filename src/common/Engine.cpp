@@ -6,20 +6,25 @@
 Engine::Engine()
     : sysData(std::make_shared<GlobalData>())
 {
-    // Start threads on successful init of the application configs
-    if (init() == SystemStatus::SUCCESS)
+    // Start logging in the console until configuration file is read.
+    Logger::getInstance().setupConsoleLog();
+
+    LOG_INFO(Logger::get()) << "Initializing system. Reading main configuration file...";
+
+    if (sysData->saveManager.init(sysData->configData) == SystemStatus::SAVE_MNGR_SUCCESS)
     {
-        m_physicThread = std::thread(&Engine::physicThread, this);
-        m_physicThread.detach();
+        LOG_INFO(Logger::get()) << "Successfully read config file.";
 
-        m_renderThread = std::thread(&Engine::renderThread, this);
-        m_renderThread.detach();
+        std::string logPath = sysData->saveManager.resolvePath(sysData->Configuration<std::string>(DEBUG_LOG_FOLDER)).string();
+        Logger::getInstance().toggleLogging(sysData->Configuration<bool>(DEBUG_MODE));
+        Logger::getInstance().setFilterSeverity(sysData->Configuration<std::string>(DEBUG_LOG_FILTER_SEVERITY));
 
-        m_audioThread = std::thread(&Engine::audioThread, this);
-        m_audioThread.detach();
+        LOG_INFO(Logger::get()) << "Now logging to file. Log file located at: " << logPath;
 
-        m_resourceThread = std::thread(&Engine::resourceThread, this);
-        m_resourceThread.detach();
+        Logger::getInstance().removeAllSinks();
+        Logger::getInstance().setupFileLog(logPath);
+
+        configureWindow();
     }
 }
 
@@ -30,6 +35,9 @@ Engine::Engine()
 void Engine::run()
 {
     LOG_TRACE(Logger::get()) << "----- Main thread started! -----";
+
+    startThreads();
+    LOG_TRACE(Logger::get()) << "All threads started";
 
     sf::Event event;
     while (sysData->window.waitEvent(event))
@@ -76,35 +84,19 @@ void Engine::run()
     LOG_TRACE(Logger::get()) << "----- Main thread ended! -----";
 }
 
-/**
- * @brief [Private] Initialize the application configurations. Success depends on loading and main config file.
- * @return SystemStatus error code if failure; otherwise, SystemStatus::Success.
-*/
-SystemStatus Engine::init()
+void Engine::startThreads()
 {
-    // Start logging in the console until configuration file is read.
-    Logger::getInstance().setupConsoleLog();
+    m_physicThread = std::thread(&Engine::physicThread, this);
+    m_physicThread.detach();
 
-    LOG_INFO(Logger::get()) << "Initializing system. Reading main configuration file...";
+    m_renderThread = std::thread(&Engine::renderThread, this);
+    m_renderThread.detach();
 
-    if (sysData->saveManager.init(sysData->configData) == SystemStatus::SAVE_MNGR_SUCCESS)
-    {
-        LOG_INFO(Logger::get()) << "Successfully read config file.";
+    m_audioThread = std::thread(&Engine::audioThread, this);
+    m_audioThread.detach();
 
-        std::string logPath = sysData->saveManager.resolvePath(sysData->Configuration<std::string>(DEBUG_LOG_FOLDER)).string();
-        Logger::getInstance().toggleLogging(sysData->Configuration<bool>(DEBUG_MODE));
-        Logger::getInstance().setFilterSeverity(sysData->Configuration<std::string>(DEBUG_LOG_FILTER_SEVERITY));
-
-        LOG_INFO(Logger::get()) << "Now logging to file. Log file located at: " << logPath;
-
-        Logger::getInstance().removeAllSinks();
-        Logger::getInstance().setupFileLog(logPath);
-
-        configureWindow();
-        return SystemStatus::SUCCESS;
-    }
-
-    return SystemStatus::ERROR;
+    m_resourceThread = std::thread(&Engine::resourceThread, this);
+    m_resourceThread.detach();
 }
 
 /**

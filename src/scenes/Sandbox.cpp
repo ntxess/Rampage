@@ -23,7 +23,7 @@ void Sandbox::init()
 	m_reg.emplace<PlayerInput>(m_player);
 	m_reg.emplace<EffectsList>(m_player);
 	m_reg.emplace<EntityStatus>(m_player).value["HP"] = 100.f;
-	//m_reg.emplace<UpdateEntityPolling>(m_player);
+	m_reg.emplace<UpdateEntityPolling>(m_player, std::chrono::milliseconds(1000));
 	m_reg.get<PlayerInput>(m_player).input =
 	{
 		{ sf::Keyboard::W, new Movement(m_player, { 0, -1 }) },
@@ -38,21 +38,22 @@ void Sandbox::init()
 	m_reg.get<Sprite>(m_player).setPosition(width / 2, height / 2);
 
 	// Create event effect for collecting coins
-	//Effects collect;
-	//collect.statusToModify = "HP";
-	//collect.modificationVal = -10.f;
-	//m_reg.get<EffectsList>(m_player).effectsList.push_back({ EffectType::INSTANT, collect });
+	Effects collect;
+	collect.statusToModify = "HP";
+	collect.modificationVal = -10.f;
+	m_reg.get<EffectsList>(m_player).effectsList.push_back({ EffectType::INSTANT, collect });
 
-	//Effects poison;
-	//poison.statusToModify = "HP";
-	//poison.modificationVal = -1.f;
-	//poison.duration = 5;
-	//m_reg.get<EffectsList>(m_player).effectsList.push_back({ EffectType::OVERTIME, poison });
+	Effects poison;
+	poison.statusToModify = "HP";
+	poison.modificationVal = -1.f;
+	poison.maxDuration = std::chrono::milliseconds(5000);
+	poison.tickRate = std::chrono::milliseconds(1000);
+	m_reg.get<EffectsList>(m_player).effectsList.push_back({ EffectType::OVERTIME, poison });
 
 	Effects hpLimiter;
 	hpLimiter.statusToModify = "HP";
 	hpLimiter.modificationVal = -5.f;
-	hpLimiter.duration = 5;
+	hpLimiter.maxDuration = std::chrono::milliseconds(5000);
 	m_reg.get<EffectsList>(m_player).effectsList.push_back({ EffectType::TEMPTIMED, hpLimiter });
 
 	// Generate a ton of sprite for testing in random places within the boundary of the window
@@ -72,7 +73,7 @@ void Sandbox::init()
 	}
 
 	m_system.addSystem<CollisionSystem>(m_reg, sf::Vector2f{ 0.f, 0.f }, m_data->window.getSize());
-	m_system.addSystem<EventSystem>(360);
+	m_system.addSystem<EventSystem>(std::chrono::milliseconds(36000));
 }
 
 void Sandbox::processEvent(const sf::Event& event)
@@ -82,20 +83,19 @@ void Sandbox::processEvent(const sf::Event& event)
 		if (event.key.code == sf::Keyboard::Escape)
 			m_data->sceneManager.addScene(std::make_unique<MainMenu>(m_data));
 
-		auto& controller = m_reg.get<PlayerInput>(m_player);
-		for (auto& [key, action] : controller.input)
-			if (event.key.code == key)
-				action->execute(m_reg);
+		//auto& controller = m_reg.get<PlayerInput>(m_player);
+		//for (auto& [key, action] : controller.input)
+		//	if (event.key.code == key)
+		//		action->execute(m_reg);
 	}
-
 }
 
 void Sandbox::processInput()
 {
-	//auto& controller = m_reg.get<PlayerInput>(m_player);
-	//for (auto& [key, action] : controller.input)
-	//	if (sf::Keyboard::isKeyPressed(key))
-	//		action->execute(m_reg);
+	auto& controller = m_reg.get<PlayerInput>(m_player);
+	for (auto& [key, action] : controller.input)
+		if (sf::Keyboard::isKeyPressed(key))
+			action->execute(m_reg);
 
 	//m_reg.get<PlayerInput>(m_player).processInput(m_reg);
 }

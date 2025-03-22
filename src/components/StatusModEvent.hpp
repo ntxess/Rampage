@@ -1,5 +1,7 @@
 #pragma once
 
+#include <chrono>
+
 struct StatusModEvent
 {
 	StatusModEvent() = default;
@@ -9,8 +11,8 @@ struct StatusModEvent
 		, receiverID(receiver)
 		, effectType(type)
 		, effect(effect)
-		, timeStart(time(NULL))
-		, timeElapsed(time_t(0))
+		, timeStart(std::chrono::steady_clock::now())
+		, timeElapsed(0)
 	{}
 
 	StatusModEvent(const StatusModEvent& other)
@@ -50,6 +52,6 @@ struct StatusModEvent
 	entt::entity receiverID;
 	EffectType effectType;
 	Effects* effect;
-	time_t timeStart;
-	time_t timeElapsed;
+	std::chrono::steady_clock::time_point timeStart;
+	std::chrono::milliseconds timeElapsed;
 };
