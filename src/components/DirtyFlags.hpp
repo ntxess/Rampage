@@ -21,9 +21,9 @@ struct UpdateEntityEvent
 struct UpdateEntityPolling
 {
 	UpdateEntityPolling() : timeStart(std::chrono::steady_clock::now()), maxDuration(0) {}
-	UpdateEntityPolling(std::chrono::milliseconds duration) : timeStart(std::chrono::steady_clock::now()), maxDuration(duration) {}
+	UpdateEntityPolling(std::chrono::milliseconds duration, bool readyOnStart = true) : timeStart(std::chrono::steady_clock::now()), maxDuration(duration) {}
 	std::chrono::steady_clock::time_point timeStart;
-	std::chrono::milliseconds maxDuration;
+	const std::chrono::milliseconds maxDuration;
 
 	bool isReady()
 	{

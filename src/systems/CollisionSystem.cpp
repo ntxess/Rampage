@@ -4,8 +4,10 @@ CollisionSystem::CollisionSystem(entt::registry& reg, const sf::Vector2f& center
 	: m_quadTree(std::make_unique<QuadTree>(sf::FloatRect(center.x, center.y, static_cast<float>(size.x), static_cast<float>(size.y))))
 {
 	const auto& view = reg.view<Sprite>();
-	for (const auto& entity : view)
-		m_quadTree->insert(reg, entity);
+	for (const auto& entityID : view)
+	{
+		m_quadTree->insert(reg, entityID);
+	}
 }
 
 constexpr std::string_view CollisionSystem::name() const
@@ -25,19 +27,28 @@ void CollisionSystem::update(entt::registry& reg, const float& dt, const entt::e
 
 void CollisionSystem::quadTreeUpdate(entt::registry& reg)
 {
-	const auto& view = reg.view<Sprite, UpdateEntityEvent>();
-	for (const auto& entity : view)
+	const auto& eventView = reg.view<Sprite, UpdateEntityEvent>();
+	for (const auto& entityID : eventView)
 	{
-		m_quadTree->remove(reg, entity);
-		m_quadTree->insert(reg, entity);
+		m_quadTree->remove(reg, entityID);
+		m_quadTree->insert(reg, entityID);
+		LOG_TRACE(Logger::get()) << "Updating event-driven entity [" << static_cast<unsigned int>(entityID) << "] in quadtree";
+	}
+
+	const auto& pollingView = reg.view<Sprite, UpdateEntityPolling>();
+	for (const auto& entityID : pollingView)
+	{
+		m_quadTree->remove(reg, entityID);
+		m_quadTree->insert(reg, entityID);
+		LOG_TRACE(Logger::get()) << "Updating polling entity [" << static_cast<unsigned int>(entityID) << "] in quadtree";
 	}
 }
 
 void CollisionSystem::collisionUpdate(entt::registry& reg)
 {
 	// Event-driven collision update
-	const auto& view = reg.view<Sprite, UpdateEntityEvent>();
-	for (const auto& sourceID : view)
+	const auto& eventView = reg.view<Sprite, UpdateEntityEvent>();
+	for (const auto& sourceID : eventView)
 	{
 		// Query all neighboring entity for collision
 		const sf::FloatRect& sourceHitbox = reg.get<Sprite>(sourceID).getGlobalBounds();
@@ -46,12 +57,21 @@ void CollisionSystem::collisionUpdate(entt::registry& reg)
 
 		for (const auto& receiverID : receiverList)
 		{
-			if (!reg.get<UpdateEntityEvent>(sourceID).isReady()) continue;
-
-			// Check if entity is on the same team
-			Team receiverTeamTag = reg.get<TeamTag>(receiverID).tag;
-			if (sourceTeamTag == receiverTeamTag)
+			if (sourceID == receiverID)
+			{
+				LOG_TRACE(Logger::get()) << "Entity [" << static_cast<unsigned int>(sourceID) << "] collided with self";
 				continue;
+			}
+			else if (Team receiverTeamTag = reg.get<TeamTag>(receiverID).tag; sourceTeamTag == receiverTeamTag)
+			{
+				LOG_TRACE(Logger::get()) << "Entity [" << static_cast<unsigned int>(sourceID) << "] collided with same team";
+				continue;
+			}
+			else if (!reg.get<UpdateEntityPolling>(sourceID).isReady())
+			{
+				LOG_TRACE(Logger::get()) << "Entity [" << static_cast<unsigned int>(sourceID) << "] is not ready to collide";
+				continue;
+			}
 
 			// For all of the source entity modifiers, apply effects to receiver
 			if (reg.valid(sourceID) && reg.all_of<EffectsList>(sourceID))
@@ -90,12 +110,21 @@ void CollisionSystem::collisionUpdate(entt::registry& reg)
 
 		for (const auto& receiverID : receiverList)
 		{
-			if (!reg.get<UpdateEntityPolling>(sourceID).isReady()) continue;
-
-			// Check if entity is on the same team
-			Team receiverTeamTag = reg.get<TeamTag>(receiverID).tag;
-			if (sourceTeamTag == receiverTeamTag)
+			if (sourceID == receiverID)
+			{
+				LOG_TRACE(Logger::get()) << "Entity [" << static_cast<unsigned int>(sourceID) << "] collided with self";
 				continue;
+			}
+			else if (Team receiverTeamTag = reg.get<TeamTag>(receiverID).tag; sourceTeamTag == receiverTeamTag)
+			{
+				LOG_TRACE(Logger::get()) << "Entity [" << static_cast<unsigned int>(sourceID) << "] collided with same team";
+				continue;
+			}
+			else if (!reg.get<UpdateEntityPolling>(sourceID).isReady())
+			{
+				LOG_TRACE(Logger::get()) << "Entity [" << static_cast<unsigned int>(sourceID) << "] is not ready to collide";
+				continue;
+			}
 
 			// For all of the source entity modifiers, apply effects to receiver
 			if (reg.valid(sourceID) && reg.all_of<EffectsList>(sourceID))
