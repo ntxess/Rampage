@@ -5,6 +5,11 @@ Sandbox::Sandbox(GlobalData* sysData)
 	, m_player(entt::null)
 {}
 
+Sandbox::~Sandbox()
+{
+	m_reg.clear();
+}
+
 void Sandbox::init()
 {	
 	DataMap texturePath;
@@ -35,7 +40,7 @@ void Sandbox::init()
 	float width = static_cast<float>(m_data->Configuration<int>(WIDTH));
 	float height = static_cast<float>(m_data->Configuration<int>(HEIGHT));
 	
-	m_reg.get<Sprite>(m_player).setPosition(width / 2, height / 2);
+	m_reg.get<Sprite>(m_player).setPosition(0, 0);
 
 	// Create event effect for collecting coins
 	Effects collect;
@@ -120,37 +125,7 @@ void Sandbox::update()
 
 void Sandbox::render()
 {
-	const auto& view = m_reg.view<Sprite>();
-	for (const auto& entity : view)
-	{
-		const auto& spriteEntity = view.get<Sprite>(entity).sprite;
-		const auto& spriteSize = spriteEntity.getGlobalBounds().getSize();
-
-		sf::RectangleShape border;
-		border.setSize({ spriteSize.x, spriteSize.y });
-		border.setFillColor(sf::Color::Transparent);
-		border.setPosition(spriteEntity.getPosition().x, spriteEntity.getPosition().y);
-		border.setOrigin({ spriteEntity.getOrigin().x, spriteEntity.getOrigin().y });
-		border.setOutlineThickness(1);
-
-		if (m_player != entity && m_reg.get<Sprite>(m_player).getGlobalBounds().intersects(spriteEntity.getGlobalBounds()))
-		{
-			border.setOutlineColor(sf::Color::Red);
-		}
-		else
-		{
-			border.setOutlineColor(sf::Color::Green);
-		}
-
-		std::string hpStdString = std::to_string(static_cast<int>(m_reg.get<EntityStatus>(entity).value["HP"]));
-		sf::String hpString(hpStdString);
-		sf::Text hpText(hpString, m_defaultFont, 11);
-		hpText.setPosition(border.getPosition().x + border.getGlobalBounds().getSize().x, border.getPosition().y + border.getGlobalBounds().getSize().y);
-
-		m_data->window.draw(hpText);
-		m_data->window.draw(border);
-		m_data->window.draw(view.get<Sprite>(entity).sprite);
-	}
+	renderIntoTexture();
 }
 
 void Sandbox::pause()
@@ -166,4 +141,98 @@ void Sandbox::resume()
 entt::registry& Sandbox::getRegistry()
 {
 	return m_reg;
+}
+
+void Sandbox::renderIntoTexture()
+{
+	//const auto& view = m_reg.view<Sprite>();
+	//for (const auto& entity : view)
+	//{
+	//	auto& spriteEntity = view.get<Sprite>(entity).sprite;
+	//	const auto& spriteSize = spriteEntity.getGlobalBounds().getSize();
+
+	//	checkBoundary(m_data->window.getSize(), spriteEntity);
+
+	//	sf::RectangleShape border;
+	//	border.setSize({ spriteSize.x, spriteSize.y });
+	//	border.setFillColor(sf::Color::Transparent);
+	//	border.setPosition(spriteEntity.getPosition().x, spriteEntity.getPosition().y);
+	//	border.setOrigin({ spriteEntity.getOrigin().x, spriteEntity.getOrigin().y });
+	//	border.setOutlineThickness(1.5);
+
+	//	if (m_player != entity && m_reg.get<Sprite>(m_player).getGlobalBounds().intersects(spriteEntity.getGlobalBounds()))
+	//	{
+	//		border.setOutlineColor(sf::Color::Red);
+	//	}
+	//	else
+	//	{
+	//		border.setOutlineColor(sf::Color::Green);
+	//	}
+
+	//	std::string hpStdString = std::to_string(static_cast<int>(m_reg.get<EntityStatus>(entity).value["HP"]));
+	//	sf::String hpString(hpStdString);
+	//	sf::Text hpText(hpString, m_defaultFont, 11);
+	//	hpText.setPosition(border.getPosition().x + border.getGlobalBounds().getSize().x, border.getPosition().y + border.getGlobalBounds().getSize().y);
+
+	//	m_data->window.draw(hpText);
+	//	m_data->window.draw(border);
+	//	m_data->window.draw(view.get<Sprite>(entity).sprite);
+	//}
+
+	const auto& scrView = m_reg.view<SceneViewRenderer>();
+	for (const auto& sceneTextureID : scrView)
+	{
+		const auto& view = m_reg.view<Sprite>();
+		for (const auto& entity : view)
+		{
+			auto& sceneRenderTexture = m_reg.get<SceneViewRenderer>(sceneTextureID).rd;
+			auto& spriteEntity = view.get<Sprite>(entity).sprite;
+			const auto& spriteSize = spriteEntity.getGlobalBounds().getSize();
+
+			checkBoundary(sceneRenderTexture.getSize(), spriteEntity);
+
+			sf::RectangleShape border;
+			border.setSize({ spriteSize.x, spriteSize.y });
+			border.setFillColor(sf::Color::Transparent);
+			border.setPosition(spriteEntity.getPosition().x, spriteEntity.getPosition().y);
+			border.setOrigin({ spriteEntity.getOrigin().x, spriteEntity.getOrigin().y });
+			border.setOutlineThickness(1.5);
+
+			if (m_player != entity && m_reg.get<Sprite>(m_player).getGlobalBounds().intersects(spriteEntity.getGlobalBounds()))
+			{
+				border.setOutlineColor(sf::Color::Red);
+			}
+			else
+			{
+				border.setOutlineColor(sf::Color::Green);
+			}
+
+			std::string hpStdString = std::to_string(static_cast<int>(m_reg.get<EntityStatus>(entity).value["HP"]));
+			sf::String hpString(hpStdString);
+			sf::Text hpText(hpString, m_defaultFont, 11);
+			hpText.setPosition(border.getPosition().x + border.getGlobalBounds().getSize().x, border.getPosition().y + border.getGlobalBounds().getSize().y);
+
+			sceneRenderTexture.draw(hpText);
+			sceneRenderTexture.draw(border);
+			sceneRenderTexture.draw(view.get<Sprite>(entity).sprite);
+		}
+	}
+}
+
+void Sandbox::checkBoundary(const sf::Vector2u& boundary, sf::Sprite& obj)
+{
+	sf::Vector2f position = obj.getPosition();
+	sf::FloatRect rect = obj.getGlobalBounds();
+
+	if (position.x < 0)
+		obj.setPosition(sf::Vector2f(0.f, position.y));
+
+	if (position.x + (rect.width) > boundary.x)
+		obj.setPosition(sf::Vector2f(boundary.x - (rect.width), position.y));
+
+	if (position.y < 0)
+		obj.setPosition(sf::Vector2f(position.x, 0.f));
+
+	if (position.y + rect.height > boundary.y)
+		obj.setPosition(sf::Vector2f(position.x, boundary.y - (rect.height)));
 }

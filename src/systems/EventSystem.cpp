@@ -13,7 +13,7 @@ void EventSystem::update(entt::registry& reg, const float& dt, const entt::entit
 {
 	LOG_TRACE(Logger::get()) << "Entering EventSystem::update()";
 
-	auto statusModView = reg.view<StatusModEvent>();
+	const auto& statusModView = reg.view<StatusModEvent>();
 	for (const auto& eventID : statusModView)
 	{
 		const entt::entity receiverID = reg.get<StatusModEvent>(eventID).receiverID;

@@ -47,11 +47,13 @@ void Engine::run()
         switch (event.type)
         {
         case sf::Event::Closed:
+            LOG_INFO(Logger::get()) << "Triggered Event::Closed";
             sysData->window.close();
             break;
 
         case sf::Event::Resized:
         {
+            LOG_INFO(Logger::get()) << "Triggered Event::Resized";
             float newWidth = static_cast<float>(event.size.width);
             float newHeight = newWidth / sysData->aspectRatio;
             if (newHeight > event.size.height)
@@ -71,10 +73,12 @@ void Engine::run()
 
         case sf::Event::LostFocus:
             // Pause
+            LOG_INFO(Logger::get()) << "Triggered Event::LostFocus";
             break;
 
         case sf::Event::GainedFocus:
             // Resume
+            LOG_INFO(Logger::get()) << "Triggered Event::GainedFocus";
             break;
 
         default:
@@ -122,7 +126,8 @@ void Engine::configureWindow()
     sysData->deltaTime = static_cast<float>(1.f / sysData->Configuration<double>(FRAMERATE));
     sysData->window.create(sf::VideoMode(width, height), name, sf::Style::Default, settings);
     sysData->window.setActive(false);
-    sysData->sceneManager.addScene(std::make_unique<Sandbox>(sysData.get()));
+    //sysData->sceneManager.addScene(std::make_unique<Sandbox>(sysData.get()));
+    sysData->sceneManager.addScene(std::make_unique<Editor>(sysData.get()));
     sysData->sceneManager.processChange();
 
     LOG_DEBUG(Logger::get()) << "System info: \n"

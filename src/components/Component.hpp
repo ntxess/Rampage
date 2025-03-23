@@ -9,3 +9,4 @@
 #include "StatusModEvent.hpp"
 #include "PlayerInput.hpp"
 #include "DirtyFlags.hpp"
+#include "SceneViewRenderer.hpp"

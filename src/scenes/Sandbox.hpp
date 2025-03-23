@@ -9,17 +9,17 @@
 #include <entt/entity/registry.hpp>
 
 // Testing
-#include <SFML/Graphics/RectangleShape.hpp>
-#include <mutex>
-#include <random>
 #include "../common/commands/ICommand.hpp"
 #include "../common/commands/Movement.hpp"
 #include "../scenes/MainMenu.hpp"
+#include <SFML/Graphics/RectangleShape.hpp>
+#include <random>
 
 class Sandbox : public IScene
 {
 public:
 	Sandbox(GlobalData* sysData);
+	~Sandbox();
 
 	void init();
 	void processEvent(const sf::Event& event);
@@ -29,6 +29,10 @@ public:
 	void pause();
 	void resume();
 	entt::registry& getRegistry();
+
+private:
+	void renderIntoTexture();
+	void checkBoundary(const sf::Vector2u& boundary, sf::Sprite& obj);
 
 private:
 	GlobalData* m_data;
