@@ -30,13 +30,14 @@ public:
 	void resume();
 	entt::registry& getRegistry();
 
+	SystemManager* getSystemManager();
+
 private:
 	void checkBoundary(const sf::Vector2u& boundary, sf::Sprite& obj);
 
 private:
 	GlobalData* m_data;
 	entt::registry m_reg;
-	SystemManager m_system;
-
 	entt::entity m_player;
+	SystemManager m_system;
 };

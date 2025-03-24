@@ -4,5 +4,5 @@
 
 struct EntityStatus
 {
-	std::map<std::string, float> value;
+	std::map<std::string, float> values;
 };

@@ -22,8 +22,9 @@ void Sandbox::init()
 	m_reg.emplace<TeamTag>(m_player, Team::FRIENDLY);
 	m_reg.emplace<PlayerInput>(m_player);
 	m_reg.emplace<EffectsList>(m_player);
-	m_reg.emplace<EntityStatus>(m_player).value["HP"] = 100.f;
 	m_reg.emplace<UpdateEntityPolling>(m_player, std::chrono::milliseconds(1000), true);
+	m_reg.emplace<EntityStatus>(m_player);
+	m_reg.get<EntityStatus>(m_player).values["HP"] = 100.f;
 	m_reg.get<PlayerInput>(m_player).input =
 	{
 		{ sf::Keyboard::W, new Movement(m_player, { 0, -1 }) },
@@ -68,7 +69,7 @@ void Sandbox::init()
 		m_reg.emplace<TeamTag>(mob, Team::ENEMY);
 		m_reg.emplace<Sprite>(mob, m_data->textureManager["coin"]);
 		m_reg.emplace<EntityStatus>(mob);
-		m_reg.get<EntityStatus>(mob).value["HP"] = 1000.f;
+		m_reg.get<EntityStatus>(mob).values["HP"] = 1000.f;
 		m_reg.get<Sprite>(mob).setPosition(float(dist6(rng)), float(dist6(rng) % int(height)));
 	}
 
@@ -110,7 +111,7 @@ void Sandbox::update()
 	const auto& view = m_reg.view<EntityStatus>();
 	for (const auto& entity : view)
 	{
-		if (m_reg.get<EntityStatus>(entity).value["HP"] <= 0)
+		if (m_reg.get<EntityStatus>(entity).values["HP"] <= 0)
 		{
 			LOG_INFO(Logger::get()) << "Destroying entity [" << static_cast<unsigned int>(entity) << "]";
 
@@ -155,6 +156,11 @@ void Sandbox::resume()
 entt::registry& Sandbox::getRegistry()
 {
 	return m_reg;
+}
+
+SystemManager* Sandbox::getSystemManager()
+{
+	return &m_system;
 }
 
 void Sandbox::checkBoundary(const sf::Vector2u& boundary, sf::Sprite& obj)

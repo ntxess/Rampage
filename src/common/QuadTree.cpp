@@ -129,3 +129,23 @@ void QuadTree::clear()
 	if (!m_nodes.empty())
 		m_nodes.clear();
 }
+
+void QuadTree::draw(sf::RenderTexture& rt)
+{
+	sf::RectangleShape border;
+	border.setPosition(m_boundary.left, m_boundary.top);
+	border.setSize(sf::Vector2f(m_boundary.width, m_boundary.height));
+	border.setOutlineThickness(1.0f);
+	border.setFillColor(sf::Color::Transparent);
+	border.setOutlineColor(sf::Color(0, 150, 100));
+
+	rt.draw(border);
+
+	if (m_divided)
+	{
+		m_northWest->draw(rt);
+		m_northEast->draw(rt);
+		m_southEast->draw(rt);
+		m_southWest->draw(rt);
+	}
+}

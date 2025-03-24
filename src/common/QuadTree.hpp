@@ -1,7 +1,8 @@
 #pragma once
 
 #include "../components/Sprite.hpp"
-#include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Graphics/RectangleShape.hpp>
+#include <SFML/Graphics/RenderTexture.hpp>
 #include <entt/entity/registry.hpp>
 #include <vector>
 #include <memory>
@@ -19,6 +20,7 @@ public:
 	std::vector<entt::entity> queryRange(entt::registry& reg, const sf::FloatRect& range);
 	bool remove(entt::registry& reg, const entt::entity ent);
 	void clear();
+	void draw(sf::RenderTexture& rt);
 
 private:
 	const sf::FloatRect m_boundary;

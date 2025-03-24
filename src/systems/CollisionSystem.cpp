@@ -154,3 +154,8 @@ void CollisionSystem::remove(entt::registry& reg, const entt::entity ent)
 {
 	m_quadTree->remove(reg, ent);
 }
+
+void CollisionSystem::draw(sf::RenderTexture& rt)
+{
+	m_quadTree->draw(rt);
+}

@@ -255,16 +255,16 @@ void Editor::renderSceneViewPanel()
 	ImGui::PopStyleVar();
 
 
-	m_reg->get<SceneViewRenderer>(m_sceneMap[m_selectedSceneKey]->renderTexture).rd.clear();
+	m_reg->get<SceneViewRenderer>(m_sceneMap[m_selectedSceneKey]->renderTextureID).rd.clear();
 
 	// Call to the actual scenes render function
 	m_sceneMap[m_selectedSceneKey]->scene->render();
 
 	displayEntityVisualizers();
-	displayQuadtreeVisualizer();
+	displayCollisionSystemVisualizer();
 
 	sf::Sprite gameView;
-	gameView.setTexture(m_reg->get<SceneViewRenderer>(m_sceneMap[m_selectedSceneKey]->renderTexture).rd.getTexture());
+	gameView.setTexture(m_reg->get<SceneViewRenderer>(m_sceneMap[m_selectedSceneKey]->renderTextureID).rd.getTexture());
 	gameView.setScale(ImGui::GetWindowWidth() / m_data->window.getSize().x, (ImGui::GetWindowHeight() - ImGui::GetFrameHeight()) / m_data->window.getSize().y);
 	ImGui::Image(gameView);
 
@@ -296,14 +296,14 @@ void Editor::renderPropertiesPanel()
 		std::string ID = "Entity " + std::to_string(static_cast<unsigned int>(entityID));
 		if (ImGui::CollapsingHeader(ID.c_str()))
 		{
-			auto& statsMap = m_reg->get<EntityStatus>(entityID).value;
+			auto& statsMap = m_reg->get<EntityStatus>(entityID).values;
 			for (auto& [name, val] : statsMap)
 			{
 				ImGui::Text(name.c_str());
 				ImGui::SameLine();
 				ImGui::Text(std::to_string(val).c_str());
 				ImGui::SameLine();
-				ImGui::InputFloat("##", &val);
+				ImGui::InputFloat(std::string("##Input" + ID).c_str(), &val);
 			}
 		}
 	}
@@ -313,7 +313,7 @@ void Editor::renderPropertiesPanel()
 
 void Editor::displayEntityVisualizers()
 {
-	auto& sceneRenderTexture = m_reg->get<SceneViewRenderer>(m_sceneMap[m_selectedSceneKey]->renderTexture);
+	auto& sceneRenderTexture = m_reg->get<SceneViewRenderer>(m_sceneMap[m_selectedSceneKey]->renderTextureID);
 	const auto& view = m_reg->view<Sprite>();
 	for (const auto& entityID : view)
 	{
@@ -336,60 +336,32 @@ void Editor::displayEntityVisualizers()
 			border.setPosition(spriteEntity.getPosition().x, spriteEntity.getPosition().y);
 			border.setOrigin({ spriteEntity.getOrigin().x, spriteEntity.getOrigin().y });
 			border.setOutlineThickness(2);
-			border.setOutlineColor(sf::Color::Green);
+
+			entt::entity player = findEntityID<PlayerInput>();
+			if (player != entt::null && player != entityID && m_reg->get<Sprite>(player).getGlobalBounds().intersects(spriteEntity.getGlobalBounds()))
+			{
+				border.setOutlineColor(sf::Color::Red);
+				LOG_TRACE(Logger::get())
+					<< "Render block found collision between ["
+					<< static_cast<unsigned int>(player)
+					<< "] and ["
+					<< static_cast<unsigned int>(entityID) << "]";
+			}
+			else
+			{
+				border.setOutlineColor(sf::Color::Green);
+			}
 			sceneRenderTexture.rd.draw(border);
 		}
 	}
 }
 
-void Editor::displayQuadtreeVisualizer()
+void Editor::displayCollisionSystemVisualizer()
 {
 	if (m_enableQuadTreeVisualizer)
 	{
-
+		auto& sceneRenderTexture = m_reg->get<SceneViewRenderer>(m_sceneMap[m_selectedSceneKey]->renderTextureID).rd;
+		auto manager = static_cast<Sandbox*>(m_sceneMap[m_selectedSceneKey]->scene.get())->getSystemManager();
+		manager->getSystem<CollisionSystem>()->draw(sceneRenderTexture);
 	}
 }
-
-//const auto& scrView = m_reg.view<SceneViewRenderer>();
-//for (const auto& sceneTextureID : scrView)
-//{
-//	const auto& view = m_reg.view<Sprite>();
-//	for (const auto& entity : view)
-//	{
-//		auto& sceneRenderTexture = m_reg.get<SceneViewRenderer>(sceneTextureID).rd;
-//		auto& spriteEntity = view.get<Sprite>(entity).sprite;
-//		const auto& spriteSize = spriteEntity.getGlobalBounds().getSize();
-
-//		checkBoundary(sceneRenderTexture.getSize(), spriteEntity);
-
-//		sf::RectangleShape border;
-//		border.setSize({ spriteSize.x, spriteSize.y });
-//		border.setFillColor(sf::Color::Transparent);
-//		border.setPosition(spriteEntity.getPosition().x, spriteEntity.getPosition().y);
-//		border.setOrigin({ spriteEntity.getOrigin().x, spriteEntity.getOrigin().y });
-//		border.setOutlineThickness(2);
-
-//		if (m_player != entity && m_reg.get<Sprite>(m_player).getGlobalBounds().intersects(spriteEntity.getGlobalBounds()))
-//		{
-//			border.setOutlineColor(sf::Color::Red);
-//			LOG_TRACE(Logger::get())
-//				<< "Render block found collision between ["
-//				<< static_cast<unsigned int>(m_player)
-//				<< "] and ["
-//				<< static_cast<unsigned int>(entity) << "]";
-//		}
-//		else
-//		{
-//			border.setOutlineColor(sf::Color::Green);
-//		}
-
-//		std::string hpStdString = std::to_string(static_cast<int>(m_reg.get<EntityStatus>(entity).value["HP"]));
-//		sf::String hpString(hpStdString);
-//		sf::Text hpText(hpString, m_defaultFont, 14);
-//		hpText.setPosition(border.getPosition().x + border.getGlobalBounds().getSize().x, border.getPosition().y + border.getGlobalBounds().getSize().y);
-
-//		sceneRenderTexture.draw(hpText);
-//		sceneRenderTexture.draw(border);
-//		sceneRenderTexture.draw(view.get<Sprite>(entity).sprite);
-//	}
-//}

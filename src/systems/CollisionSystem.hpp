@@ -6,7 +6,6 @@
 #include "../common/QuadTree.hpp"
 #include "../components/Component.hpp"
 #include <memory>
-#include <mutex>
 
 class CollisionSystem : public System
 {
@@ -16,6 +15,7 @@ public:
 	constexpr std::string_view name() const;
 	void update(entt::registry& reg, const float& dt = 0.f, const entt::entity ent = entt::null);
 	void remove(entt::registry& reg, const entt::entity ent);
+	void draw(sf::RenderTexture& rt);
 
 private:
 	void quadTreeUpdate(entt::registry& reg);
