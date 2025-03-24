@@ -39,5 +39,4 @@ private:
 	SystemManager m_system;
 
 	entt::entity m_player;
-	sf::Font m_defaultFont;
 };

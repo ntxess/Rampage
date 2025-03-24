@@ -16,11 +16,6 @@ void Sandbox::init()
 	m_data->saveManager.load("config/texture.json", texturePath);     // Load config file
 	m_data->textureManager.load(texturePath, thor::Resources::Reuse); // Load the texture from loaded paths
 
-	if (!m_defaultFont.loadFromFile("E:\\Dev\\Rampage\\assets\\font\\Prototype.ttf"))
-	{
-		LOG_FATAL(Logger::get()) << "Failed to load default font.";
-	}
-
 	// Create the main player object
 	m_player = m_reg.create();
 	m_reg.emplace<Sprite>(m_player, m_data->textureManager["player"]);
@@ -139,38 +134,7 @@ void Sandbox::render()
 		{
 			auto& sceneRenderTexture = m_reg.get<SceneViewRenderer>(sceneTextureID).rd;
 			auto& spriteEntity = view.get<Sprite>(entity).sprite;
-			const auto& spriteSize = spriteEntity.getGlobalBounds().getSize();
-
 			checkBoundary(sceneRenderTexture.getSize(), spriteEntity);
-
-			sf::RectangleShape border;
-			border.setSize({ spriteSize.x, spriteSize.y });
-			border.setFillColor(sf::Color::Transparent);
-			border.setPosition(spriteEntity.getPosition().x, spriteEntity.getPosition().y);
-			border.setOrigin({ spriteEntity.getOrigin().x, spriteEntity.getOrigin().y });
-			border.setOutlineThickness(2);
-
-			if (m_player != entity && m_reg.get<Sprite>(m_player).getGlobalBounds().intersects(spriteEntity.getGlobalBounds()))
-			{
-				border.setOutlineColor(sf::Color::Red);
-				LOG_TRACE(Logger::get())
-					<< "Render block found collision between ["
-					<< static_cast<unsigned int>(m_player)
-					<< "] and ["
-					<< static_cast<unsigned int>(entity) << "]";
-			}
-			else
-			{
-				border.setOutlineColor(sf::Color::Green);
-			}
-
-			std::string hpStdString = std::to_string(static_cast<int>(m_reg.get<EntityStatus>(entity).value["HP"]));
-			sf::String hpString(hpStdString);
-			sf::Text hpText(hpString, m_defaultFont, 14);
-			hpText.setPosition(border.getPosition().x + border.getGlobalBounds().getSize().x, border.getPosition().y + border.getGlobalBounds().getSize().y);
-
-			sceneRenderTexture.draw(hpText);
-			sceneRenderTexture.draw(border);
 			sceneRenderTexture.draw(view.get<Sprite>(entity).sprite);
 		}
 	}

@@ -12,6 +12,11 @@ Editor::~Editor()
 
 void Editor::init()
 {
+	if (!m_defaultFont.loadFromFile("E:\\Dev\\Rampage\\assets\\font\\Prototype.ttf"))
+	{
+		LOG_FATAL(Logger::get()) << "Failed to load default font.";
+	}
+
 	sf::ContextSettings settings;
 	settings.depthBits = 24;
 	settings.stencilBits = 8;
@@ -164,9 +169,11 @@ void Editor::renderDebugPanel()
 	{
 		if (ImGui::BeginTable("split", 1))
 		{
-			ImGui::TableNextColumn(); ImGui::Checkbox("Entity Box Visualizer", &m_enableEntityCollider);
-			ImGui::TableNextColumn(); ImGui::Checkbox("Entity Heading", &m_enableEntityHeading);
-			ImGui::TableNextColumn(); ImGui::Checkbox("Quad-Tree Visualizer", &m_enableQuadTreeVisualizer);
+			ImGui::TableNextColumn(); ImGui::Checkbox("Display Entity ID", &m_enableEntityID);
+			ImGui::TableNextColumn(); ImGui::Checkbox("Display Entity Box Visualizer", &m_enableEntityCollider);
+			ImGui::TableNextColumn(); ImGui::Checkbox("Display Entity Heading", &m_enableEntityHeading);
+			ImGui::TableNextColumn(); ImGui::Checkbox("Display Quad-Tree Visualizer", &m_enableQuadTreeVisualizer);
+
 			ImGui::EndTable();
 			ImGui::SliderInt("Spawn Entity", &m_totalEntity, 0, 10000);
 		}
@@ -198,8 +205,6 @@ void Editor::renderDebugPanel()
 	{
 
 	}
-
-
 
 	ImGui::End();
 }
@@ -255,20 +260,8 @@ void Editor::renderSceneViewPanel()
 	// Call to the actual scenes render function
 	m_sceneMap[m_selectedSceneKey]->scene->render();
 
-	if (m_enableEntityCollider)
-	{
-
-	}
-
-	if (m_enableEntityHeading)
-	{
-
-	}
-
-	if (m_enableQuadTreeVisualizer)
-	{
-
-	}
+	displayEntityVisualizers();
+	displayQuadtreeVisualizer();
 
 	sf::Sprite gameView;
 	gameView.setTexture(m_reg->get<SceneViewRenderer>(m_sceneMap[m_selectedSceneKey]->renderTexture).rd.getTexture());
@@ -297,6 +290,106 @@ void Editor::renderPropertiesPanel()
 	ImGui::SetNextWindowSize(ImVec2(m_data->window.getSize().x - (m_data->window.getSize().x / 5 + (m_data->window.getSize().x / (m_data->aspectRatio))), m_data->window.getSize().y), ImGuiCond_Once);
 	ImGui::Begin("Properties Panel", NULL, m_expandablePanelFlags);
 
+	const auto& view = m_reg->view<Sprite, EntityStatus>();
+	for (const auto& entityID : view)
+	{
+		std::string ID = "Entity " + std::to_string(static_cast<unsigned int>(entityID));
+		if (ImGui::CollapsingHeader(ID.c_str()))
+		{
+			auto& statsMap = m_reg->get<EntityStatus>(entityID).value;
+			for (auto& [name, val] : statsMap)
+			{
+				ImGui::Text(name.c_str());
+				ImGui::SameLine();
+				ImGui::Text(std::to_string(val).c_str());
+				ImGui::SameLine();
+				ImGui::InputFloat("##", &val);
+			}
+		}
+	}
 
 	ImGui::End();
 }
+
+void Editor::displayEntityVisualizers()
+{
+	auto& sceneRenderTexture = m_reg->get<SceneViewRenderer>(m_sceneMap[m_selectedSceneKey]->renderTexture);
+	const auto& view = m_reg->view<Sprite>();
+	for (const auto& entityID : view)
+	{
+		auto& spriteEntity = view.get<Sprite>(entityID).sprite;
+
+		if (m_enableEntityID)
+		{
+			sf::String ID(std::to_string(static_cast<int>(entityID)));
+			sf::Text IDText(ID, m_defaultFont, 14);
+			IDText.setPosition(spriteEntity.getPosition().x + spriteEntity.getGlobalBounds().getSize().x, spriteEntity.getPosition().y + spriteEntity.getGlobalBounds().getSize().y);
+			sceneRenderTexture.rd.draw(IDText);
+		}
+
+		if (m_enableEntityCollider)
+		{
+			const auto& spriteSize = spriteEntity.getGlobalBounds().getSize();
+			sf::RectangleShape border;
+			border.setSize({ spriteSize.x, spriteSize.y });
+			border.setFillColor(sf::Color::Transparent);
+			border.setPosition(spriteEntity.getPosition().x, spriteEntity.getPosition().y);
+			border.setOrigin({ spriteEntity.getOrigin().x, spriteEntity.getOrigin().y });
+			border.setOutlineThickness(2);
+			border.setOutlineColor(sf::Color::Green);
+			sceneRenderTexture.rd.draw(border);
+		}
+	}
+}
+
+void Editor::displayQuadtreeVisualizer()
+{
+	if (m_enableQuadTreeVisualizer)
+	{
+
+	}
+}
+
+//const auto& scrView = m_reg.view<SceneViewRenderer>();
+//for (const auto& sceneTextureID : scrView)
+//{
+//	const auto& view = m_reg.view<Sprite>();
+//	for (const auto& entity : view)
+//	{
+//		auto& sceneRenderTexture = m_reg.get<SceneViewRenderer>(sceneTextureID).rd;
+//		auto& spriteEntity = view.get<Sprite>(entity).sprite;
+//		const auto& spriteSize = spriteEntity.getGlobalBounds().getSize();
+
+//		checkBoundary(sceneRenderTexture.getSize(), spriteEntity);
+
+//		sf::RectangleShape border;
+//		border.setSize({ spriteSize.x, spriteSize.y });
+//		border.setFillColor(sf::Color::Transparent);
+//		border.setPosition(spriteEntity.getPosition().x, spriteEntity.getPosition().y);
+//		border.setOrigin({ spriteEntity.getOrigin().x, spriteEntity.getOrigin().y });
+//		border.setOutlineThickness(2);
+
+//		if (m_player != entity && m_reg.get<Sprite>(m_player).getGlobalBounds().intersects(spriteEntity.getGlobalBounds()))
+//		{
+//			border.setOutlineColor(sf::Color::Red);
+//			LOG_TRACE(Logger::get())
+//				<< "Render block found collision between ["
+//				<< static_cast<unsigned int>(m_player)
+//				<< "] and ["
+//				<< static_cast<unsigned int>(entity) << "]";
+//		}
+//		else
+//		{
+//			border.setOutlineColor(sf::Color::Green);
+//		}
+
+//		std::string hpStdString = std::to_string(static_cast<int>(m_reg.get<EntityStatus>(entity).value["HP"]));
+//		sf::String hpString(hpStdString);
+//		sf::Text hpText(hpString, m_defaultFont, 14);
+//		hpText.setPosition(border.getPosition().x + border.getGlobalBounds().getSize().x, border.getPosition().y + border.getGlobalBounds().getSize().y);
+
+//		sceneRenderTexture.draw(hpText);
+//		sceneRenderTexture.draw(border);
+//		sceneRenderTexture.draw(view.get<Sprite>(entity).sprite);
+//	}
+//}

@@ -46,6 +46,8 @@ private:
 	void renderSceneViewPanel();
 	void renderFileExplorerPanel();
 	void renderPropertiesPanel();
+	void displayEntityVisualizers();
+	void displayQuadtreeVisualizer();
 
 private:
 	GlobalData* m_data;
@@ -60,6 +62,7 @@ private:
 	ImGuiID m_dockspaceId4;
 	ImGuiID m_dockspaceId5;
 
+	bool m_enableEntityID;
 	bool m_enableEntityCollider;
 	bool m_enableEntityHeading;
 	bool m_enableQuadTreeVisualizer;
