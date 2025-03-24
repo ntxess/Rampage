@@ -10,6 +10,19 @@
 #include <imgui-SFML.h>
 #include <memory>
 
+struct SceneData
+{
+	std::unique_ptr<IScene> scene;
+	entt::entity renderTexture;
+
+	SceneData(std::unique_ptr<IScene> scn, unsigned int width, unsigned int height, const sf::ContextSettings& settings) : scene(std::move(scn))
+	{ 
+		scene->init();
+		renderTexture = scene->getRegistry().create();
+		scene->getRegistry().emplace<SceneViewRenderer>(renderTexture, width, height, settings);
+	}
+};
+
 class Editor : public IScene
 {
 public:
@@ -41,14 +54,20 @@ private:
 	ImGuiWindowFlags m_panelFlags;
 	ImGuiWindowFlags m_expandablePanelFlags;
 
-	entt::entity m_sceneViewTextureID;
-	std::unique_ptr<IScene> m_game;
-	entt::registry* m_reg;
-
 	ImGuiID m_dockspaceId1;
 	ImGuiID m_dockspaceId2;
 	ImGuiID m_dockspaceId3;
 	ImGuiID m_dockspaceId4;
 	ImGuiID m_dockspaceId5;
+
+	bool m_enableEntityCollider;
+	bool m_enableEntityHeading;
+	bool m_enableQuadTreeVisualizer;
+	int m_totalEntity;
+
+	// Current loaded scene data
+	std::unordered_map<std::string, std::unique_ptr<SceneData>> m_sceneMap;
+	std::string m_selectedSceneKey;
+	entt::registry* m_reg;
 };
 

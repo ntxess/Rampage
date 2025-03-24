@@ -3,7 +3,9 @@
 #include "../scenes/IScene.hpp"
 #include "../common/CommonEnum.hpp"
 #include "../common/GlobalData.hpp"
+#include "../common/Logger.hpp"
 #include "../common/Entity.hpp"
+#include "../components/Component.hpp"
 #include <entt/entity/registry.hpp>
 
 class MainMenu : public IScene
@@ -23,4 +25,6 @@ public:
 private:
 	GlobalData* m_data;
 	entt::registry m_reg;
+
+	entt::entity m_wallpaper;
 };

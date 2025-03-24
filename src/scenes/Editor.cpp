@@ -38,11 +38,25 @@ void Editor::init()
 	ImGui::GetIO().ConfigWindowsMoveFromTitleBarOnly = true;
 	ImGui::GetIO().ConfigDockingAlwaysTabBar = true; // ImGUI bug: Setting this true, will prevent you from using SetNextWindowSizeConstraints
 
-	m_game = std::make_unique<Sandbox>(m_data);
-	m_game->init();
-	m_reg = &m_game->getRegistry();
-	m_sceneViewTextureID = m_reg->create();
-	m_reg->emplace<SceneViewRenderer>(m_sceneViewTextureID, m_data->Configuration<int>(WIDTH), m_data->Configuration<int>(HEIGHT), settings);
+	// Initializing all the scenes for selection
+	std::unique_ptr<IScene> sandbox = std::make_unique<Sandbox>(m_data);
+	m_sceneMap["Sandbox"] = std::make_unique<SceneData>(std::move(sandbox), m_data->Configuration<int>(WIDTH), m_data->Configuration<int>(HEIGHT), settings);
+
+	std::unique_ptr<IScene> mainmenu1 = std::make_unique<MainMenu>(m_data);
+	m_sceneMap["MainMenu1"] = std::make_unique<SceneData>(std::move(mainmenu1), m_data->Configuration<int>(WIDTH), m_data->Configuration<int>(HEIGHT), settings);
+
+	std::unique_ptr<IScene> mainmenu2 = std::make_unique<MainMenu>(m_data);
+	m_sceneMap["MainMenu2"] = std::make_unique<SceneData>(std::move(mainmenu2), m_data->Configuration<int>(WIDTH), m_data->Configuration<int>(HEIGHT), settings);
+
+	std::unique_ptr<IScene> mainmenu3 = std::make_unique<MainMenu>(m_data);
+	m_sceneMap["MainMenu3"] = std::make_unique<SceneData>(std::move(mainmenu3), m_data->Configuration<int>(WIDTH), m_data->Configuration<int>(HEIGHT), settings);
+
+	std::unique_ptr<IScene> mainmenu4 = std::make_unique<MainMenu>(m_data);
+	m_sceneMap["MainMenu4"] = std::make_unique<SceneData>(std::move(mainmenu4), m_data->Configuration<int>(WIDTH), m_data->Configuration<int>(HEIGHT), settings);
+
+	// Load in first scene of map
+	m_selectedSceneKey = m_sceneMap.begin()->first;
+	m_reg = &m_sceneMap[m_selectedSceneKey]->scene->getRegistry();
 }
 
 void Editor::processEvent(const sf::Event& event)
@@ -57,12 +71,12 @@ void Editor::processEvent(const sf::Event& event)
 
 void Editor::processInput()
 {
-	m_game->processInput();
+	m_sceneMap[m_selectedSceneKey]->scene->processInput();
 }
 
 void Editor::update()
 {
-	m_game->update();
+	m_sceneMap[m_selectedSceneKey]->scene->update();
 }
 
 void Editor::render()
@@ -94,7 +108,6 @@ entt::registry& Editor::getRegistry()
 
 void Editor::setupDockspace()
 {
-	//ImGui::GetIO().ConfigDockingAlwaysTabBar = true;
 	m_dockspaceId1 = ImGui::GetID("Dockspace1");
 	m_dockspaceId2 = ImGui::GetID("Dockspace2");
 	m_dockspaceId3 = ImGui::GetID("Dockspace3");
@@ -147,6 +160,47 @@ void Editor::renderDebugPanel()
 	ImGui::SetNextWindowSize(ImVec2(m_data->window.getSize().x / 5, m_data->window.getSize().y / 2), ImGuiCond_Once);
 	ImGui::Begin("Debug Panel", NULL, m_expandablePanelFlags);
 
+	if (ImGui::CollapsingHeader("Scene View Option"))
+	{
+		if (ImGui::BeginTable("split", 1))
+		{
+			ImGui::TableNextColumn(); ImGui::Checkbox("Entity Box Visualizer", &m_enableEntityCollider);
+			ImGui::TableNextColumn(); ImGui::Checkbox("Entity Heading", &m_enableEntityHeading);
+			ImGui::TableNextColumn(); ImGui::Checkbox("Quad-Tree Visualizer", &m_enableQuadTreeVisualizer);
+			ImGui::EndTable();
+			ImGui::SliderInt("Spawn Entity", &m_totalEntity, 0, 10000);
+		}
+	}
+
+	if (ImGui::CollapsingHeader("Scene Manager"))
+	{
+		for (const auto& [sceneName, sceneObj] : m_sceneMap)
+		{
+			if (ImGui::Selectable(sceneName.c_str(), m_selectedSceneKey == sceneName))
+			{
+				m_selectedSceneKey = sceneName;
+				m_reg = &m_sceneMap[sceneName]->scene->getRegistry();
+			}
+		}
+	}
+
+	if (ImGui::CollapsingHeader("Animation Manager"))
+	{
+
+	}
+
+	if (ImGui::CollapsingHeader("Resource Manager"))
+	{
+
+	}
+
+	if (ImGui::CollapsingHeader("Save Manager"))
+	{
+
+	}
+
+
+
 	ImGui::End();
 }
 
@@ -196,17 +250,30 @@ void Editor::renderSceneViewPanel()
 	ImGui::PopStyleVar();
 
 
-	m_reg->get<SceneViewRenderer>(m_sceneViewTextureID).rd.clear();
+	m_reg->get<SceneViewRenderer>(m_sceneMap[m_selectedSceneKey]->renderTexture).rd.clear();
 
-	m_game->render();
+	// Call to the actual scenes render function
+	m_sceneMap[m_selectedSceneKey]->scene->render();
+
+	if (m_enableEntityCollider)
+	{
+
+	}
+
+	if (m_enableEntityHeading)
+	{
+
+	}
+
+	if (m_enableQuadTreeVisualizer)
+	{
+
+	}
 
 	sf::Sprite gameView;
-	gameView.setTexture(m_reg->get<SceneViewRenderer>(m_sceneViewTextureID).rd.getTexture());
+	gameView.setTexture(m_reg->get<SceneViewRenderer>(m_sceneMap[m_selectedSceneKey]->renderTexture).rd.getTexture());
 	gameView.setScale(ImGui::GetWindowWidth() / m_data->window.getSize().x, (ImGui::GetWindowHeight() - ImGui::GetFrameHeight()) / m_data->window.getSize().y);
 	ImGui::Image(gameView);
-
-	//LOG_DEBUG(Logger::get()) << "SceneView Size: " << ImGui::GetWindowSize().x << " x " << ImGui::GetWindowSize().y;
-	//LOG_DEBUG(Logger::get()) << "SceneView VP Size: " << ImGui::GetWindowViewport()->Size.x << " x " << ImGui::GetWindowViewport()->Size.y;
 
 	ImGui::End();
 	ImGui::GetIO().ConfigDockingAlwaysTabBar = true;

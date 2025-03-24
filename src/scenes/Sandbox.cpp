@@ -131,62 +131,6 @@ void Sandbox::render()
 {
 	LOG_TRACE(Logger::get()) << "Entering render()";
 
-	renderIntoTexture();
-
-	LOG_TRACE(Logger::get()) << "Leaving render()";
-}
-
-void Sandbox::pause()
-{
-
-}
-
-void Sandbox::resume()
-{
-
-}
-
-entt::registry& Sandbox::getRegistry()
-{
-	return m_reg;
-}
-
-void Sandbox::renderIntoTexture()
-{
-	//const auto& view = m_reg.view<Sprite>();
-	//for (const auto& entity : view)
-	//{
-	//	auto& spriteEntity = view.get<Sprite>(entity).sprite;
-	//	const auto& spriteSize = spriteEntity.getGlobalBounds().getSize();
-
-	//	checkBoundary(m_data->window.getSize(), spriteEntity);
-
-	//	sf::RectangleShape border;
-	//	border.setSize({ spriteSize.x, spriteSize.y });
-	//	border.setFillColor(sf::Color::Transparent);
-	//	border.setPosition(spriteEntity.getPosition().x, spriteEntity.getPosition().y);
-	//	border.setOrigin({ spriteEntity.getOrigin().x, spriteEntity.getOrigin().y });
-	//	border.setOutlineThickness(1.5);
-
-	//	if (m_player != entity && m_reg.get<Sprite>(m_player).getGlobalBounds().intersects(spriteEntity.getGlobalBounds()))
-	//	{
-	//		border.setOutlineColor(sf::Color::Red);
-	//	}
-	//	else
-	//	{
-	//		border.setOutlineColor(sf::Color::Green);
-	//	}
-
-	//	std::string hpStdString = std::to_string(static_cast<int>(m_reg.get<EntityStatus>(entity).value["HP"]));
-	//	sf::String hpString(hpStdString);
-	//	sf::Text hpText(hpString, m_defaultFont, 11);
-	//	hpText.setPosition(border.getPosition().x + border.getGlobalBounds().getSize().x, border.getPosition().y + border.getGlobalBounds().getSize().y);
-
-	//	m_data->window.draw(hpText);
-	//	m_data->window.draw(border);
-	//	m_data->window.draw(view.get<Sprite>(entity).sprite);
-	//}
-
 	const auto& scrView = m_reg.view<SceneViewRenderer>();
 	for (const auto& sceneTextureID : scrView)
 	{
@@ -209,10 +153,10 @@ void Sandbox::renderIntoTexture()
 			if (m_player != entity && m_reg.get<Sprite>(m_player).getGlobalBounds().intersects(spriteEntity.getGlobalBounds()))
 			{
 				border.setOutlineColor(sf::Color::Red);
-				LOG_TRACE(Logger::get()) 
-					<< "Render block found collision between [" 
-					<< static_cast<unsigned int>(m_player) 
-					<< "] and [" 
+				LOG_TRACE(Logger::get())
+					<< "Render block found collision between ["
+					<< static_cast<unsigned int>(m_player)
+					<< "] and ["
 					<< static_cast<unsigned int>(entity) << "]";
 			}
 			else
@@ -230,6 +174,23 @@ void Sandbox::renderIntoTexture()
 			sceneRenderTexture.draw(view.get<Sprite>(entity).sprite);
 		}
 	}
+
+	LOG_TRACE(Logger::get()) << "Leaving render()";
+}
+
+void Sandbox::pause()
+{
+
+}
+
+void Sandbox::resume()
+{
+
+}
+
+entt::registry& Sandbox::getRegistry()
+{
+	return m_reg;
 }
 
 void Sandbox::checkBoundary(const sf::Vector2u& boundary, sf::Sprite& obj)

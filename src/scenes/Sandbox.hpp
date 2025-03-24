@@ -31,7 +31,6 @@ public:
 	entt::registry& getRegistry();
 
 private:
-	void renderIntoTexture();
 	void checkBoundary(const sf::Vector2u& boundary, sf::Sprite& obj);
 
 private:

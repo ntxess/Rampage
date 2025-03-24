@@ -126,7 +126,6 @@ void Engine::configureWindow()
     sysData->deltaTime = static_cast<float>(1.f / sysData->Configuration<double>(FRAMERATE));
     sysData->window.create(sf::VideoMode(width, height), name, sf::Style::Default, settings);
     sysData->window.setActive(false);
-    //sysData->sceneManager.addScene(std::make_unique<Sandbox>(sysData.get()));
     sysData->sceneManager.addScene(std::make_unique<Editor>(sysData.get()));
     sysData->sceneManager.processChange();
 
