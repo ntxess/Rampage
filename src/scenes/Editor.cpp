@@ -50,14 +50,8 @@ void Editor::init()
 	std::unique_ptr<IScene> mainmenu1 = std::make_unique<MainMenu>(m_data);
 	m_sceneMap["MainMenu1"] = std::make_unique<SceneData>(std::move(mainmenu1), m_data->Configuration<int>(WIDTH), m_data->Configuration<int>(HEIGHT), settings);
 
-	std::unique_ptr<IScene> mainmenu2 = std::make_unique<MainMenu>(m_data);
-	m_sceneMap["MainMenu2"] = std::make_unique<SceneData>(std::move(mainmenu2), m_data->Configuration<int>(WIDTH), m_data->Configuration<int>(HEIGHT), settings);
-
-	std::unique_ptr<IScene> mainmenu3 = std::make_unique<MainMenu>(m_data);
-	m_sceneMap["MainMenu3"] = std::make_unique<SceneData>(std::move(mainmenu3), m_data->Configuration<int>(WIDTH), m_data->Configuration<int>(HEIGHT), settings);
-
-	std::unique_ptr<IScene> mainmenu4 = std::make_unique<MainMenu>(m_data);
-	m_sceneMap["MainMenu4"] = std::make_unique<SceneData>(std::move(mainmenu4), m_data->Configuration<int>(WIDTH), m_data->Configuration<int>(HEIGHT), settings);
+	std::unique_ptr<IScene> gameOfLifeSim = std::make_unique<GameOfLifeSim>(m_data);
+	m_sceneMap["GameOfLifeSim"] = std::make_unique<SceneData>(std::move(gameOfLifeSim), m_data->Configuration<int>(WIDTH), m_data->Configuration<int>(HEIGHT), settings);
 
 	// Load in first scene of map
 	m_selectedSceneKey = m_sceneMap.begin()->first;
