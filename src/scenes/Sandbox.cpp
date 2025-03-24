@@ -28,7 +28,7 @@ void Sandbox::init()
 	m_reg.emplace<PlayerInput>(m_player);
 	m_reg.emplace<EffectsList>(m_player);
 	m_reg.emplace<EntityStatus>(m_player).value["HP"] = 100.f;
-	m_reg.emplace<UpdateEntityPolling>(m_player, std::chrono::milliseconds(1000));
+	m_reg.emplace<UpdateEntityPolling>(m_player, std::chrono::milliseconds(1000), true);
 	m_reg.get<PlayerInput>(m_player).input =
 	{
 		{ sf::Keyboard::W, new Movement(m_player, { 0, -1 }) },
@@ -107,6 +107,8 @@ void Sandbox::processInput()
 
 void Sandbox::update()
 {
+	LOG_TRACE(Logger::get()) << "Entering update()";
+
     m_system.update(m_reg, m_data->deltaTime);
 
 	// Delete anything that has zero or less HP
@@ -121,11 +123,17 @@ void Sandbox::update()
 			m_reg.destroy(entity);
 		}
 	}
+
+	LOG_TRACE(Logger::get()) << "Leaving update()";
 }
 
 void Sandbox::render()
 {
+	LOG_TRACE(Logger::get()) << "Entering render()";
+
 	renderIntoTexture();
+
+	LOG_TRACE(Logger::get()) << "Leaving render()";
 }
 
 void Sandbox::pause()
@@ -196,11 +204,16 @@ void Sandbox::renderIntoTexture()
 			border.setFillColor(sf::Color::Transparent);
 			border.setPosition(spriteEntity.getPosition().x, spriteEntity.getPosition().y);
 			border.setOrigin({ spriteEntity.getOrigin().x, spriteEntity.getOrigin().y });
-			border.setOutlineThickness(1.5);
+			border.setOutlineThickness(2);
 
 			if (m_player != entity && m_reg.get<Sprite>(m_player).getGlobalBounds().intersects(spriteEntity.getGlobalBounds()))
 			{
 				border.setOutlineColor(sf::Color::Red);
+				LOG_TRACE(Logger::get()) 
+					<< "Render block found collision between [" 
+					<< static_cast<unsigned int>(m_player) 
+					<< "] and [" 
+					<< static_cast<unsigned int>(entity) << "]";
 			}
 			else
 			{
@@ -209,7 +222,7 @@ void Sandbox::renderIntoTexture()
 
 			std::string hpStdString = std::to_string(static_cast<int>(m_reg.get<EntityStatus>(entity).value["HP"]));
 			sf::String hpString(hpStdString);
-			sf::Text hpText(hpString, m_defaultFont, 11);
+			sf::Text hpText(hpString, m_defaultFont, 14);
 			hpText.setPosition(border.getPosition().x + border.getGlobalBounds().getSize().x, border.getPosition().y + border.getGlobalBounds().getSize().y);
 
 			sceneRenderTexture.draw(hpText);

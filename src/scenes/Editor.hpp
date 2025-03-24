@@ -26,6 +26,8 @@ public:
 	entt::registry& getRegistry();
 
 private:
+	void setupDockspace();
+	void renderDebugPanel();
 	void renderPerformancePanel();
 	void renderLogViewPanel();
 	void renderSceneViewPanel();
@@ -42,5 +44,11 @@ private:
 	entt::entity m_sceneViewTextureID;
 	std::unique_ptr<IScene> m_game;
 	entt::registry* m_reg;
+
+	ImGuiID m_dockspaceId1;
+	ImGuiID m_dockspaceId2;
+	ImGuiID m_dockspaceId3;
+	ImGuiID m_dockspaceId4;
+	ImGuiID m_dockspaceId5;
 };
 

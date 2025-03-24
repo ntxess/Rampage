@@ -36,6 +36,7 @@ void Editor::init()
 	ImGui::SFML::Init(m_data->window);
 	ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 	ImGui::GetIO().ConfigWindowsMoveFromTitleBarOnly = true;
+	ImGui::GetIO().ConfigDockingAlwaysTabBar = true; // ImGUI bug: Setting this true, will prevent you from using SetNextWindowSizeConstraints
 
 	m_game = std::make_unique<Sandbox>(m_data);
 	m_game->init();
@@ -68,11 +69,14 @@ void Editor::render()
 {
 	ImGui::SFML::Update(m_data->window, sf::seconds(m_data->deltaTime));
 
+	setupDockspace();
+	renderDebugPanel();
 	renderPerformancePanel();
 	renderLogViewPanel();
 	renderSceneViewPanel();
 	renderFileExplorerPanel();
 	renderPropertiesPanel();
+	ImGui::ShowDemoWindow();
 
 	ImGui::SFML::Render(m_data->window);
 }
@@ -88,13 +92,67 @@ entt::registry& Editor::getRegistry()
 	return *m_reg;
 }
 
-void Editor::renderPerformancePanel()
+void Editor::setupDockspace()
 {
+	//ImGui::GetIO().ConfigDockingAlwaysTabBar = true;
+	m_dockspaceId1 = ImGui::GetID("Dockspace1");
+	m_dockspaceId2 = ImGui::GetID("Dockspace2");
+	m_dockspaceId3 = ImGui::GetID("Dockspace3");
+	m_dockspaceId4 = ImGui::GetID("Dockspace4");
+	m_dockspaceId5 = ImGui::GetID("Dockspace5");
+
+	ImGui::SetNextWindowPos(ImVec2(0, 0));
+	ImGui::SetNextWindowSize(ImVec2(m_data->window.getSize().x, m_data->window.getSize().y));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
 	ImGui::SetNextWindowPos(ImVec2(0, 0));
 	ImGui::SetNextWindowSize(ImVec2(m_data->window.getSize().x / 5, m_data->window.getSize().y / 2));
-	ImGui::Begin("Left Panel 1", NULL, m_panelFlags);
+	ImGui::Begin("##LP1", NULL, m_panelFlags);
+	ImGui::DockSpace(m_dockspaceId1, ImVec2(m_data->window.getSize().x / 5, m_data->window.getSize().y / 2), ImGuiDockNodeFlags_NoResize);
 	ImGui::End();
 
+	ImGui::SetNextWindowPos(ImVec2(0, m_data->window.getSize().y / 2));
+	ImGui::SetNextWindowSize(ImVec2(m_data->window.getSize().x / 5, m_data->window.getSize().y / 2));
+	ImGui::Begin("##LP2", NULL, m_panelFlags);
+	ImGui::DockSpace(m_dockspaceId2, ImVec2(m_data->window.getSize().x / 5, m_data->window.getSize().y / 2), ImGuiDockNodeFlags_NoResize);
+	ImGui::End();
+
+	ImGui::SetNextWindowPos(ImVec2(m_data->window.getSize().x / 5, 0));
+	ImGui::SetNextWindowSize(ImVec2(m_data->window.getSize().x / (m_data->aspectRatio), m_data->window.getSize().y / m_data->aspectRatio));
+	ImGui::Begin("##MP1", NULL, m_panelFlags);
+	ImGui::DockSpace(m_dockspaceId3, ImVec2(m_data->window.getSize().x / (m_data->aspectRatio), m_data->window.getSize().y / m_data->aspectRatio), ImGuiDockNodeFlags_NoResize);
+	ImGui::End();
+
+	ImGui::SetNextWindowPos(ImVec2((m_data->window.getSize().x / 5), m_data->window.getSize().y / (m_data->aspectRatio)));
+	ImGui::SetNextWindowSize(ImVec2(m_data->window.getSize().x / (m_data->aspectRatio), m_data->window.getSize().y - (m_data->window.getSize().y / (m_data->aspectRatio))));
+	ImGui::Begin("##MP2", NULL, m_panelFlags);
+	ImGui::DockSpace(m_dockspaceId4, ImVec2(m_data->window.getSize().x / (m_data->aspectRatio), m_data->window.getSize().y - (m_data->window.getSize().y / (m_data->aspectRatio))), ImGuiDockNodeFlags_NoResize);
+	ImGui::End();
+
+	ImGui::SetNextWindowPos(ImVec2(m_data->window.getSize().x / 5 + (m_data->window.getSize().x / (m_data->aspectRatio)), 0));
+	ImGui::SetNextWindowSize(ImVec2(m_data->window.getSize().x - (m_data->window.getSize().x / 5 + (m_data->window.getSize().x / (m_data->aspectRatio))), m_data->window.getSize().y));
+	ImGui::Begin("##RP1", NULL, m_panelFlags);
+	ImGui::DockSpace(m_dockspaceId5, ImVec2(m_data->window.getSize().x - (m_data->window.getSize().x / 5 + (m_data->window.getSize().x / (m_data->aspectRatio))), m_data->window.getSize().y), ImGuiDockNodeFlags_NoResize);
+	ImGui::End();
+
+	ImGui::PopStyleVar(3);
+}
+
+void Editor::renderDebugPanel()
+{
+	ImGui::SetNextWindowDockID(m_dockspaceId1, ImGuiCond_Once);
+	ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Once);
+	ImGui::SetNextWindowSize(ImVec2(m_data->window.getSize().x / 5, m_data->window.getSize().y / 2), ImGuiCond_Once);
+	ImGui::Begin("Debug Panel", NULL, m_expandablePanelFlags);
+
+	ImGui::End();
+}
+
+void Editor::renderPerformancePanel()
+{
+	ImGui::SetNextWindowDockID(m_dockspaceId1, ImGuiCond_Once);
 	ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Once);
 	ImGui::SetNextWindowSize(ImVec2(m_data->window.getSize().x / 5, m_data->window.getSize().y / 2), ImGuiCond_Once);
 	ImGui::Begin("Performance Panel", NULL, m_expandablePanelFlags);
@@ -104,11 +162,7 @@ void Editor::renderPerformancePanel()
 
 void Editor::renderLogViewPanel()
 {
-	ImGui::SetNextWindowPos(ImVec2(0, m_data->window.getSize().y / 2));
-	ImGui::SetNextWindowSize(ImVec2(m_data->window.getSize().x / 5, m_data->window.getSize().y / 2));
-	ImGui::Begin("Left Panel 2", NULL, m_panelFlags);
-	ImGui::End();
-
+	ImGui::SetNextWindowDockID(m_dockspaceId2, ImGuiCond_Once);
 	ImGui::SetNextWindowPos(ImVec2(0, m_data->window.getSize().y / 2), ImGuiCond_Once);
 	ImGui::SetNextWindowSize(ImVec2(m_data->window.getSize().x / 5, m_data->window.getSize().y / 2), ImGuiCond_Once);
 	ImGui::Begin("Log View Panel", NULL, m_expandablePanelFlags);
@@ -117,27 +171,30 @@ void Editor::renderLogViewPanel()
 	ImGui::End();
 }
 
-static void aspectRatio(ImGuiSizeCallbackData* data) 
+static void constrainedByAspectRatio(ImGuiSizeCallbackData* data) 
 { 
-	float aspect_ratio = *(float*)data->UserData;
-	data->DesiredSize.y = (float)(int)(data->DesiredSize.x / aspect_ratio);
+	float aspectRatio = *(float*)data->UserData;
+	data->DesiredSize.y = (float)(int)(data->DesiredSize.x / aspectRatio);
+	LOG_TRACE(Logger::get()) << "ImGuiSizeCallback(): Desired Window Size: " << data->DesiredSize.x << " x " << data->DesiredSize.y;
 }
 
 void Editor::renderSceneViewPanel()
 {
-	//ImVec2 extraSizeNeeded = ImVec2(0.0f, ImGui::GetFrameHeight()); // For title-bar. Multiply by 2 if you have a menu.
-
-	ImGui::SetNextWindowPos(ImVec2(m_data->window.getSize().x / 5, 0));
-	ImGui::SetNextWindowSize(ImVec2(m_data->window.getSize().x / (m_data->aspectRatio), m_data->window.getSize().y / m_data->aspectRatio));
-	ImGui::Begin("Middle Panel 1", NULL, m_panelFlags);
-	ImGui::End();
-
-	const float aspect_ratio = 16.0f / 9.0f;
+	const float aspectRatio = 16.0f / 9.0f;
+	ImGui::GetIO().ConfigDockingAlwaysTabBar = false;
+	ImGui::SetNextWindowDockID(m_dockspaceId3, ImGuiCond_Once);
 	ImGui::SetNextWindowPos(ImVec2(m_data->window.getSize().x / 5, 0), ImGuiCond_Once);
-	ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(FLT_MAX, FLT_MAX), aspectRatio, (void*)&aspect_ratio);
+	ImGui::SetNextWindowSizeConstraints
+	(
+		ImVec2(m_data->window.getSize().x / (m_data->aspectRatio), m_data->window.getSize().y / m_data->aspectRatio), 
+		ImVec2(FLT_MAX, FLT_MAX), 
+		constrainedByAspectRatio,
+		(void*)&aspectRatio
+	);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 	ImGui::Begin("Scene View Panel", NULL, m_expandablePanelFlags);
 	ImGui::PopStyleVar();
+
 
 	m_reg->get<SceneViewRenderer>(m_sceneViewTextureID).rd.clear();
 
@@ -146,36 +203,29 @@ void Editor::renderSceneViewPanel()
 	sf::Sprite gameView;
 	gameView.setTexture(m_reg->get<SceneViewRenderer>(m_sceneViewTextureID).rd.getTexture());
 	gameView.setScale(ImGui::GetWindowWidth() / m_data->window.getSize().x, (ImGui::GetWindowHeight() - ImGui::GetFrameHeight()) / m_data->window.getSize().y);
-
-	//gameView.setScale(ImGui::GetWindowWidth() / m_data->window.getSize().x, ImGui::GetWindowHeight() / m_data->window.getSize().y);
 	ImGui::Image(gameView);
 
+	//LOG_DEBUG(Logger::get()) << "SceneView Size: " << ImGui::GetWindowSize().x << " x " << ImGui::GetWindowSize().y;
+	//LOG_DEBUG(Logger::get()) << "SceneView VP Size: " << ImGui::GetWindowViewport()->Size.x << " x " << ImGui::GetWindowViewport()->Size.y;
+
 	ImGui::End();
+	ImGui::GetIO().ConfigDockingAlwaysTabBar = true;
 }
 
 void Editor::renderFileExplorerPanel()
 {
-	ImGui::SetNextWindowPos(ImVec2((m_data->window.getSize().x / 5), m_data->window.getSize().y / (m_data->aspectRatio)));
-	ImGui::SetNextWindowSize(ImVec2(m_data->window.getSize().x / (m_data->aspectRatio), m_data->window.getSize().y - (m_data->window.getSize().y / (m_data->aspectRatio))));
-	ImGui::Begin("Middle Panel 2", NULL, m_panelFlags);
-	ImGui::End();
-
+	ImGui::SetNextWindowDockID(m_dockspaceId4, ImGuiCond_Once);
 	ImGui::SetNextWindowPos(ImVec2((m_data->window.getSize().x / 5), m_data->window.getSize().y / (m_data->aspectRatio)), ImGuiCond_Once);
 	ImGui::SetNextWindowSize(ImVec2(m_data->window.getSize().x / (m_data->aspectRatio), m_data->window.getSize().y - (m_data->window.getSize().y / (m_data->aspectRatio))), ImGuiCond_Once);
 	ImGui::Begin("FileExplorer Panel", NULL, m_expandablePanelFlags);
 
-	ImGui::ShowDemoWindow();
 
 	ImGui::End();
 }
 
 void Editor::renderPropertiesPanel()
 {
-	ImGui::SetNextWindowPos(ImVec2(m_data->window.getSize().x / 5 + (m_data->window.getSize().x / (m_data->aspectRatio)), 0));
-	ImGui::SetNextWindowSize(ImVec2(m_data->window.getSize().x - (m_data->window.getSize().x / 5 + (m_data->window.getSize().x / (m_data->aspectRatio))), m_data->window.getSize().y));
-	ImGui::Begin("Right Panel 1", NULL, m_panelFlags);
-	ImGui::End();
-
+	ImGui::SetNextWindowDockID(m_dockspaceId5, ImGuiCond_Once);
 	ImGui::SetNextWindowPos(ImVec2(m_data->window.getSize().x / 5 + (m_data->window.getSize().x / (m_data->aspectRatio)), 0), ImGuiCond_Once);
 	ImGui::SetNextWindowSize(ImVec2(m_data->window.getSize().x - (m_data->window.getSize().x / 5 + (m_data->window.getSize().x / (m_data->aspectRatio))), m_data->window.getSize().y), ImGuiCond_Once);
 	ImGui::Begin("Properties Panel", NULL, m_expandablePanelFlags);
