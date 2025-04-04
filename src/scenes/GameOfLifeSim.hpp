@@ -25,7 +25,7 @@ public:
 
 	void drawOptions();
 	int getNeighbors(std::vector<std::vector<int>>& board, int i, int j);
-	void readFile(const std::string& fileName);
+	void readFile(std::string_view fileName);
 
 private:
 	GlobalData* m_data;

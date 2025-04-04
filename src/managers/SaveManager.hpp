@@ -18,10 +18,10 @@ public:
 	SaveManager(const std::string filepath);
 
 	SystemStatus init(ConfigData& configMap);
-	SystemStatus load(const std::string& filename, ConfigData& configMap);
-	SystemStatus load(const std::string& filename, DataMap& dataMap);
-	SystemStatus save(const std::string& filename, const ConfigData& configMap);
-	SystemStatus save(const std::string& filename, const DataMap& dataMap);
+	SystemStatus load(std::string_view filename, ConfigData& configMap);
+	SystemStatus load(std::string_view filename, DataMap& dataMap);
+	SystemStatus save(std::string_view filename, const ConfigData& configMap);
+	SystemStatus save(std::string_view filename, const DataMap& dataMap);
 
 	static std::string getType(const std::any& data);
 	static std::string getValue(const std::any& data);
@@ -48,7 +48,7 @@ private:
 	std::any anyCast(rapidjson::Value& val);
 	bool createVal(rapidjson::Document& doc, rapidjson::Value& val, const std::any& data);
 	void vecParseHelper(rapidjson::Value& val, DataMap& dataMap, std::string key, std::vector<std::any>& vec);
-	SystemStatus creatConfig(const std::string& filename);
+	SystemStatus creatConfig(std::string_view filename);
 
 private:
 	const std::filesystem::path RELATIVE_PATH;

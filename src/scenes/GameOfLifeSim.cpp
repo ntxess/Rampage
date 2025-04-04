@@ -210,9 +210,9 @@ int GameOfLifeSim::getNeighbors(std::vector<std::vector<int>>& board, int i, int
 	return neighbors;
 }
 
-void GameOfLifeSim::readFile(const std::string& filename)
+void GameOfLifeSim::readFile(std::string_view filename)
 {
-	std::ifstream input(filename);
+	std::ifstream input(filename.data());
 	if (!input.is_open())
 	{
 		std::cout << "Failed to open: " << filename << "\n";

@@ -1,8 +1,8 @@
 #pragma once
 
-#include <map>
+#include <unordered_map>
 
 struct EntityStatus
 {
-	std::map<std::string, float> values;
+	std::unordered_map<std::string, float> values;
 };

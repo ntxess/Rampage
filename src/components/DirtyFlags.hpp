@@ -6,8 +6,6 @@ struct UpdateEntityEvent
 {
 	UpdateEntityEvent() : timeStart(std::chrono::steady_clock::now()), maxDuration(0) {}
 	UpdateEntityEvent(std::chrono::milliseconds duration) : timeStart(std::chrono::steady_clock::now()), maxDuration(duration) {}
-	std::chrono::steady_clock::time_point timeStart;
-	std::chrono::milliseconds maxDuration;
 
 	bool isReady()
 	{
@@ -16,14 +14,15 @@ struct UpdateEntityEvent
 		timeStart = std::chrono::steady_clock::now();
 		return true;
 	}
+
+	std::chrono::steady_clock::time_point timeStart;
+	std::chrono::milliseconds maxDuration;
 };
 
 struct UpdateEntityPolling
 {
 	UpdateEntityPolling() : timeStart(std::chrono::steady_clock::now()), maxDuration(0) {}
 	UpdateEntityPolling(std::chrono::milliseconds duration, bool readyOnStart = true) : timeStart(std::chrono::steady_clock::now()), maxDuration(duration) {}
-	std::chrono::steady_clock::time_point timeStart;
-	const std::chrono::milliseconds maxDuration;
 
 	bool isReady()
 	{
@@ -32,4 +31,7 @@ struct UpdateEntityPolling
 		timeStart = std::chrono::steady_clock::now();
 		return true;
 	}
+
+	std::chrono::steady_clock::time_point timeStart;
+	const std::chrono::milliseconds maxDuration;
 };

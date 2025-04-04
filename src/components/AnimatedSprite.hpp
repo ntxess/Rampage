@@ -5,8 +5,6 @@
 #include <Thor/Animations/Animator.hpp>
 #include <Thor/Animations/FrameAnimation.hpp>
 
-#include <string>
-
 class AnimatedSprite
 {
 	AnimatedSprite(sf::Texture& texture, bool repeat = false)

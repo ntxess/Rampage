@@ -53,9 +53,9 @@ void Logger::setupFileLog(const std::string logPath)
 	boost::log::add_common_attributes();
 }
 
-void Logger::setFilterSeverity(const std::string& severityLevel)
+void Logger::setFilterSeverity(std::string_view severityLevel)
 {
-	boost::log::core::get()->set_filter(boost::log::trivial::severity >= getFilterSeverity(severityLevel));
+	boost::log::core::get()->set_filter(boost::log::trivial::severity >= getFilterSeverity(severityLevel.data()));
 }
 
 void Logger::removeAllSinks()
@@ -63,9 +63,9 @@ void Logger::removeAllSinks()
 	boost::log::core::get()->remove_all_sinks();
 }
 
-boost::log::trivial::severity_level Logger::getFilterSeverity(const std::string& severityLevel)
+boost::log::trivial::severity_level Logger::getFilterSeverity(std::string_view severityLevel)
 {
-	static const std::unordered_map<std::string, boost::log::trivial::severity_level> m_filterMap =
+	static const std::unordered_map<std::string_view, boost::log::trivial::severity_level> m_filterMap =
 	{
 		{ "trace", boost::log::trivial::trace },
 		{ "debug", boost::log::trivial::debug },

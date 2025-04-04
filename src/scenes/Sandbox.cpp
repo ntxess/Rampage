@@ -69,7 +69,7 @@ void Sandbox::init()
 		m_reg.emplace<TeamTag>(mob, Team::ENEMY);
 		m_reg.emplace<Sprite>(mob, m_data->textureManager["coin"]);
 		m_reg.emplace<EntityStatus>(mob);
-		m_reg.get<EntityStatus>(mob).values["HP"] = 1000.f;
+		m_reg.get<EntityStatus>(mob).values["HP"] = 1.f;
 		m_reg.get<Sprite>(mob).setPosition(float(dist6(rng)), float(dist6(rng) % int(height)));
 	}
 

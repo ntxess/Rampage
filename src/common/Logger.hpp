@@ -9,7 +9,6 @@
 #include <boost/log/sources/severity_logger.hpp>
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/log/support/date_time.hpp>
-#include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <string>
 #include <sstream>
 #include <unordered_map>
@@ -41,7 +40,7 @@ public:
 	void toggleLogging(bool option);
 	void setupConsoleLog();
 	void setupFileLog(const std::string logPath);
-	void setFilterSeverity(const std::string& severityLevel);
+	void setFilterSeverity(std::string_view severityLevel);
 	void removeAllSinks();
 
 private:
@@ -50,7 +49,7 @@ private:
 	Logger(const Logger&) = delete;
 	Logger& operator=(const Logger&) = delete;
 
-	boost::log::trivial::severity_level getFilterSeverity(const std::string& severityLevel);
+	boost::log::trivial::severity_level getFilterSeverity(std::string_view severityLevel);
 	std::string generateFilename() const;
 
 private:

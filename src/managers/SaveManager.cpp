@@ -72,10 +72,10 @@ SystemStatus SaveManager::init(ConfigData& configMap)
  * @param [OUT] configMap
  * @return SystemStatus error code if failure; otherwise, SystemStatus::Success.
 */
-SystemStatus SaveManager::load(const std::string& filename, ConfigData& configMap)
+SystemStatus SaveManager::load(std::string_view filename, ConfigData& configMap)
 {
     auto path = RELATIVE_PATH;
-    path.append(CONFIG_FOLDER_PATH).append(filename);
+    path.append(CONFIG_FOLDER_PATH).append(filename.data());
     std::ifstream ifs(path.string(), std::fstream::app);
 
     if (!ifs.good())
@@ -100,9 +100,9 @@ SystemStatus SaveManager::load(const std::string& filename, ConfigData& configMa
  * @param dataMap
  * @return
 */
-SystemStatus SaveManager::load(const std::string& filename, DataMap& dataMap)
+SystemStatus SaveManager::load(std::string_view filename, DataMap& dataMap)
 {
-    auto path = resolvePath(filename);
+    auto path = resolvePath(filename.data());
     std::ifstream ifs(path, std::fstream::app);
 
     if (!ifs.good())
@@ -127,7 +127,7 @@ SystemStatus SaveManager::load(const std::string& filename, DataMap& dataMap)
  * @param [IN] configMap
  * @return SystemStatus error code if failure; otherwise, SystemStatus::Success.
 */
-SystemStatus SaveManager::save(const std::string& filename, const ConfigData& configMap)
+SystemStatus SaveManager::save(std::string_view filename, const ConfigData& configMap)
 {
     auto path = RELATIVE_PATH;
     std::ifstream ifs(path.append(CONFIG_FOLDER_PATH).append(filename).string(), std::fstream::app);
@@ -165,9 +165,9 @@ SystemStatus SaveManager::save(const std::string& filename, const ConfigData& co
  * @brief
  * @return
 */
-SystemStatus SaveManager::save(const std::string& filename, const DataMap& dataMap)
+SystemStatus SaveManager::save(std::string_view filename, const DataMap& dataMap)
 {
-    auto path = resolvePath(filename);
+    auto path = resolvePath(filename.data());
     std::ifstream ifs(path, std::fstream::app);
 
     if (!ifs.good())
@@ -795,10 +795,10 @@ void SaveManager::vecParseHelper(rapidjson::Value& val, DataMap& dataMap, std::s
  * @param [IN] filename
  * @return SystemStatus error code if failure; otherwise, SystemStatus::Success.
 */
-SystemStatus SaveManager::creatConfig(const std::string& filename)
+SystemStatus SaveManager::creatConfig(std::string_view filename)
 {
     auto path = RELATIVE_PATH;
-    std::fstream ifs(path.append(CONFIG_FOLDER_PATH).append(filename).string(), std::fstream::in | std::fstream::out | std::fstream::app);
+    std::fstream ifs(path.append(CONFIG_FOLDER_PATH).append(filename.data()).string(), std::fstream::in | std::fstream::out | std::fstream::app);
 
     if (!ifs.good())
         return SystemStatus::SAVE_MNGR_FAIL_READ;

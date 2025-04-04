@@ -248,7 +248,6 @@ void Editor::renderSceneViewPanel()
 	ImGui::Begin("Scene View Panel", NULL, m_expandablePanelFlags);
 	ImGui::PopStyleVar();
 
-
 	m_reg->get<SceneViewRenderer>(m_sceneMap[m_selectedSceneKey]->renderTextureID).rd.clear();
 
 	// Call to the actual scenes render function
@@ -284,21 +283,144 @@ void Editor::renderPropertiesPanel()
 	ImGui::SetNextWindowSize(ImVec2(m_data->window.getSize().x - (m_data->window.getSize().x / 5 + (m_data->window.getSize().x / (m_data->aspectRatio))), m_data->window.getSize().y), ImGuiCond_Once);
 	ImGui::Begin("Properties Panel", NULL, m_expandablePanelFlags);
 
-	const auto& view = m_reg->view<Sprite, EntityStatus>();
+	const auto& view = m_reg->view<Sprite>();
 	for (const auto& entityID : view)
 	{
 		std::string ID = "Entity " + std::to_string(static_cast<unsigned int>(entityID));
 		if (ImGui::CollapsingHeader(ID.c_str()))
 		{
-			auto& statsMap = m_reg->get<EntityStatus>(entityID).values;
-			for (auto& [name, val] : statsMap)
+			const float divider1Pos = ImGui::GetWindowWidth() / 3.f;
+			const float divider2Pos = (ImGui::GetWindowWidth() * 2.f) / 3.f;
+			sf::Sprite& sprite = m_reg->get<Sprite>(entityID).sprite;
+
+			ImGui::BeginChild(("##EntityColm" + ID).c_str(), { ImGui::GetWindowWidth(), ImGui::GetWindowHeight() / 2.f });
+			
+			ImGui::PushItemWidth((ImGui::GetWindowWidth() / 4.f) - 25.f);
+
+			ImGui::SeparatorText("Sprite");
+
+			float xOrigin = sprite.getOrigin().x;
+			float yOrigin = sprite.getOrigin().y;
+			float xTextureWidth = sprite.getTextureRect().width;
+			float yTextureHeight = sprite.getTextureRect().height;
+			bool isRepeated = sprite.getTexture()->isRepeated();
+			int rHexVal = sprite.getColor().r;
+			int gHexVal = sprite.getColor().g;
+			int bHexVal = sprite.getColor().b;
+
+			ImGui::Text("Texture");
+			ImGui::SameLine(divider1Pos);
+			ImGui::Text("Color");
+			ImGui::NewLine();
+
+			ImGui::SameLine(30.f);
+			ImGui::ImageButton(("##EntityButton" + ID).c_str(), *sprite.getTexture(), {48.f, 48.f}, sf::Color::Transparent, sf::Color::White);
+			//ImGui::SameLine();
+			//if (ImGui::Checkbox(("Repeat##SetRepeat" + ID).c_str(), &isRepeated))
+			//{
+			//	m_reg->emplace<Sprite>(entityID, m_data->textureManager["player"], isRepeated);
+			//	sprite = m_reg->get<Sprite>(entityID).sprite;
+			//}
+
+			ImGui::SameLine(divider1Pos);
+			auto rHexValInput = ImGui::InputInt(("R##SpColorHexInput" + ID).c_str(), &rHexVal);
+			ImGui::SetCursorPos({ divider1Pos, 62.5f});
+			auto gHexValInput = ImGui::InputInt(("G##SpColorHexInput" + ID).c_str(), &gHexVal);
+			ImGui::SetCursorPos({ divider1Pos, 85.5f});
+			auto bHexValInput = ImGui::InputInt(("B##SpColorHexInput" + ID).c_str(), &bHexVal);
+
+			if (rHexValInput || gHexValInput || bHexValInput) sprite.setColor(sf::Color(rHexVal, gHexVal, bHexVal));
+
+			ImGui::NewLine();
+			ImGui::Text("Origin");
+			ImGui::SameLine(divider1Pos);
+			ImGui::Text("Dimension");
+
+			auto xOriginInput = ImGui::InputFloat(("X##TfOriginInput" + ID).c_str(), &xOrigin);
+			ImGui::SameLine(divider1Pos);
+			auto textureWidthInput = ImGui::InputFloat(("Width##TfTextureInput" + ID).c_str(), &xTextureWidth);
+
+			auto yOriginInput = ImGui::InputFloat(("Y##TfOriginInput" + ID).c_str(), &yOrigin);
+			ImGui::SameLine(divider1Pos);
+			auto textureHeightInput = ImGui::InputFloat(("Height##TfTextureInput" + ID).c_str(), &yTextureHeight);
+
+			if (xOriginInput || yOriginInput) sprite.setOrigin(xOrigin, yOrigin);
+			if (textureWidthInput || textureHeightInput) sprite.setTextureRect(sf::IntRect(0, 0, static_cast<int>(xTextureWidth), static_cast<int>(yTextureHeight)));
+			
+			ImGui::SeparatorText("Transform");
+
+			float xPos = sprite.getPosition().x;
+			float yPos = sprite.getPosition().y;
+			float rotationDegree = sprite.getRotation();
+			float xScale = sprite.getScale().x;
+			float yScale = sprite.getScale().y;
+
+			ImGui::Text("Position");
+			ImGui::SameLine(divider1Pos);
+			ImGui::Text("Rotation");
+			ImGui::SameLine(divider2Pos);
+			ImGui::Text("Scale");
+
+			auto xPosInput = ImGui::InputFloat(("X##TfPosInput" + ID).c_str(), &xPos);
+			ImGui::SameLine(divider1Pos);
+			auto degRotationInput = ImGui::InputFloat(("Deg##TfRotationInput" + ID).c_str(), &rotationDegree);
+			ImGui::SameLine(divider2Pos);
+			auto xScaleInput = ImGui::InputFloat(("X##TfScaleInput" + ID).c_str(), &xScale);
+
+			auto yPosInput = ImGui::InputFloat(("Y##TfPosInput" + ID).c_str(), &yPos);
+			ImGui::SameLine(divider1Pos);
+			auto degRotationSlider = ImGui::SliderFloat(("Deg##TfRotationSlider" + ID).c_str(), &rotationDegree, -360.f, 360.f);
+			ImGui::SameLine(divider2Pos);
+			auto yScaleInput = ImGui::InputFloat(("Y##TfScaleInput" + ID).c_str(), &yScale);
+
+			if (xPosInput || yPosInput) sprite.setPosition(xPos, yPos);
+			if (degRotationInput || degRotationSlider) sprite.setRotation(rotationDegree);
+			if (xScaleInput || yScaleInput) sprite.setScale(xScale, yScale);
+
+			ImGui::PopItemWidth();
+
+			if (m_reg->all_of<EntityStatus>(entityID))
 			{
-				ImGui::Text(name.c_str());
+				ImGui::SeparatorText("Entity Status");
+				std::vector<std::string> discardedStatNames;
+				auto& statsMap = m_reg->get<EntityStatus>(entityID).values;
+				for (auto& [name, val] : statsMap)
+				{
+					ImGui::Text(name.c_str());
+					ImGui::SameLine(ImGui::GetWindowWidth() / 2.f);
+					ImGui::SetNextItemWidth((ImGui::GetWindowWidth() / 2.f) - 85.f);
+					ImGui::InputFloat(("##Input" + name + ID).c_str(), &val);
+					ImGui::SameLine();
+					if (ImGui::Button(("##DiscardStatButton" + name + ID).c_str(), { 20.f, 20.f })) discardedStatNames.push_back(name);
+				}
+
+				for (const auto& name : discardedStatNames)
+				{
+					statsMap.erase(name);
+				}
+
+				ImGui::Separator();
+				ImGui::Text("Add New Stat");
+				static char newStatName[64] = {0};
+				static float newStatVal = 0.f;
+				ImGui::SetNextItemWidth((ImGui::GetWindowWidth() / 2.f) - 85.f);
+				ImGui::InputText(("##NewStatName" + ID).c_str(), newStatName, 64);
+				ImGui::SameLine(ImGui::GetWindowWidth() / 2.f);
+				ImGui::SetNextItemWidth((ImGui::GetWindowWidth() / 2.f) - 85.f);
+				ImGui::InputFloat(("##NewStatVal" + ID).c_str(), &newStatVal);
 				ImGui::SameLine();
-				ImGui::Text(std::to_string(val).c_str());
-				ImGui::SameLine();
-				ImGui::InputFloat(std::string("##Input" + ID).c_str(), &val);
+				if (ImGui::Button(("##AddStatButton" + ID).c_str(), { 20.f, 20.f }))
+				{
+					if (newStatName[0] != '\0')
+					{
+						statsMap[newStatName] = newStatVal;
+						newStatName[0] = '\0';
+						newStatVal = 0.f;
+					}
+				}
 			}
+
+			ImGui::EndChild();
 		}
 	}
 
