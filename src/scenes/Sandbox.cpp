@@ -62,7 +62,7 @@ void Sandbox::init()
 	std::mt19937 rng(dev());
 	std::uniform_int_distribution<std::mt19937::result_type> dist6(0, static_cast<unsigned int>(width));
 
-	for (size_t i = 0; i < 50; i++)
+	for (size_t i = 0; i < 10; i++)
 	{
 		// Entity create and store into the scene's ENTT::entity registry
 		entt::entity mob = m_reg.create();

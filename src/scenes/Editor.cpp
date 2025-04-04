@@ -291,13 +291,17 @@ void Editor::renderPropertiesPanel()
 		{
 			const float divider1Pos = ImGui::GetWindowWidth() / 3.f;
 			const float divider2Pos = (ImGui::GetWindowWidth() * 2.f) / 3.f;
+			const float elDivider1Pos = ImGui::GetWindowWidth() / 6.f;
+
 			sf::Sprite& sprite = m_reg->get<Sprite>(entityID).sprite;
 
-			ImGui::BeginChild(("##EntityColm" + ID).c_str(), { ImGui::GetWindowWidth(), ImGui::GetWindowHeight() / 2.f });
+			ImGui::BeginChild(("##EntityColm" + ID).c_str(), { ImGui::GetWindowWidth(), ImGui::GetWindowHeight() });
 			
 			ImGui::PushItemWidth((ImGui::GetWindowWidth() / 4.f) - 25.f);
 
+			ImGui::Separator();
 			ImGui::SeparatorText("Sprite");
+			ImGui::Separator();
 
 			float xOrigin = sprite.getOrigin().x;
 			float yOrigin = sprite.getOrigin().y;
@@ -323,13 +327,14 @@ void Editor::renderPropertiesPanel()
 			//}
 
 			ImGui::SameLine(divider1Pos);
-			auto rHexValInput = ImGui::InputInt(("R##SpColorHexInput" + ID).c_str(), &rHexVal);
-			ImGui::SetCursorPos({ divider1Pos, 62.5f});
+			auto rHexValInput = ImGui::InputInt(("R##SpColorHexInput" + ID).c_str(), &rHexVal); // NOTE: 23 is the spacing between InputInt and the next item
+			ImGui::SetCursorPos({ divider1Pos, 71.f});
 			auto gHexValInput = ImGui::InputInt(("G##SpColorHexInput" + ID).c_str(), &gHexVal);
-			ImGui::SetCursorPos({ divider1Pos, 85.5f});
+			ImGui::SetCursorPos({ divider1Pos, 94.f});
 			auto bHexValInput = ImGui::InputInt(("B##SpColorHexInput" + ID).c_str(), &bHexVal);
 
-			if (rHexValInput || gHexValInput || bHexValInput) sprite.setColor(sf::Color(rHexVal, gHexVal, bHexVal));
+			if (rHexValInput || gHexValInput || bHexValInput) 
+				sprite.setColor(sf::Color(rHexVal, gHexVal, bHexVal));
 
 			ImGui::NewLine();
 			ImGui::Text("Origin");
@@ -344,10 +349,16 @@ void Editor::renderPropertiesPanel()
 			ImGui::SameLine(divider1Pos);
 			auto textureHeightInput = ImGui::InputFloat(("Height##TfTextureInput" + ID).c_str(), &yTextureHeight);
 
-			if (xOriginInput || yOriginInput) sprite.setOrigin(xOrigin, yOrigin);
-			if (textureWidthInput || textureHeightInput) sprite.setTextureRect(sf::IntRect(0, 0, static_cast<int>(xTextureWidth), static_cast<int>(yTextureHeight)));
+			if (xOriginInput || yOriginInput) 
+				sprite.setOrigin(xOrigin, yOrigin);
+
+			if (textureWidthInput || textureHeightInput) 
+				sprite.setTextureRect(sf::IntRect(0, 0, static_cast<int>(xTextureWidth), static_cast<int>(yTextureHeight)));
 			
+			ImGui::NewLine();
+			ImGui::Separator();
 			ImGui::SeparatorText("Transform");
+			ImGui::Separator();
 
 			float xPos = sprite.getPosition().x;
 			float yPos = sprite.getPosition().y;
@@ -373,40 +384,85 @@ void Editor::renderPropertiesPanel()
 			ImGui::SameLine(divider2Pos);
 			auto yScaleInput = ImGui::InputFloat(("Y##TfScaleInput" + ID).c_str(), &yScale);
 
-			if (xPosInput || yPosInput) sprite.setPosition(xPos, yPos);
-			if (degRotationInput || degRotationSlider) sprite.setRotation(rotationDegree);
-			if (xScaleInput || yScaleInput) sprite.setScale(xScale, yScale);
+			if (xPosInput || yPosInput)
+				sprite.setPosition(xPos, yPos);
+
+			if (degRotationInput || degRotationSlider)
+				sprite.setRotation(rotationDegree);
+
+			if (xScaleInput || yScaleInput)
+				sprite.setScale(xScale, yScale);
+
+			if (m_reg->all_of<UpdateEntityEvent>(entityID))
+			{
+				ImGui::NewLine();
+				ImGui::Separator();
+				ImGui::SeparatorText("Entity Event Collider");
+				ImGui::Separator();
+
+				ImGui::Text("I-Frame duration");
+				auto& updateEvent = m_reg->get<UpdateEntityEvent>(entityID);
+				int maxDuration = updateEvent.maxDuration.count();
+				if (ImGui::InputInt(("Sec##EventMaxDurationInput" + ID).c_str(), &maxDuration))
+					updateEvent.maxDuration = std::chrono::milliseconds(maxDuration);
+			}
+
+			if (m_reg->all_of<UpdateEntityPolling>(entityID))
+			{
+				ImGui::NewLine();
+				ImGui::Separator();
+				ImGui::SeparatorText("Entity Polling Collider");
+				ImGui::Separator();
+
+				ImGui::Text("I-Frame duration");
+				auto& updatePolling = m_reg->get<UpdateEntityPolling>(entityID);
+				int maxDuration = updatePolling.maxDuration.count();
+				if (ImGui::InputInt(("Sec##PollingMaxDurationInput" + ID).c_str(), &maxDuration))
+					updatePolling.maxDuration = std::chrono::milliseconds(maxDuration);
+			}
 
 			ImGui::PopItemWidth();
 
 			if (m_reg->all_of<EntityStatus>(entityID))
 			{
+				ImGui::NewLine();
+				ImGui::Separator();
 				ImGui::SeparatorText("Entity Status");
-				std::vector<std::string> discardedStatNames;
+				ImGui::Separator();
+
+				ImGui::Text("Status");
+				ImGui::SameLine(divider1Pos);
+				ImGui::Text("Value");
+
+				std::string discardedStat = "";
 				auto& statsMap = m_reg->get<EntityStatus>(entityID).values;
 				for (auto& [name, val] : statsMap)
 				{
 					ImGui::Text(name.c_str());
-					ImGui::SameLine(ImGui::GetWindowWidth() / 2.f);
-					ImGui::SetNextItemWidth((ImGui::GetWindowWidth() / 2.f) - 85.f);
-					ImGui::InputFloat(("##Input" + name + ID).c_str(), &val);
+					ImGui::SameLine(divider1Pos);
+					ImGui::SetNextItemWidth(ImGui::GetWindowWidth() / 6.f);
+					ImGui::InputFloat(("##StatValInput" + name + ID).c_str(), &val);
 					ImGui::SameLine();
-					if (ImGui::Button(("##DiscardStatButton" + name + ID).c_str(), { 20.f, 20.f })) discardedStatNames.push_back(name);
+					if (ImGui::Button(("##DiscardStatButton" + name + ID).c_str(), { 20.f, 20.f }))
+						discardedStat = name;
 				}
 
-				for (const auto& name : discardedStatNames)
+				if (!discardedStat.empty())
 				{
-					statsMap.erase(name);
+					statsMap.erase(discardedStat);
 				}
 
-				ImGui::Separator();
+				ImGui::NewLine();
 				ImGui::Text("Add New Stat");
-				static char newStatName[64] = {0};
+				ImGui::Text("Status");
+				ImGui::SameLine(divider1Pos);
+				ImGui::Text("Value");
+				static char newStatName[64] = { 0 };
 				static float newStatVal = 0.f;
-				ImGui::SetNextItemWidth((ImGui::GetWindowWidth() / 2.f) - 85.f);
+				ImGui::SetNextItemWidth(ImGui::GetWindowWidth() / 6.f);
 				ImGui::InputText(("##NewStatName" + ID).c_str(), newStatName, 64);
-				ImGui::SameLine(ImGui::GetWindowWidth() / 2.f);
-				ImGui::SetNextItemWidth((ImGui::GetWindowWidth() / 2.f) - 85.f);
+				ImGui::SameLine(divider1Pos);
+				ImGui::SetNextItemWidth(ImGui::GetWindowWidth() / 6.f);
 				ImGui::InputFloat(("##NewStatVal" + ID).c_str(), &newStatVal);
 				ImGui::SameLine();
 				if (ImGui::Button(("##AddStatButton" + ID).c_str(), { 20.f, 20.f }))
@@ -418,6 +474,119 @@ void Editor::renderPropertiesPanel()
 						newStatVal = 0.f;
 					}
 				}
+			}
+
+			if (m_reg->all_of<EffectsList>(entityID))
+			{
+				const char* effectTypes[] = { "NULLTYPE", "INSTANT", "OVERTIME", "TEMPTIMED" }; // NOTE: Update this when adding new effect types
+				
+				ImGui::PushItemWidth(elDivider1Pos);
+
+				ImGui::NewLine();
+				ImGui::Separator();
+				ImGui::SeparatorText("Entity Effects");
+				ImGui::Separator();
+
+				ImGui::Text("Effect Type");
+				ImGui::SameLine(elDivider1Pos + 10.f);
+				ImGui::Text("Aff. Status");
+				ImGui::SameLine(elDivider1Pos * 2 + 20.f);
+				ImGui::Text("Modifier");
+				ImGui::SameLine(elDivider1Pos * 3 + 30.f);
+				ImGui::Text("Max Duration");
+				ImGui::SameLine(elDivider1Pos * 4 + 40.f);
+				ImGui::Text("Tick Rate");
+
+				int index = 0;
+				int discardIndex = -1;
+				auto& effectVec = m_reg->get<EffectsList>(entityID).effectsList;
+				for (auto& [effectType, effect] : effectVec)
+				{
+					int selectedEffectType = static_cast<int>(effectType);
+					if (ImGui::Combo(("##EffectType" + std::to_string(index) + ID).c_str(), &selectedEffectType, effectTypes, IM_ARRAYSIZE(effectTypes)))
+						effectType = static_cast<EffectType>(selectedEffectType);
+
+					ImGui::SameLine(elDivider1Pos + 10.f);
+
+					char* statusToModify = const_cast<char*>(effect.statusToModify.c_str());
+					if (ImGui::InputText(("##EffectName" + std::to_string(index) + ID).c_str(), statusToModify, 64, 0))
+						effect.statusToModify = statusToModify;
+
+					ImGui::SameLine(elDivider1Pos * 2 + 20.f);
+
+					ImGui::InputFloat(("##EffectVal" + std::to_string(index) + ID).c_str(), &effect.modificationVal);
+
+					ImGui::SameLine(elDivider1Pos * 3 + 30.f);
+
+					int maxDuration = effect.maxDuration.count();
+					if (ImGui::InputInt(("##EffectMaxDuration" + std::to_string(index) + ID).c_str(), &maxDuration))
+						effect.maxDuration = std::chrono::milliseconds(maxDuration);
+
+					ImGui::SameLine(elDivider1Pos * 4 + 40.f);
+
+					int tickRate = effect.tickRate.count();
+					if (ImGui::InputInt(("##EffectTickRate" + std::to_string(index) + ID).c_str(), &tickRate))
+						effect.tickRate = std::chrono::milliseconds(tickRate);
+
+					ImGui::SameLine(elDivider1Pos * 5 + 50.f);
+
+					if (ImGui::Button(("##DiscardEffectButton" + std::to_string(index) + ID).c_str(), { 20.f, 20.f }))
+						discardIndex = index;
+
+					++index;
+				}
+
+				if (discardIndex != -1)
+				{
+					effectVec.erase(effectVec.begin() + discardIndex);
+				}
+
+				ImGui::NewLine();
+				ImGui::Text("Add New Effects");
+				ImGui::Text("Effect Type");
+				ImGui::SameLine(elDivider1Pos + 10.f);
+				ImGui::Text("Aff. Status");
+				ImGui::SameLine(elDivider1Pos * 2 + 20.f);
+				ImGui::Text("Modifier");
+				ImGui::SameLine(elDivider1Pos * 3 + 30.f);
+				ImGui::Text("Max Duration");
+				ImGui::SameLine(elDivider1Pos * 4 + 40.f);
+				ImGui::Text("Tick Rate");
+
+				static int newEffectType = 0;
+				static char newStatusToModify[64] = { 0 };
+				static float newEffectVal = 0.f;
+				static int newMaxDuration = 0;
+				static int newTickRate = 0;
+
+				ImGui::Combo(("##NewEffectType" + std::to_string(index) + ID).c_str(), &newEffectType, effectTypes, IM_ARRAYSIZE(effectTypes));
+				ImGui::SameLine(elDivider1Pos + 10.f);
+				ImGui::InputText(("##NewEffectName" + std::to_string(index) + ID).c_str(), newStatusToModify, 64, 0);
+				ImGui::SameLine(elDivider1Pos * 2 + 20.f);
+				ImGui::InputFloat(("##NewEffectVal" + std::to_string(index) + ID).c_str(), &newEffectVal);
+				ImGui::SameLine(elDivider1Pos * 3 + 30.f);
+				ImGui::InputInt(("##NewEffectMaxDuration" + std::to_string(index) + ID).c_str(), &newMaxDuration);
+				ImGui::SameLine(elDivider1Pos * 4 + 40.f);
+				ImGui::InputInt(("##NewEffectTickRate" + std::to_string(index) + ID).c_str(), &newTickRate);
+				ImGui::SameLine(elDivider1Pos * 5 + 50.f);
+				if (ImGui::Button(("##AddEffectButton" + std::to_string(index) + ID).c_str(), { 20.f, 20.f }))
+				{
+					if (newStatusToModify[0] != '\0')
+					{
+						Effects newEffect;
+						newEffect.statusToModify = newStatusToModify;
+						newEffect.modificationVal = newEffectVal;
+						newEffect.maxDuration = std::chrono::milliseconds(newMaxDuration);
+						newEffect.tickRate = std::chrono::milliseconds(newTickRate);
+						effectVec.push_back({ static_cast<EffectType>(newEffectType), newEffect });
+						newStatusToModify[0] = '\0';
+						newEffectVal = 0.f;
+						newMaxDuration = 0;
+						newTickRate = 0;
+					}
+				}
+
+				ImGui::PopItemWidth();
 			}
 
 			ImGui::EndChild();

@@ -6,7 +6,7 @@
 struct Effects
 {
 	std::string statusToModify;
-	float modificationVal;
-	std::chrono::milliseconds maxDuration;
-	std::chrono::milliseconds tickRate;
+	float modificationVal = 0;
+	std::chrono::milliseconds maxDuration = std::chrono::milliseconds(0);
+	std::chrono::milliseconds tickRate = std::chrono::milliseconds(0);
 };

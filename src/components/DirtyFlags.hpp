@@ -33,5 +33,5 @@ struct UpdateEntityPolling
 	}
 
 	std::chrono::steady_clock::time_point timeStart;
-	const std::chrono::milliseconds maxDuration;
+	std::chrono::milliseconds maxDuration;
 };
