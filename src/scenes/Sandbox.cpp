@@ -39,23 +39,15 @@ void Sandbox::init()
 	m_reg.get<Sprite>(m_player).setPosition(0, 0);
 
 	// Create event effect for collecting coins
-	Effects collect;
-	collect.statusToModify = "HP";
-	collect.modificationVal = -10.f;
-	m_reg.get<EffectsList>(m_player).effectsList.push_back({ EffectType::INSTANT, collect });
-
-	Effects poison;
-	poison.statusToModify = "HP";
-	poison.modificationVal = -1.f;
-	poison.maxDuration = std::chrono::milliseconds(5000);
-	poison.tickRate = std::chrono::milliseconds(1000);
-	m_reg.get<EffectsList>(m_player).effectsList.push_back({ EffectType::OVERTIME, poison });
-
-	Effects hpLimiter;
-	hpLimiter.statusToModify = "HP";
-	hpLimiter.modificationVal = -5.f;
-	hpLimiter.maxDuration = std::chrono::milliseconds(5000);
-	m_reg.get<EffectsList>(m_player).effectsList.push_back({ EffectType::TEMPTIMED, hpLimiter });
+	m_reg.get<EffectsList>(m_player).effectsList.push_back({ EffectType::INSTANT, Effects{"HP", -10.f} });
+	m_reg.get<EffectsList>(m_player).effectsList.push_back({ 
+		EffectType::OVERTIME, 
+		Effects{"HP", 
+		-1.f, 
+		std::chrono::milliseconds(5000),
+		std::chrono::milliseconds(1000)} 
+	});
+	m_reg.get<EffectsList>(m_player).effectsList.push_back({ EffectType::TEMPTIMED, Effects{"HP", -10.f, std::chrono::milliseconds(5000)} });
 
 	// Generate a ton of sprite for testing in random places within the boundary of the window
 	std::random_device dev;

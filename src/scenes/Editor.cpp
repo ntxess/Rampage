@@ -281,13 +281,27 @@ void Editor::renderPropertiesPanel()
 	ImGui::SetNextWindowDockID(m_dockspaceId5, ImGuiCond_Once);
 	ImGui::SetNextWindowPos(ImVec2(m_data->window.getSize().x / 5 + (m_data->window.getSize().x / (m_data->aspectRatio)), 0), ImGuiCond_Once);
 	ImGui::SetNextWindowSize(ImVec2(m_data->window.getSize().x - (m_data->window.getSize().x / 5 + (m_data->window.getSize().x / (m_data->aspectRatio))), m_data->window.getSize().y), ImGuiCond_Once);
-	ImGui::Begin("Properties Panel", NULL, m_expandablePanelFlags);
+	ImGui::Begin("Properties Panel", NULL, m_expandablePanelFlags | ImGuiWindowFlags_AlwaysVerticalScrollbar);
+	static std::unordered_map<entt::entity, bool> closableGroups;
 
 	const auto& view = m_reg->view<Sprite>();
 	for (const auto& entityID : view)
 	{
+		// Check if the entity ID is already in the map and set it to true if not
+		// This ensures that the group is closable by default
+		if (!closableGroups.count(entityID))
+		{
+			closableGroups[entityID] = true;
+		}
+
+		if (closableGroups[entityID] == false)
+		{
+			m_reg->destroy(entityID);
+			continue;
+		}
+
 		std::string ID = "Entity " + std::to_string(static_cast<unsigned int>(entityID));
-		if (ImGui::CollapsingHeader(ID.c_str()))
+		if (ImGui::CollapsingHeader(ID.c_str(), &closableGroups[entityID]))
 		{
 			const float divider1Pos = ImGui::GetWindowWidth() / 3.f;
 			const float divider2Pos = (ImGui::GetWindowWidth() * 2.f) / 3.f;
@@ -436,6 +450,7 @@ void Editor::renderPropertiesPanel()
 
 				std::string discardedStat = "";
 				auto& statsMap = m_reg->get<EntityStatus>(entityID).values;
+				ImGui::PushStyleColor(ImGuiCol_Button, { 0.5f, 0, 0, 1.0f });
 				for (auto& [name, val] : statsMap)
 				{
 					ImGui::Text(name.c_str());
@@ -446,6 +461,7 @@ void Editor::renderPropertiesPanel()
 					if (ImGui::Button(("##DiscardStatButton" + name + ID).c_str(), { 20.f, 20.f }))
 						discardedStat = name;
 				}
+				ImGui::PopStyleColor();
 
 				if (!discardedStat.empty())
 				{
@@ -465,6 +481,7 @@ void Editor::renderPropertiesPanel()
 				ImGui::SetNextItemWidth(ImGui::GetWindowWidth() / 6.f);
 				ImGui::InputFloat(("##NewStatVal" + ID).c_str(), &newStatVal);
 				ImGui::SameLine();
+				ImGui::PushStyleColor(ImGuiCol_Button, { 0, 0.5f, 0, 1.0f });
 				if (ImGui::Button(("##AddStatButton" + ID).c_str(), { 20.f, 20.f }))
 				{
 					if (newStatName[0] != '\0')
@@ -474,6 +491,7 @@ void Editor::renderPropertiesPanel()
 						newStatVal = 0.f;
 					}
 				}
+				ImGui::PopStyleColor();
 			}
 
 			if (m_reg->all_of<EffectsList>(entityID))
@@ -508,9 +526,9 @@ void Editor::renderPropertiesPanel()
 
 					ImGui::SameLine(elDivider1Pos + 10.f);
 
-					char* statusToModify = const_cast<char*>(effect.statusToModify.c_str());
-					if (ImGui::InputText(("##EffectName" + std::to_string(index) + ID).c_str(), statusToModify, 64, 0))
-						effect.statusToModify = statusToModify;
+					char* targetStat = const_cast<char*>(effect.targetStat.c_str());
+					if (ImGui::InputText(("##EffectName" + std::to_string(index) + ID).c_str(), targetStat, 64, 0))
+						effect.targetStat = targetStat;
 
 					ImGui::SameLine(elDivider1Pos * 2 + 20.f);
 
@@ -530,8 +548,10 @@ void Editor::renderPropertiesPanel()
 
 					ImGui::SameLine(elDivider1Pos * 5 + 50.f);
 
+					ImGui::PushStyleColor(ImGuiCol_Button, { 0.5f, 0, 0, 1.0f });
 					if (ImGui::Button(("##DiscardEffectButton" + std::to_string(index) + ID).c_str(), { 20.f, 20.f }))
 						discardIndex = index;
+					ImGui::PopStyleColor();
 
 					++index;
 				}
@@ -569,23 +589,27 @@ void Editor::renderPropertiesPanel()
 				ImGui::SameLine(elDivider1Pos * 4 + 40.f);
 				ImGui::InputInt(("##NewEffectTickRate" + std::to_string(index) + ID).c_str(), &newTickRate);
 				ImGui::SameLine(elDivider1Pos * 5 + 50.f);
+				ImGui::PushStyleColor(ImGuiCol_Button, { 0, 0.5f, 0, 1.0f });
 				if (ImGui::Button(("##AddEffectButton" + std::to_string(index) + ID).c_str(), { 20.f, 20.f }))
 				{
 					if (newStatusToModify[0] != '\0')
 					{
-						Effects newEffect;
-						newEffect.statusToModify = newStatusToModify;
-						newEffect.modificationVal = newEffectVal;
-						newEffect.maxDuration = std::chrono::milliseconds(newMaxDuration);
-						newEffect.tickRate = std::chrono::milliseconds(newTickRate);
-						effectVec.push_back({ static_cast<EffectType>(newEffectType), newEffect });
+						effectVec.push_back({ 
+							static_cast<EffectType>(newEffectType), 
+							Effects{newStatusToModify, 
+								newEffectVal, 
+								std::chrono::milliseconds(newMaxDuration), 
+								std::chrono::milliseconds(newTickRate
+							)} 
+						});
+
 						newStatusToModify[0] = '\0';
 						newEffectVal = 0.f;
 						newMaxDuration = 0;
 						newTickRate = 0;
 					}
 				}
-
+				ImGui::PopStyleColor();
 				ImGui::PopItemWidth();
 			}
 

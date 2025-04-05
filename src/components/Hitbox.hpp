@@ -1,16 +1,17 @@
 #pragma once
 
+#include "IComponent.hpp"
+#include "../common/IComponentVisitor.hpp"
 #include <SFML/Graphics/VertexArray.hpp>
 
-struct Hitbox
+class Hitbox : public IComponent
 {
-	Hitbox(const sf::VertexArray& verticies)
-		: hitbox(verticies)
-	{}
+public:
+	Hitbox() = delete;
+	Hitbox(const sf::VertexArray& verticies);
+	Hitbox(const sf::PrimitiveType type, const std::size_t vertexCount = 0);
 
-	Hitbox(const sf::PrimitiveType type, const std::size_t vertexCount = 0)
-		: hitbox(type, vertexCount)
-	{}
+	void accept(IComponentVisitor* visitor) const override;
 
 	inline sf::FloatRect getBounds() const
 	{

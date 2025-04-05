@@ -1,22 +1,18 @@
 #pragma once
 
-#include "SFML/Graphics/Sprite.hpp"
-#include "SFML/Graphics/Texture.hpp"
+#include "IComponent.hpp"
+#include "../common/IComponentVisitor.hpp"
+#include <SFML/Graphics/Sprite.hpp>
+#include <SFML/Graphics/Texture.hpp>
 
-struct Sprite
+class Sprite : public IComponent
 {
-	Sprite(sf::Texture& texture, bool repeat = false)
-	{
-		texture.setRepeated(repeat);
-		sprite.setTexture(texture);
-	}
+public:
+	Sprite() = delete;
+	Sprite(sf::Texture& texture, bool repeat = false);
+	Sprite(sf::Texture& texture, int width, int height, bool repeat = false);
 
-	Sprite(sf::Texture& texture, int width, int height, bool repeat = false)
-	{
-		texture.setRepeated(repeat);
-		sprite.setTexture(texture);
-		sprite.setTextureRect(sf::IntRect(0, 0, width, height));
-	}
+	void accept(IComponentVisitor* visitor) const override;
 
 	inline const sf::Vector2f& getOrigin() const
 	{

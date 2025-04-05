@@ -4,13 +4,12 @@
 #include "../common/CommonEnum.hpp"
 #include "../common/GlobalData.hpp"
 #include "../common/Logger.hpp"
-#include "../common/Entity.hpp"
+#include "../common/commands/Movement.hpp"
+#include "../components/Component.hpp"
 #include "../managers/SystemManager.hpp"
 #include <entt/entity/registry.hpp>
 
 // Testing
-#include "../common/commands/ICommand.hpp"
-#include "../common/commands/Movement.hpp"
 #include "../scenes/MainMenu.hpp"
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <random>

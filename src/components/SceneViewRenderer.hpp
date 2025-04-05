@@ -1,13 +1,16 @@
 #pragma once
 
+#include "IComponent.hpp"
+#include "../common/IComponentVisitor.hpp"
 #include <SFML/Graphics/RenderTexture.hpp>
 
-struct SceneViewRenderer
+class SceneViewRenderer : public IComponent
 {
-	SceneViewRenderer(unsigned int width, unsigned int height, const sf::ContextSettings& settings)
-	{
-		rd.create(width, height, settings);
-	}
+public:
+	SceneViewRenderer() = delete;
+	SceneViewRenderer(unsigned int width, unsigned int height, const sf::ContextSettings& settings);
+
+	void accept(IComponentVisitor* visitor) const override;
 
 	sf::RenderTexture rd;
 };

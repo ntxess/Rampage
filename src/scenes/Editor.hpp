@@ -1,12 +1,13 @@
 #pragma once
 
 #include "../scenes/IScene.hpp"
-#include "../scenes/Sandbox.hpp"
-#include "../scenes/MainMenu.hpp"
-#include "../scenes/GameOfLifeSim.hpp"
 #include "../common/CommonEnum.hpp"
 #include "../common/GlobalData.hpp"
 #include "../common/Logger.hpp"
+#include "../components/Component.hpp"
+#include "../scenes/Sandbox.hpp"
+#include "../scenes/MainMenu.hpp"
+#include "../scenes/GameOfLifeSim.hpp"
 #include <entt/entity/registry.hpp>
 #include <imgui.h>
 #include <imgui-SFML.h>

@@ -3,6 +3,7 @@
 #include "ICommand.hpp"
 #include "../../components/Component.hpp"
 #include <entt/entity/entity.hpp>
+#include <entt/entity/registry.hpp>
 #include <SFML/System/Vector2.hpp>
 
 class Movement : public ICommand
