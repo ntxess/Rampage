@@ -14,9 +14,9 @@
 #include <unordered_map>
 
 #if defined(_WIN32)  
-	#define __FILENAME__ (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__)
+#define __FILENAME__ (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__)
 #elif defined(__linux__)
-	#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 #endif
 
 #define	LOG_TRACE(logger) \
@@ -35,25 +35,25 @@
 class Logger
 {
 public:
-	static Logger& getInstance();
-	static boost::log::sources::severity_logger<boost::log::trivial::severity_level>& get();
-	void toggleLogging(bool option);
-	void setupConsoleLog();
-	void setupFileLog(const std::string logPath);
-	void setFilterSeverity(std::string_view severityLevel);
-	void removeAllSinks();
+    static Logger& getInstance();
+    static boost::log::sources::severity_logger<boost::log::trivial::severity_level>& get();
+    void toggleLogging(bool option);
+    void setupConsoleLog();
+    void setupFileLog(const std::string logPath);
+    void setFilterSeverity(std::string_view severityLevel);
+    void removeAllSinks();
 
 private:
-	Logger();
-	~Logger() = default;
-	Logger(const Logger&) = delete;
-	Logger& operator=(const Logger&) = delete;
+    Logger();
+    ~Logger() = default;
+    Logger(const Logger&) = delete;
+    Logger& operator=(const Logger&) = delete;
 
-	boost::log::trivial::severity_level getFilterSeverity(std::string_view severityLevel);
-	std::string generateFilename() const;
+    boost::log::trivial::severity_level getFilterSeverity(std::string_view severityLevel);
+    std::string generateFilename() const;
 
 private:
-	bool m_enableLogging;
-	std::string m_severityLevel;
-	boost::log::sources::severity_logger<boost::log::trivial::severity_level> m_slg;
+    bool m_enableLogging;
+    std::string m_severityLevel;
+    boost::log::sources::severity_logger<boost::log::trivial::severity_level> m_slg;
 };

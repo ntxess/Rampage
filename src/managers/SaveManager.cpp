@@ -1,10 +1,10 @@
 #include "SaveManager.hpp"
 
 /**
- * @brief 
+ * @brief
 */
 SaveManager::SaveManager()
-	: RELATIVE_PATH(std::filesystem::current_path())
+    : RELATIVE_PATH(std::filesystem::current_path())
     , MAIN_CONFIG("config.json")
     , CONFIG_FOLDER_PATH("config")
 {}
@@ -654,9 +654,9 @@ void SaveManager::write(rapidjson::Document& doc, const DataMap& dataMap)
 }
 
 /**
- * @brief 
- * @param val 
- * @return 
+ * @brief
+ * @param val
+ * @return
 */
 std::any SaveManager::anyCast(rapidjson::Value& val)
 {

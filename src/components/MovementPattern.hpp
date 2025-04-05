@@ -6,5 +6,5 @@
 class MovementPattern : public IComponent
 {
 public:
-	void accept(IComponentVisitor* visitor, entt::entity entityID) override;
+    void accept(IComponentVisitor* visitor, entt::entity entityID) override;
 };

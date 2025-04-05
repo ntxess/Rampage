@@ -5,18 +5,18 @@
 
 enum class Team
 {
-	UNAFFILIATED,
-	FRIENDLY,
-	ENEMY,
+    UNAFFILIATED,
+    FRIENDLY,
+    ENEMY,
 };
 
 class TeamTag : public IComponent
 {
 public:
-	TeamTag();
-	TeamTag(Team tag);
+    TeamTag();
+    TeamTag(Team tag);
 
-	void accept(IComponentVisitor* visitor, entt::entity entityID) override;
+    void accept(IComponentVisitor* visitor, entt::entity entityID) override;
 
-	Team tag;
+    Team tag;
 };

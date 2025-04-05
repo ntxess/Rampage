@@ -42,7 +42,7 @@ void MainMenu::resume()
 
 void MainMenu::accept(ISceneVisitor* visitor)
 {
-	visitor->visit(this);
+    visitor->visit(this);
 }
 
 entt::registry& MainMenu::getRegistry()

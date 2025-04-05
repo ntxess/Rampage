@@ -10,9 +10,9 @@
 class PlayerInput : public IComponent
 {
 public:
-	void accept(IComponentVisitor* visitor, entt::entity entityID) override;
+    void accept(IComponentVisitor* visitor, entt::entity entityID) override;
 
-	void processInput(entt::registry& reg);
+    void processInput(entt::registry& reg);
 
-	std::unordered_map<sf::Keyboard::Key, ICommand*> input;
+    std::unordered_map<sf::Keyboard::Key, ICommand*> input;
 };

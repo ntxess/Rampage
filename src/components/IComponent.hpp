@@ -6,6 +6,6 @@
 class IComponent
 {
 public:
-	virtual ~IComponent() = default;
-	virtual void accept(IComponentVisitor* visitor, entt::entity entityID) = 0;
-};;
+    virtual ~IComponent() = default;
+    virtual void accept(IComponentVisitor* visitor, entt::entity entityID) = 0;
+};

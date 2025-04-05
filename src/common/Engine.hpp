@@ -13,25 +13,24 @@
 class Engine
 {
 public:
-    Engine();
+	Engine();
 
-    void run();
-
-private:
-    void startThreads();
-    void configureWindow();
-    void physicThread();
-    void renderThread();
-    void audioThread();
-    void resourceThread();
+	void run();
 
 private:
-    std::shared_ptr<GlobalData> sysData;
-    std::thread m_physicThread;
-    std::thread m_renderThread;
-    std::thread m_audioThread;
-    std::thread m_resourceThread;
-    std::binary_semaphore m_inputProducer{ 0 };
-    std::binary_semaphore m_inputConsumer{ 1 };
+	void startThreads();
+	void configureWindow();
+	void physicThread();
+	void renderThread();
+	void audioThread();
+	void resourceThread();
+
+private:
+	std::shared_ptr<GlobalData> sysData;
+	std::thread m_physicThread;
+	std::thread m_renderThread;
+	std::thread m_audioThread;
+	std::thread m_resourceThread;
+	std::binary_semaphore m_inputProducer{ 0 };
+	std::binary_semaphore m_inputConsumer{ 1 };
 };
-

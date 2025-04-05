@@ -5,6 +5,6 @@
 class ICommand
 {
 public:
-	virtual ~ICommand() = default;
-	virtual void execute(entt::registry& reg) = 0;
+    virtual ~ICommand() = default;
+    virtual void execute(entt::registry& reg) = 0;
 };

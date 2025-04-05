@@ -9,10 +9,10 @@
 class Movement : public ICommand
 {
 public:
-	Movement(const entt::entity ent, sf::Vector2f direction);
-	void execute(entt::registry& reg);
+    Movement(const entt::entity ent, sf::Vector2f direction);
+    void execute(entt::registry& reg);
 
 private:
-	const entt::entity entityId;
-	sf::Vector2f direction;
+    const entt::entity entityId;
+    sf::Vector2f direction;
 };

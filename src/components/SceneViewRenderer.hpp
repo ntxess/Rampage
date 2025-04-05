@@ -7,10 +7,10 @@
 class SceneViewRenderer : public IComponent
 {
 public:
-	SceneViewRenderer() = delete;
-	SceneViewRenderer(unsigned int width, unsigned int height, const sf::ContextSettings& settings);
+    SceneViewRenderer() = delete;
+    SceneViewRenderer(unsigned int width, unsigned int height, const sf::ContextSettings& settings);
 
-	void accept(IComponentVisitor* visitor, entt::entity entityID) override;
+    void accept(IComponentVisitor* visitor, entt::entity entityID) override;
 
-	sf::RenderTexture rd;
+    sf::RenderTexture rd;
 };

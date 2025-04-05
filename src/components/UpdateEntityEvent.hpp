@@ -7,13 +7,13 @@
 class UpdateEntityEvent : public IComponent
 {
 public:
-	UpdateEntityEvent();
-	UpdateEntityEvent(std::chrono::milliseconds duration);
+    UpdateEntityEvent();
+    UpdateEntityEvent(std::chrono::milliseconds duration);
 
-	void accept(IComponentVisitor* visitor, entt::entity entityID) override;
+    void accept(IComponentVisitor* visitor, entt::entity entityID) override;
 
-	bool isReady();
+    bool isReady();
 
-	std::chrono::steady_clock::time_point timeStart;
-	std::chrono::milliseconds maxDuration;
+    std::chrono::steady_clock::time_point timeStart;
+    std::chrono::milliseconds maxDuration;
 };

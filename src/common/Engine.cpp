@@ -63,7 +63,7 @@ void Engine::run()
             }
 
             sysData->window.setSize(sf::Vector2u(
-                static_cast<unsigned int>(newWidth), 
+                static_cast<unsigned int>(newWidth),
                 static_cast<unsigned int>(newHeight))
             );
 

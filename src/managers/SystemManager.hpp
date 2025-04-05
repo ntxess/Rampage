@@ -19,7 +19,7 @@ public:
     }
 
     template<typename T>
-    T* getSystem() 
+    T* getSystem()
     {
         if (m_systems.count(typeid(T)))
             return static_cast<T*>(m_systems[typeid(T)].get());
@@ -35,7 +35,7 @@ public:
 
             const auto it = std::find_if(m_sequentialSystems.begin(), m_sequentialSystems.end(), [type](System* system) {
                 return system->name() == type;
-            });
+                });
 
             m_sequentialSystems.erase(it);
             m_systems.erase(typeid(T));
@@ -71,4 +71,3 @@ private:
     std::unordered_map<std::type_index, std::unique_ptr<System>> m_systems;
     std::vector<System*> m_sequentialSystems;
 };
-

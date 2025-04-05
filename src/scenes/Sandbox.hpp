@@ -17,27 +17,27 @@
 class Sandbox : public IScene
 {
 public:
-	Sandbox(GlobalData* sysData);
-	~Sandbox();
+    Sandbox(GlobalData* sysData);
+    ~Sandbox();
 
-	void init() override;
-	void processEvent(const sf::Event& event) override;
-	void processInput() override;
-	void update() override;
-	void render() override;
-	void pause() override;
-	void resume() override;
-	void accept(ISceneVisitor* visitor) override;
-	entt::registry& getRegistry() override;
+    void init() override;
+    void processEvent(const sf::Event& event) override;
+    void processInput() override;
+    void update() override;
+    void render() override;
+    void pause() override;
+    void resume() override;
+    void accept(ISceneVisitor* visitor) override;
+    entt::registry& getRegistry() override;
 
-	SystemManager* getSystemManager();
-
-private:
-	void checkBoundary(const sf::Vector2u& boundary, sf::Sprite& obj);
+    SystemManager* getSystemManager();
 
 private:
-	GlobalData* m_data;
-	entt::registry m_reg;
-	entt::entity m_player;
-	SystemManager m_system;
+    void checkBoundary(const sf::Vector2u& boundary, sf::Sprite& obj);
+
+private:
+    GlobalData* m_data;
+    entt::registry m_reg;
+    entt::entity m_player;
+    SystemManager m_system;
 };
