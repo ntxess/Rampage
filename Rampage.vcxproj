@@ -170,6 +170,18 @@
     <ClCompile Include="dep\SFML-imgui\include\imgui_draw.cpp" />
     <ClCompile Include="dep\SFML-imgui\include\imgui_tables.cpp" />
     <ClCompile Include="dep\SFML-imgui\include\imgui_widgets.cpp" />
+    <ClCompile Include="src\common\EditorSceneVisitor.cpp" />
+    <ClCompile Include="src\components\Effects.cpp" />
+    <ClCompile Include="src\components\EffectsList.cpp" />
+    <ClCompile Include="src\components\EntityStatus.cpp" />
+    <ClCompile Include="src\components\Hitbox.cpp" />
+    <ClCompile Include="src\components\MovementPattern.cpp" />
+    <ClCompile Include="src\components\PlayerInput.cpp" />
+    <ClCompile Include="src\components\SceneViewRenderer.cpp" />
+    <ClCompile Include="src\components\Sprite.cpp" />
+    <ClCompile Include="src\common\EditorComponentVisitor.cpp" />
+    <ClCompile Include="src\components\StatusModEvent.cpp" />
+    <ClCompile Include="src\components\TeamTag.cpp" />
     <ClCompile Include="src\managers\EntityManager.cpp" />
     <ClCompile Include="src\scenes\GameOfLifeSim.cpp" />
     <ClCompile Include="src\scenes\Editor.cpp" />
@@ -179,8 +191,6 @@
     <ClCompile Include="src\common\Entity.cpp" />
     <ClCompile Include="src\common\Engine.cpp" />
     <ClCompile Include="src\common\QuadTree.cpp" />
-    <ClCompile Include="src\components\CollisionEvent.hpp" />
-    <ClCompile Include="src\components\Effects.hpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\managers\SaveManager.cpp" />
     <ClCompile Include="src\managers\SceneManager.cpp" />
@@ -190,6 +200,8 @@
     <ClCompile Include="src\systems\EventSystem.cpp" />
     <ClCompile Include="src\systems\WayPointSystem.cpp" />
     <ClCompile Include="test\Unittest-Suite.hpp" />
+    <ClCompile Include="src\components\UpdateEntityEvent.cpp" />
+    <ClCompile Include="src\components\UpdateEntityPolling.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dep\SFML-imgui\include\imconfig-SFML.h" />
@@ -201,15 +213,19 @@
     <ClInclude Include="dep\SFML-imgui\include\imstb_rectpack.h" />
     <ClInclude Include="dep\SFML-imgui\include\imstb_textedit.h" />
     <ClInclude Include="dep\SFML-imgui\include\imstb_truetype.h" />
+    <ClInclude Include="src\common\EditorSceneVisitor.hpp" />
+    <ClInclude Include="src\common\ISceneVisitor.hpp" />
+    <ClInclude Include="src\components\Effects.hpp" />
+    <ClInclude Include="src\components\IComponent.hpp" />
+    <ClInclude Include="src\common\IComponentVisitor.hpp" />
+    <ClInclude Include="src\common\EditorComponentVisitor.hpp" />
     <ClInclude Include="src\managers\EntityManager.hpp" />
     <ClInclude Include="src\components\MovementPattern.hpp" />
     <ClInclude Include="src\scenes\GameOfLifeSim.hpp" />
     <ClInclude Include="src\components\SceneViewRenderer.hpp" />
     <ClInclude Include="src\scenes\Editor.hpp" />
     <ClInclude Include="src\common\Logger.hpp" />
-    <ClInclude Include="src\components\AnimatedSprite.hpp" />
     <ClInclude Include="src\managers\AnimationManager.hpp" />
-    <ClInclude Include="src\components\DirtyFlags.hpp" />
     <ClInclude Include="src\common\commands\ICommand.hpp" />
     <ClInclude Include="src\common\commands\Movement.hpp" />
     <ClInclude Include="src\components\EntityStatus.hpp" />
@@ -237,6 +253,8 @@
     <ClInclude Include="src\systems\System.hpp" />
     <ClInclude Include="test\Unittest-SaveManager.hpp" />
     <ClInclude Include="src\systems\WayPointSystem.hpp" />
+    <ClInclude Include="src\components\UpdateEntityEvent.hpp" />
+    <ClInclude Include="src\components\UpdateEntityPolling.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="config\config.json" />

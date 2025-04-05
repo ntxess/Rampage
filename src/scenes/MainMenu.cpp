@@ -40,6 +40,11 @@ void MainMenu::pause()
 void MainMenu::resume()
 {}
 
+void MainMenu::accept(ISceneVisitor* visitor)
+{
+	visitor->visit(this);
+}
+
 entt::registry& MainMenu::getRegistry()
 {
     return m_reg;

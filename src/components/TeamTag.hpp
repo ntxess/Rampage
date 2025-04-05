@@ -1,6 +1,7 @@
 #pragma once
 
-#include "../common/CommonEnum.hpp"
+#include "IComponent.hpp"
+#include "../common/IComponentVisitor.hpp"
 
 enum class Team
 {
@@ -9,11 +10,13 @@ enum class Team
 	ENEMY,
 };
 
-struct TeamTag
+class TeamTag : public IComponent
 {
-	TeamTag(Team tag) 
-		: tag(tag) 
-	{}
+public:
+	TeamTag();
+	TeamTag(Team tag);
+
+	void accept(IComponentVisitor* visitor, entt::entity entityID) override;
 
 	Team tag;
 };

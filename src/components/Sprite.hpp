@@ -1,22 +1,18 @@
 #pragma once
 
-#include "SFML/Graphics/Sprite.hpp"
-#include "SFML/Graphics/Texture.hpp"
+#include "IComponent.hpp"
+#include "../common/IComponentVisitor.hpp"
+#include <SFML/Graphics/Sprite.hpp>
+#include <SFML/Graphics/Texture.hpp>
 
-struct Sprite
+class Sprite : public IComponent
 {
-	Sprite(sf::Texture& texture, bool repeat = false)
-	{
-		texture.setRepeated(repeat);
-		sprite.setTexture(texture);
-	}
+public:
+	Sprite() = delete;
+	Sprite(sf::Texture& texture, bool repeat = false);
+	Sprite(sf::Texture& texture, int width, int height, bool repeat = false);
 
-	Sprite(sf::Texture& texture, int width, int height, bool repeat = false)
-	{
-		texture.setRepeated(repeat);
-		sprite.setTexture(texture);
-		sprite.setTextureRect(sf::IntRect(0, 0, width, height));
-	}
+	void accept(IComponentVisitor* visitor, entt::entity entityID) override;
 
 	inline const sf::Vector2f& getOrigin() const
 	{
@@ -87,6 +83,32 @@ struct Sprite
 	{
 		return sprite.getGlobalBounds();
 	}
+
+	inline sf::FloatRect getLocalBounds() const
+	{
+		return sprite.getLocalBounds();
+	}
+
+	inline void setColor(const sf::Color& color)
+	{
+		sprite.setColor(color);
+	}
+
+	inline const sf::Texture* getTexture() const
+	{
+		return sprite.getTexture();
+	}
+
+	inline const sf::IntRect& getTextureRect() const
+	{
+		return sprite.getTextureRect();
+	}
+
+	inline const sf::Color& getColor() const
+	{
+		return sprite.getColor();
+	}
+
 
 	sf::Sprite sprite;
 };

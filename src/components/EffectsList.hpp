@@ -1,5 +1,7 @@
 #pragma once
 
+#include "IComponent.hpp"
+#include "../common/IComponentVisitor.hpp"
 #include "Effects.hpp"
 #include <vector>
 
@@ -11,7 +13,10 @@ enum class EffectType
 	TEMPTIMED,
 };
 
-struct EffectsList
+class EffectsList : public IComponent
 {
+public:
+	void accept(IComponentVisitor* visitor, entt::entity entityID) override;
+
 	std::vector<std::pair<EffectType, Effects>> effectsList;
 };
