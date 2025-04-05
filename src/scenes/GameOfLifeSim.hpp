@@ -14,14 +14,15 @@ public:
 	GameOfLifeSim(GlobalData* sysData);
 	~GameOfLifeSim();
 
-	void init();
-	void processEvent(const sf::Event& event);
-	void processInput();
-	void update();
-	void render();
-	void pause();
-	void resume();
-	entt::registry& getRegistry();
+	void init() override;
+	void processEvent(const sf::Event& event) override;
+	void processInput() override;
+	void update() override;
+	void render() override;
+	void pause() override;
+	void resume() override;
+	void accept(ISceneVisitor* visitor) override;
+	entt::registry& getRegistry() override;
 
 	void drawOptions();
 	int getNeighbors(std::vector<std::vector<int>>& board, int i, int j);

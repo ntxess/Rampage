@@ -8,7 +8,7 @@ Hitbox::Hitbox(const sf::PrimitiveType type, const std::size_t vertexCount)
 	: hitbox(type, vertexCount)
 {}
 
-void Hitbox::accept(IComponentVisitor* visitor) const
+void Hitbox::accept(IComponentVisitor* visitor, entt::entity entityID)
 {
-	visitor->visit(this);
+	visitor->visit(this, entityID);
 }

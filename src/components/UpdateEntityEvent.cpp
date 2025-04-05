@@ -8,9 +8,9 @@ UpdateEntityEvent::UpdateEntityEvent(std::chrono::milliseconds duration)
 	: timeStart(std::chrono::steady_clock::now()), maxDuration(duration)
 {}
 
-void UpdateEntityEvent::accept(IComponentVisitor* visitor) const
+void UpdateEntityEvent::accept(IComponentVisitor* visitor, entt::entity entityID)
 {
-	visitor->visit(this);
+	visitor->visit(this, entityID);
 }
 
 bool UpdateEntityEvent::isReady()

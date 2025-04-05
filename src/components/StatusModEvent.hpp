@@ -15,7 +15,7 @@ public:
 	StatusModEvent(StatusModEvent&& other) noexcept;
 	StatusModEvent& operator=(const StatusModEvent& other);
 
-	void accept(IComponentVisitor* visitor) const override;
+	void accept(IComponentVisitor* visitor, entt::entity entityID) override;
 
 	entt::entity sourceID;
 	entt::entity receiverID;

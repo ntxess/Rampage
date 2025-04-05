@@ -13,7 +13,7 @@ Sprite::Sprite(sf::Texture& texture, int width, int height, bool repeat)
 	sprite.setTextureRect(sf::IntRect(0, 0, width, height));
 }
 
-void Sprite::accept(IComponentVisitor* visitor) const
+void Sprite::accept(IComponentVisitor* visitor, entt::entity entityID)
 {
-	visitor->visit(this);
+	visitor->visit(this, entityID);
 }

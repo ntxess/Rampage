@@ -145,6 +145,11 @@ void Sandbox::resume()
 
 }
 
+void Sandbox::accept(ISceneVisitor* visitor)
+{
+	visitor->visit(this);
+}
+
 entt::registry& Sandbox::getRegistry()
 {
 	return m_reg;

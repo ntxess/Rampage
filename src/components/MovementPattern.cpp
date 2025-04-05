@@ -1,6 +1,6 @@
 #include "MovementPattern.hpp"
 
-void MovementPattern::accept(IComponentVisitor* visitor) const
+void MovementPattern::accept(IComponentVisitor* visitor, entt::entity entityID)
 {
-	visitor->visit(this);
+	visitor->visit(this, entityID);
 }

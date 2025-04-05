@@ -10,7 +10,7 @@ public:
 	UpdateEntityPolling();
 	UpdateEntityPolling(std::chrono::milliseconds duration, bool readyOnStart = true);
 
-	void accept(IComponentVisitor* visitor) const override;
+	void accept(IComponentVisitor* visitor, entt::entity entityID) override;
 
 	bool isReady();
 

@@ -11,7 +11,7 @@ public:
 	Hitbox(const sf::VertexArray& verticies);
 	Hitbox(const sf::PrimitiveType type, const std::size_t vertexCount = 0);
 
-	void accept(IComponentVisitor* visitor) const override;
+	void accept(IComponentVisitor* visitor, entt::entity entityID) override;
 
 	inline sf::FloatRect getBounds() const
 	{

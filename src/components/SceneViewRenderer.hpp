@@ -10,7 +10,7 @@ public:
 	SceneViewRenderer() = delete;
 	SceneViewRenderer(unsigned int width, unsigned int height, const sf::ContextSettings& settings);
 
-	void accept(IComponentVisitor* visitor) const override;
+	void accept(IComponentVisitor* visitor, entt::entity entityID) override;
 
 	sf::RenderTexture rd;
 };

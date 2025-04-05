@@ -112,6 +112,11 @@ void GameOfLifeSim::pause()
 void GameOfLifeSim::resume()
 {}
 
+void GameOfLifeSim::accept(ISceneVisitor* visitor)
+{
+	visitor->visit(this);
+}
+
 entt::registry& GameOfLifeSim::getRegistry()
 {
 	return m_reg;

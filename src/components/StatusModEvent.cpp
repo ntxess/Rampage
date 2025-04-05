@@ -51,7 +51,7 @@ StatusModEvent& StatusModEvent::operator=(const StatusModEvent & other)
 	return *this;
 }
 
-void StatusModEvent::accept(IComponentVisitor* visitor) const
+void StatusModEvent::accept(IComponentVisitor* visitor, entt::entity entityID)
 {
-	visitor->visit(this);
+	visitor->visit(this, entityID);
 }

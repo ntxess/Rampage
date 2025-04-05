@@ -8,9 +8,9 @@ UpdateEntityPolling::UpdateEntityPolling(std::chrono::milliseconds duration, boo
 	: timeStart(std::chrono::steady_clock::now()), maxDuration(duration)
 {}
 
-void UpdateEntityPolling::accept(IComponentVisitor* visitor) const
+void UpdateEntityPolling::accept(IComponentVisitor* visitor, entt::entity entityID)
 {
-	visitor->visit(this);
+	visitor->visit(this, entityID);
 }
 
 bool UpdateEntityPolling::isReady()

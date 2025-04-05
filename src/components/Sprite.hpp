@@ -12,7 +12,7 @@ public:
 	Sprite(sf::Texture& texture, bool repeat = false);
 	Sprite(sf::Texture& texture, int width, int height, bool repeat = false);
 
-	void accept(IComponentVisitor* visitor) const override;
+	void accept(IComponentVisitor* visitor, entt::entity entityID) override;
 
 	inline const sf::Vector2f& getOrigin() const
 	{
@@ -83,6 +83,32 @@ public:
 	{
 		return sprite.getGlobalBounds();
 	}
+
+	inline sf::FloatRect getLocalBounds() const
+	{
+		return sprite.getLocalBounds();
+	}
+
+	inline void setColor(const sf::Color& color)
+	{
+		sprite.setColor(color);
+	}
+
+	inline const sf::Texture* getTexture() const
+	{
+		return sprite.getTexture();
+	}
+
+	inline const sf::IntRect& getTextureRect() const
+	{
+		return sprite.getTextureRect();
+	}
+
+	inline const sf::Color& getColor() const
+	{
+		return sprite.getColor();
+	}
+
 
 	sf::Sprite sprite;
 };

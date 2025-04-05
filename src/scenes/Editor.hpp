@@ -4,6 +4,8 @@
 #include "../common/CommonEnum.hpp"
 #include "../common/GlobalData.hpp"
 #include "../common/Logger.hpp"
+#include "../common/EditorSceneVisitor.hpp"
+#include "../common/EditorComponentVisitor.hpp"
 #include "../components/Component.hpp"
 #include "../scenes/Sandbox.hpp"
 #include "../scenes/MainMenu.hpp"
@@ -32,14 +34,15 @@ public:
 	Editor(GlobalData* sysData);
 	~Editor();
 
-	void init();
-	void processEvent(const sf::Event& event);
-	void processInput();
-	void update();
-	void render();
-	void pause();
-	void resume();
-	entt::registry& getRegistry();
+	void init() override;
+	void processEvent(const sf::Event& event) override;
+	void processInput() override;
+	void update() override;
+	void render() override;
+	void pause() override;
+	void resume() override;
+	void accept(ISceneVisitor* visitor) override;
+	entt::registry& getRegistry() override;
 
 private:
 	void setupDockspace();
@@ -78,6 +81,9 @@ private:
 	std::unordered_map<std::string, std::unique_ptr<SceneData>> m_sceneMap;
 	std::string m_selectedSceneKey;
 	entt::registry* m_reg;
+
+	EditorComponentVisitor m_componentVisitor;
+	EditorSceneVisitor m_sceneVisitor;
 };
 
 template<typename... Args>

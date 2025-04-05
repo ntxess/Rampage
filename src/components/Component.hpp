@@ -1,7 +1,5 @@
 #pragma once
 
-// #include "IComponent.hpp"
-// #include "AnimatedSprite.hpp"
 #include "Effects.hpp"
 #include "EffectsList.hpp"
 #include "EntityStatus.hpp"

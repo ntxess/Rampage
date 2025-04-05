@@ -8,7 +8,7 @@
 class EntityStatus : public IComponent
 {
 public:
-	void accept(IComponentVisitor* visitor) const override;
+	void accept(IComponentVisitor* visitor, entt::entity entityID) override;
 
 	std::unordered_map<std::string, float> values;
 };

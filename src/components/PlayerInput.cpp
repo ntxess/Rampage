@@ -1,8 +1,8 @@
 #include "PlayerInput.hpp"
 
-void PlayerInput::accept(IComponentVisitor* visitor) const
+void PlayerInput::accept(IComponentVisitor* visitor, entt::entity entityID)
 {
-	visitor->visit(this);
+	visitor->visit(this, entityID);
 }
 
 void PlayerInput::processInput(entt::registry& reg)

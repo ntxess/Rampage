@@ -10,7 +10,7 @@ public:
 	UpdateEntityEvent();
 	UpdateEntityEvent(std::chrono::milliseconds duration);
 
-	void accept(IComponentVisitor* visitor) const override;
+	void accept(IComponentVisitor* visitor, entt::entity entityID) override;
 
 	bool isReady();
 

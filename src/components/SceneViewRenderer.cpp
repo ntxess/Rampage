@@ -5,7 +5,7 @@ SceneViewRenderer::SceneViewRenderer(unsigned int width, unsigned int height, co
 	rd.create(width, height, settings);
 }
 
-void SceneViewRenderer::accept(IComponentVisitor* visitor) const
+void SceneViewRenderer::accept(IComponentVisitor* visitor, entt::entity entityID)
 {
-	visitor->visit(this);
+	visitor->visit(this, entityID);
 }

@@ -41,7 +41,7 @@ Effects& Effects::operator=(const Effects& other)
 	return *this;
 }
 
-void Effects::accept(IComponentVisitor* visitor) const
+void Effects::accept(IComponentVisitor* visitor, entt::entity entityID)
 {
-	visitor->visit(this);
+	visitor->visit(this, entityID);
 }

@@ -16,7 +16,7 @@ public:
 	TeamTag();
 	TeamTag(Team tag);
 
-	void accept(IComponentVisitor* visitor) const override;
+	void accept(IComponentVisitor* visitor, entt::entity entityID) override;
 
 	Team tag;
 };

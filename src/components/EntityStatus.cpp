@@ -1,6 +1,6 @@
 #include "EntityStatus.hpp"
 
-void EntityStatus::accept(IComponentVisitor* visitor) const
+void EntityStatus::accept(IComponentVisitor* visitor, entt::entity entityID)
 {
-	visitor->visit(this);
+	visitor->visit(this, entityID);
 }
