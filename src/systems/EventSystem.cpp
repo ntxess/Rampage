@@ -74,13 +74,14 @@ EventSystem::EventStatus EventSystem::apply(const EffectType effectType, StatusM
 EventSystem::EventStatus EventSystem::instantEvent(StatusModEvent& statusModEvent, EntityStatus& receiverStatus) const
 {
 	if (receiverStatus.values.count(statusModEvent.effect->targetStat))
+	{
 		receiverStatus.values[statusModEvent.effect->targetStat] += statusModEvent.effect->modificationVal;
-
-	LOG_DEBUG(Logger::get()) 
-		<< "Applying instant event. Modifying \"" << statusModEvent.effect->targetStat 
-		<< "\" of entity [" << static_cast<unsigned int>(statusModEvent.receiverID)
-		<< "] by " << statusModEvent.effect->modificationVal
-		<< ". Current val: " << receiverStatus.values.at(statusModEvent.effect->targetStat);
+		LOG_DEBUG(Logger::get()) 
+			<< "Applying instant event. Modifying \"" << statusModEvent.effect->targetStat 
+			<< "\" of entity [" << static_cast<unsigned int>(statusModEvent.receiverID)
+			<< "] by " << statusModEvent.effect->modificationVal
+			<< ". Current val: " << receiverStatus.values.at(statusModEvent.effect->targetStat);
+	}
 
 	return EventStatus::COMPLETE;
 }
@@ -96,22 +97,26 @@ EventSystem::EventStatus EventSystem::overTimeEvent(StatusModEvent& statusModEve
 		statusModEvent.timeElapsed += currDuration;
 
 		if (receiverStatus.values.count(statusModEvent.effect->targetStat))
+		{
 			receiverStatus.values[statusModEvent.effect->targetStat] += statusModEvent.effect->modificationVal;
-
-		LOG_DEBUG(Logger::get()) 
-			<< "Applying over-time event. Modifying \"" << statusModEvent.effect->targetStat
-			<< "\" of entity [" << static_cast<unsigned int>(statusModEvent.receiverID)
-			<< "] by " << statusModEvent.effect->modificationVal
-			<< ". Current val: " << receiverStatus.values.at(statusModEvent.effect->targetStat);
+			LOG_DEBUG(Logger::get()) 
+				<< "Applying over-time event. Modifying \"" << statusModEvent.effect->targetStat
+				<< "\" of entity [" << static_cast<unsigned int>(statusModEvent.receiverID)
+				<< "] by " << statusModEvent.effect->modificationVal
+				<< ". Current val: " << receiverStatus.values.at(statusModEvent.effect->targetStat);
+		}
 	}
 
 	if (m_eventWatchdogTime < currDuration || statusModEvent.timeElapsed >= statusModEvent.effect->maxDuration)
 	{
-		LOG_DEBUG(Logger::get())
-			<< "Completed over-time event. \"" << statusModEvent.effect->targetStat
-			<< "\" stat of entity [" << static_cast<unsigned int>(statusModEvent.receiverID)
-			<< "] is " << receiverStatus.values.at(statusModEvent.effect->targetStat)
-			<< ". Time elapsed: " << statusModEvent.timeElapsed << " >= " << statusModEvent.effect->maxDuration;
+		if (receiverStatus.values.count(statusModEvent.effect->targetStat))
+		{
+			LOG_DEBUG(Logger::get())
+				<< "Completed over-time event. \"" << statusModEvent.effect->targetStat
+				<< "\" stat of entity [" << static_cast<unsigned int>(statusModEvent.receiverID)
+				<< "] is " << receiverStatus.values.at(statusModEvent.effect->targetStat)
+				<< ". Time elapsed: " << statusModEvent.timeElapsed << " >= " << statusModEvent.effect->maxDuration;
+		}
 
 		return EventStatus::COMPLETE;
 	}
@@ -134,25 +139,27 @@ EventSystem::EventStatus EventSystem::tempTimedEvent(StatusModEvent& statusModEv
 		statusModEvent.timeElapsed += std::chrono::milliseconds(1); // Disable this logic block with this variable
 
 		if (receiverStatus.values.count(statusModEvent.effect->targetStat))
+		{
 			receiverStatus.values[statusModEvent.effect->targetStat] += statusModEvent.effect->modificationVal;
-
-		LOG_DEBUG(Logger::get())
-			<< "Applying temporary-timed event. Modifying \"" << statusModEvent.effect->targetStat
-			<< "\" of entity [" << static_cast<unsigned int>(statusModEvent.receiverID)
-			<< "] by " << statusModEvent.effect->modificationVal
-			<< ". Current val: " << receiverStatus.values.at(statusModEvent.effect->targetStat);
+			LOG_DEBUG(Logger::get())
+				<< "Applying temporary-timed event. Modifying \"" << statusModEvent.effect->targetStat
+				<< "\" of entity [" << static_cast<unsigned int>(statusModEvent.receiverID)
+				<< "] by " << statusModEvent.effect->modificationVal
+				<< ". Current val: " << receiverStatus.values.at(statusModEvent.effect->targetStat);
+		}
 	}
 
 	if (currDuration >= statusModEvent.effect->maxDuration)
 	{
 		if (receiverStatus.values.count(statusModEvent.effect->targetStat))
+		{
 			receiverStatus.values[statusModEvent.effect->targetStat] += statusModEvent.effect->modificationVal * -1.f;
-
-		LOG_DEBUG(Logger::get()) 
-			<< "Completed temporary-timed event. Restoring \"" << statusModEvent.effect->targetStat
-			<< "\" of entity [" << static_cast<unsigned int>(statusModEvent.receiverID)
-			<< "] by " << statusModEvent.effect->modificationVal
-			<< ". Current val: " << receiverStatus.values.at(statusModEvent.effect->targetStat);
+			LOG_DEBUG(Logger::get()) 
+				<< "Completed temporary-timed event. Restoring \"" << statusModEvent.effect->targetStat
+				<< "\" of entity [" << static_cast<unsigned int>(statusModEvent.receiverID)
+				<< "] by " << statusModEvent.effect->modificationVal
+				<< ". Current val: " << receiverStatus.values.at(statusModEvent.effect->targetStat);
+		}
 
 		return EventStatus::COMPLETE;
 	}

@@ -288,55 +288,70 @@ void Editor::renderPropertiesPanel()
 	ImGui::SetNextWindowSize(ImVec2(m_data->window.getSize().x - (m_data->window.getSize().x / 5 + (m_data->window.getSize().x / (m_data->aspectRatio))), m_data->window.getSize().y), ImGuiCond_Once);
 	ImGui::Begin("Properties Panel", NULL, m_expandablePanelFlags | ImGuiWindowFlags_AlwaysVerticalScrollbar);
 	static std::unordered_map<entt::entity, bool> closableGroups;
+	static std::unordered_map<entt::entity, std::array<bool, 5>> closableComponents;
 
 	const auto& view = m_reg->view<Sprite>();
 	for (const auto& entityID : view)
 	{
-		if (!closableGroups.count(entityID))
+		if (!closableGroups.count(entityID) || !closableComponents.count(entityID))
 		{
 			closableGroups[entityID] = true;
-		}
-
-		if (closableGroups[entityID] == false)
-		{
-			m_reg->destroy(entityID);
-			continue;
+			closableComponents[entityID].fill(true);
 		}
 
 		std::string ID = "Entity " + std::to_string(static_cast<unsigned int>(entityID));
 		if (ImGui::CollapsingHeader(ID.c_str(), &closableGroups[entityID]))
 		{
+			ImGui::BeginChild(("##EntityColm" + ID).c_str(), { ImGui::GetWindowWidth() - 26.f, ImGui::GetWindowHeight() });
 
-			ImGui::BeginChild(("##EntityColm" + ID).c_str(), { ImGui::GetWindowWidth(), ImGui::GetWindowHeight() });
-
-			if (m_reg->all_of<Sprite>(entityID))
+			if (m_reg->all_of<Sprite>(entityID) && ImGui::CollapsingHeader(("Sprite##Header" + ID).c_str(), &closableComponents[entityID][0], ImGuiTreeNodeFlags_DefaultOpen))
 			{
 				auto& sprite = m_reg->get<Sprite>(entityID);
-				sprite.accept(&m_componentVisitor, entityID);
+				sprite.accept(&m_componentVisitor, entityID);					
+			}
+			if (!closableComponents[entityID][0])
+			{
+				m_reg->remove<Sprite>(entityID);
 			}
 
-			if (m_reg->all_of<UpdateEntityEvent>(entityID))
+			if (m_reg->all_of<UpdateEntityEvent>(entityID) && ImGui::CollapsingHeader(("UpdateEntityEvent##Header" + ID).c_str(), &closableComponents[entityID][1], ImGuiTreeNodeFlags_DefaultOpen))
 			{
 				auto& updateEntityEvent = m_reg->get<UpdateEntityEvent>(entityID);
 				updateEntityEvent.accept(&m_componentVisitor, entityID);
 			}
+			if (!closableComponents[entityID][1])
+			{
+				m_reg->remove<UpdateEntityEvent>(entityID);
+			}
 
-			if (m_reg->all_of<UpdateEntityPolling>(entityID))
+			if (m_reg->all_of<UpdateEntityPolling>(entityID) && ImGui::CollapsingHeader(("UpdateEntityPolling##Header" + ID).c_str(), &closableComponents[entityID][2], ImGuiTreeNodeFlags_DefaultOpen))
 			{
 				auto& updateEntityPolling = m_reg->get<UpdateEntityPolling>(entityID);
 				updateEntityPolling.accept(&m_componentVisitor, entityID);
 			}
+			if (!closableComponents[entityID][2])
+			{
+				m_reg->remove<UpdateEntityPolling>(entityID);
+			}
 
-			if (m_reg->all_of<EntityStatus>(entityID))
+			if (m_reg->all_of<EntityStatus>(entityID) && ImGui::CollapsingHeader(("EntityStatus##Header" + ID).c_str(), &closableComponents[entityID][3], ImGuiTreeNodeFlags_DefaultOpen))
 			{
 				auto& entityStatus = m_reg->get<EntityStatus>(entityID);
 				entityStatus.accept(&m_componentVisitor, entityID);
 			}
+			if (!closableComponents[entityID][3])
+			{
+				m_reg->remove<EntityStatus>(entityID);
+			}
 
-			if (m_reg->all_of<EffectsList>(entityID))
+			if (m_reg->all_of<EffectsList>(entityID) && ImGui::CollapsingHeader(("EffectsList##Header" + ID).c_str(), &closableComponents[entityID][4], ImGuiTreeNodeFlags_DefaultOpen))
 			{
 				auto& effectsList = m_reg->get<EffectsList>(entityID);
 				effectsList.accept(&m_componentVisitor, entityID);
+			}
+			if (!closableComponents[entityID][4])
+			{
+				m_reg->remove<EffectsList>(entityID);
 			}
 
 			ImGui::EndChild();

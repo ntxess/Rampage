@@ -12,17 +12,14 @@ void EditorComponentVisitor::visit(Effects* effects, entt::entity entityID)
 
 void EditorComponentVisitor::visit(EffectsList* effectsList, entt::entity entityID)
 {
+	ImGui::NewLine();
+
 	const std::string ID = std::to_string(static_cast<unsigned int>(entityID));
 	const float divider1Pos = ImGui::GetWindowWidth() / 3.f;
 	const float elDivider1Pos = ImGui::GetWindowWidth() / 6.f;
 	const char* effectTypes[] = { "NULLTYPE", "INSTANT", "OVERTIME", "TEMPTIMED" }; // NOTE: Update this when adding new effect types
 
 	ImGui::PushItemWidth(elDivider1Pos);
-
-	ImGui::NewLine();
-	ImGui::Separator();
-	ImGui::SeparatorText("Entity Effects");
-	ImGui::Separator();
 
 	ImGui::Text("Effect Type");
 	ImGui::SameLine(elDivider1Pos + 10.f);
@@ -129,17 +126,16 @@ void EditorComponentVisitor::visit(EffectsList* effectsList, entt::entity entity
 	}
 	ImGui::PopStyleColor();
 	ImGui::PopItemWidth();
+
+	ImGui::NewLine();
 }
 
 void EditorComponentVisitor::visit(EntityStatus* entityStatus, entt::entity entityID)
 {
+	ImGui::NewLine();
+
 	const std::string ID = std::to_string(static_cast<unsigned int>(entityID));
 	const float divider1Pos = ImGui::GetWindowWidth() / 3.f;
-
-	ImGui::NewLine();
-	ImGui::Separator();
-	ImGui::SeparatorText("Entity Status");
-	ImGui::Separator();
 
 	ImGui::Text("Status");
 	ImGui::SameLine(divider1Pos);
@@ -188,6 +184,8 @@ void EditorComponentVisitor::visit(EntityStatus* entityStatus, entt::entity enti
 		}
 	}
 	ImGui::PopStyleColor();
+
+	ImGui::NewLine();
 }
 
 void EditorComponentVisitor::visit(Hitbox* hitbox, entt::entity entityID)
@@ -209,15 +207,15 @@ void EditorComponentVisitor::visit(SceneViewRenderer* sceneViewRenderer, entt::e
 
 void EditorComponentVisitor::visit(Sprite* sprite, entt::entity entityID)
 {
+	ImGui::NewLine();
+
 	const std::string ID = std::to_string(static_cast<unsigned int>(entityID));
 	const float divider1Pos = ImGui::GetWindowWidth() / 3.f;
 	const float divider2Pos = (ImGui::GetWindowWidth() * 2.f) / 3.f;
 
 	ImGui::PushItemWidth((ImGui::GetWindowWidth() / 4.f) - 25.f);
 
-	ImGui::Separator();
-	ImGui::SeparatorText("Sprite");
-	ImGui::Separator();
+	ImGui::SeparatorText("Texture");
 
 	float xOrigin = sprite->getOrigin().x;
 	float yOrigin = sprite->getOrigin().y;
@@ -244,9 +242,9 @@ void EditorComponentVisitor::visit(Sprite* sprite, entt::entity entityID)
 
 	ImGui::SameLine(divider1Pos);
 	auto rHexValInput = ImGui::InputInt(("R##SpColorHexInput" + ID).c_str(), &rHexVal); // NOTE: 23 is the spacing between InputInt and the next item
-	ImGui::SetCursorPos({ divider1Pos, 71.f });
+	ImGui::SetCursorPos({ divider1Pos, 102.5f });
 	auto gHexValInput = ImGui::InputInt(("G##SpColorHexInput" + ID).c_str(), &gHexVal);
-	ImGui::SetCursorPos({ divider1Pos, 94.f });
+	ImGui::SetCursorPos({ divider1Pos, 125.5f });
 	auto bHexValInput = ImGui::InputInt(("B##SpColorHexInput" + ID).c_str(), &bHexVal);
 
 	if (rHexValInput || gHexValInput || bHexValInput)
@@ -272,9 +270,7 @@ void EditorComponentVisitor::visit(Sprite* sprite, entt::entity entityID)
 		sprite->setTextureRect(sf::IntRect(0, 0, static_cast<int>(xTextureWidth), static_cast<int>(yTextureHeight)));
 
 	ImGui::NewLine();
-	ImGui::Separator();
 	ImGui::SeparatorText("Transform");
-	ImGui::Separator();
 
 	float xPos = sprite->getPosition().x;
 	float yPos = sprite->getPosition().y;
@@ -310,6 +306,8 @@ void EditorComponentVisitor::visit(Sprite* sprite, entt::entity entityID)
 		sprite->setScale(xScale, yScale);
 
 	ImGui::PopItemWidth();
+
+	ImGui::NewLine();
 }
 
 void EditorComponentVisitor::visit(StatusModEvent* statusModEvent, entt::entity entityID)
@@ -322,14 +320,11 @@ void EditorComponentVisitor::visit(TeamTag* teamTag, entt::entity entityID)
 
 void EditorComponentVisitor::visit(UpdateEntityEvent* updateEntityEvent, entt::entity entityID)
 {
+	ImGui::NewLine();
+
 	const std::string ID = std::to_string(static_cast<unsigned int>(entityID));
 
 	ImGui::PushItemWidth((ImGui::GetWindowWidth() / 4.f) - 25.f);
-
-	ImGui::NewLine();
-	ImGui::Separator();
-	ImGui::SeparatorText("Entity Event Collider");
-	ImGui::Separator();
 
 	ImGui::Text("I-Frame duration");
 	int maxDuration = updateEntityEvent->maxDuration.count();
@@ -337,18 +332,17 @@ void EditorComponentVisitor::visit(UpdateEntityEvent* updateEntityEvent, entt::e
 		updateEntityEvent->maxDuration = std::chrono::milliseconds(maxDuration);
 
 	ImGui::PopItemWidth();
+
+	ImGui::NewLine();
 }
 
 void EditorComponentVisitor::visit(UpdateEntityPolling* updateEntityPolling, entt::entity entityID)
 {
+	ImGui::NewLine();
+
 	const std::string ID = std::to_string(static_cast<unsigned int>(entityID));
 
 	ImGui::PushItemWidth((ImGui::GetWindowWidth() / 4.f) - 25.f);
-
-	ImGui::NewLine();
-	ImGui::Separator();
-	ImGui::SeparatorText("Entity Polling Collider");
-	ImGui::Separator();
 
 	ImGui::Text("I-Frame duration");
 	int maxDuration = updateEntityPolling->maxDuration.count();
@@ -356,6 +350,8 @@ void EditorComponentVisitor::visit(UpdateEntityPolling* updateEntityPolling, ent
 		updateEntityPolling->maxDuration = std::chrono::milliseconds(maxDuration);
 
 	ImGui::PopItemWidth();
+
+	ImGui::NewLine();
 }
 
 
