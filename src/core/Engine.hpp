@@ -4,6 +4,7 @@
 #include "util/Logger.hpp"
 #include "SFML/Audio.hpp"
 #include "SFML/Graphics.hpp"
+#include <atomic>
 #include <memory>
 #include <semaphore>
 #include <thread>
@@ -25,7 +26,8 @@ private:
 	void resourceThread();
 
 private:
-	std::shared_ptr<GlobalData> sysData;
+	std::shared_ptr<GlobalData> m_sysData;
+	std::atomic<bool> m_windowActive;
 	std::thread m_physicThread;
 	std::thread m_renderThread;
 	std::thread m_audioThread;

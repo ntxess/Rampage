@@ -4,20 +4,21 @@
  * @brief [Public] Normal constuctor.
 */
 Engine::Engine(std::unique_ptr<IScene> initialScene)
-    : sysData(std::make_shared<GlobalData>())
+    : m_sysData(std::make_shared<GlobalData>())
+    , m_windowActive(true)
 {
     // Start logging in the console until configuration file is read.
     Logger::getInstance().setupConsoleLog();
 
     LOG_INFO(Logger::get()) << "Initializing system. Reading main configuration file...";
 
-    if (sysData->saveManager.init(sysData->configData))
+    if (m_sysData->saveManager.init(m_sysData->configData))
     {
         LOG_INFO(Logger::get()) << "Successfully read config file.";
 
-        std::string logPath = sysData->saveManager.resolvePath(sysData->Configuration<std::string>(DEBUG_LOG_FOLDER)).string();
-        Logger::getInstance().toggleLogging(sysData->Configuration<bool>(DEBUG_MODE));
-        Logger::getInstance().setFilterSeverity(sysData->Configuration<std::string>(DEBUG_LOG_FILTER_SEVERITY));
+        std::string logPath = m_sysData->saveManager.resolvePath(m_sysData->Configuration<std::string>(DEBUG_LOG_FOLDER)).string();
+        Logger::getInstance().toggleLogging(m_sysData->Configuration<bool>(DEBUG_MODE));
+        Logger::getInstance().setFilterSeverity(m_sysData->Configuration<std::string>(DEBUG_LOG_FILTER_SEVERITY));
 
         LOG_INFO(Logger::get()) << "Now logging to file. Log file located at: " << logPath;
 
@@ -39,35 +40,39 @@ void Engine::run()
     LOG_TRACE(Logger::get()) << "----- Main thread started! -----";
 
     startThreads();
-    LOG_INFO(Logger::get()) << "All threads started";
 
     sf::Event event;
-    while (sysData->window.waitEvent(event))
+    while (m_windowActive && m_sysData->window.waitEvent(event))
     {
         switch (event.type)
         {
         case sf::Event::Closed:
             LOG_INFO(Logger::get()) << "Triggered Event::Closed";
-            sysData->window.close();
+            m_windowActive = false;
+            m_physicThread.join();
+            m_renderThread.join();
+            m_audioThread.join();
+            m_resourceThread.join();
+            m_sysData->window.close();
             break;
 
         case sf::Event::Resized:
         {
             LOG_INFO(Logger::get()) << "Triggered Event::Resized";
             float newWidth = static_cast<float>(event.size.width);
-            float newHeight = newWidth / sysData->aspectRatio;
+            float newHeight = newWidth / m_sysData->aspectRatio;
             if (newHeight > event.size.height)
             {
                 newHeight = static_cast<float>(event.size.height);
-                newWidth = newHeight * sysData->aspectRatio;
+                newWidth = newHeight * m_sysData->aspectRatio;
             }
 
-            sysData->window.setSize(sf::Vector2u(
+            m_sysData->window.setSize(sf::Vector2u(
                 static_cast<unsigned int>(newWidth),
                 static_cast<unsigned int>(newHeight))
             );
 
-            sysData->viewport.setSize(newWidth, newHeight);
+            m_sysData->viewport.setSize(newWidth, newHeight);
             break;
         }
 
@@ -82,27 +87,20 @@ void Engine::run()
             break;
 
         default:
-            sysData->sceneManager.getActiveScene()->processEvent(event);
+            m_sysData->sceneManager.getActiveScene()->processEvent(event);
             break;
         }
     }
 
-    LOG_TRACE(Logger::get()) << "----- Main thread ended! -----";
+    LOG_INFO(Logger::get()) << "----- Main thread ended! -----";
 }
 
 void Engine::startThreads()
 {
     m_physicThread = std::thread(&Engine::physicThread, this);
-    m_physicThread.detach();
-
     m_renderThread = std::thread(&Engine::renderThread, this);
-    m_renderThread.detach();
-
     m_audioThread = std::thread(&Engine::audioThread, this);
-    m_audioThread.detach();
-
     m_resourceThread = std::thread(&Engine::resourceThread, this);
-    m_resourceThread.detach();
 }
 
 /**
@@ -119,23 +117,23 @@ void Engine::configureWindow(std::unique_ptr<IScene> initialScene)
     settings.majorVersion = 4;
     settings.minorVersion = 3;
 
-    std::string name = sysData->Configuration<std::string>(NAME);
-    unsigned int width = sysData->Configuration<int>(WIDTH);
-    unsigned int height = sysData->Configuration<int>(HEIGHT);
-    sysData->aspectRatio = static_cast<float>(width) / static_cast<float>(height);
-    sysData->deltaTime = static_cast<float>(1.f / sysData->Configuration<double>(FRAMERATE));
-    sysData->window.create(sf::VideoMode(width, height), name, sf::Style::Default, settings);
-    sysData->window.setActive(false);
-    sysData->sceneManager.addScene(std::move(initialScene), true, sysData.get());
-    sysData->sceneManager.processChange();
+    std::string name = m_sysData->Configuration<std::string>(NAME);
+    unsigned int width = m_sysData->Configuration<int>(WIDTH);
+    unsigned int height = m_sysData->Configuration<int>(HEIGHT);
+    m_sysData->aspectRatio = static_cast<float>(width) / static_cast<float>(height);
+    m_sysData->deltaTime = static_cast<float>(1.f / m_sysData->Configuration<double>(FRAMERATE));
+    m_sysData->window.create(sf::VideoMode(width, height), name, sf::Style::Default, settings);
+    m_sysData->window.setActive(false);
+    m_sysData->sceneManager.addScene(std::move(initialScene), true, m_sysData.get());
+    m_sysData->sceneManager.processChange();
 
     LOG_DEBUG(Logger::get()) << "System info: \n"
         << "\tWindow name: " << name << "\n"
         << "\tWindow width: " << width << "\n"
         << "\tWindow height: " << height << "\n"
-        << "\tDelta time: " << sysData->deltaTime;
+        << "\tDelta time: " << m_sysData->deltaTime;
 
-    LOG_DEBUG(Logger::get()) << "Configuration data: \n" << sysData->configData;
+    LOG_DEBUG(Logger::get()) << "Configuration data: \n" << m_sysData->configData;
 }
 
 /**
@@ -143,29 +141,32 @@ void Engine::configureWindow(std::unique_ptr<IScene> initialScene)
 */
 void Engine::physicThread()
 {
-    LOG_TRACE(Logger::get()) << "----- Physic thread started! -----";
+    LOG_INFO(Logger::get()) << "----- Physic thread started! -----";
 
     float newTime, frameTime;
-    float currentTime = sysData->clock.getElapsedTime().asSeconds();
+    float currentTime = m_sysData->clock.getElapsedTime().asSeconds();
     float accumulator = 0.0f;
 
-    while (sysData->window.isOpen())
+    while (m_windowActive)
     {
-        newTime = sysData->clock.getElapsedTime().asSeconds();
+        newTime = m_sysData->clock.getElapsedTime().asSeconds();
         frameTime = newTime - currentTime;
         currentTime = newTime;
         accumulator += frameTime;
 
-        while (accumulator >= sysData->deltaTime)
+        while (accumulator >= m_sysData->deltaTime)
         {
             m_inputConsumer.acquire();
-            sysData->sceneManager.getActiveScene()->update();
+            m_sysData->sceneManager.getActiveScene()->update();
             m_inputProducer.release();
-            accumulator -= sysData->deltaTime;
+            accumulator -= m_sysData->deltaTime;
         }
     }
 
-    LOG_TRACE(Logger::get()) << "----- Physic thread ended! -----";
+    m_inputConsumer.release();
+    m_inputProducer.release();
+
+    LOG_INFO(Logger::get()) << "----- Physic thread ended! -----";
 }
 
 /**
@@ -173,22 +174,25 @@ void Engine::physicThread()
 */
 void Engine::renderThread()
 {
-    LOG_TRACE(Logger::get()) << "----- Render thread started! -----";
+    LOG_INFO(Logger::get()) << "----- Render thread started! -----";
 
-    sysData->window.setActive(true);
+    m_sysData->window.setActive(true);
 
-    while (sysData->window.isOpen())
+    while (m_windowActive)
     {
-        sysData->window.clear();
-        sysData->sceneManager.processChange();
+        m_sysData->window.clear();
+        m_sysData->sceneManager.processChange();
         m_inputProducer.acquire();
-        sysData->sceneManager.getActiveScene()->processInput();
+        m_sysData->sceneManager.getActiveScene()->processInput();
         m_inputConsumer.release();
-        sysData->sceneManager.getActiveScene()->render();
-        sysData->window.display();
+        m_sysData->sceneManager.getActiveScene()->render();
+        m_sysData->window.display();
     }
 
-    LOG_TRACE(Logger::get()) << "----- Render thread ended! -----";
+    m_inputConsumer.release();
+    m_inputProducer.release();
+
+    LOG_INFO(Logger::get()) << "----- Render thread ended! -----";
 }
 
 /**
@@ -196,14 +200,14 @@ void Engine::renderThread()
 */
 void Engine::audioThread()
 {
-    LOG_TRACE(Logger::get()) << "----- Audio thread started! -----";
+    LOG_INFO(Logger::get()) << "----- Audio thread started! -----";
 
-    while (true)
+    while (m_windowActive)
     {
 
     }
 
-    LOG_TRACE(Logger::get()) << "----- Audio thread ended! -----";
+    LOG_INFO(Logger::get()) << "----- Audio thread ended! -----";
 }
 
 /**
@@ -211,12 +215,12 @@ void Engine::audioThread()
 */
 void Engine::resourceThread()
 {
-    LOG_TRACE(Logger::get()) << "----- Resource thread started! -----";
+    LOG_INFO(Logger::get()) << "----- Resource thread started! -----";
 
-    while (true)
+    while (m_windowActive)
     {
 
     }
 
-    LOG_TRACE(Logger::get()) << "----- Resource thread ended! -----";
+    LOG_INFO(Logger::get()) << "----- Resource thread ended! -----";
 }
