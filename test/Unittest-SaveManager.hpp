@@ -1,11 +1,13 @@
-#include "../src/common/CommonEnum.hpp"
-#include "../src/common/GlobalData.hpp"
+#include "../src/core/GlobalData.hpp"
+#include "../src/core/util/AnyToString.hpp"
+#include <any>
 #include <iostream>
 #include <string>
+#include <unordered_map>
 
 static int saveData(GlobalData& m_data)
 {
-    m_data.saveData[entt::hashed_string("unittest-save")] = std::make_unique<DataMap>();
+    m_data.saveData[entt::hashed_string("unittest-save")] = std::make_unique<std::unordered_map<std::string, std::any>>();
     m_data.saveData[entt::hashed_string("unittest-save")]->emplace("DAT00", false);
     m_data.saveData[entt::hashed_string("unittest-save")]->emplace("DAT01", 1);
     m_data.saveData[entt::hashed_string("unittest-save")]->emplace("DAT02", 2);
@@ -15,7 +17,7 @@ static int saveData(GlobalData& m_data)
     m_data.saveData[entt::hashed_string("unittest-save")]->emplace("DAT06", std::vector<std::any>{511.2, 611.3, 711.4});
     m_data.saveManager.save("save/unittest-save.sav", *(m_data.saveData[entt::hashed_string("unittest-save")]));
 
-    DataMap loadedSaveData;
+    std::unordered_map<std::string, std::any> loadedSaveData;
     m_data.saveManager.load("save/unittest-save.sav", loadedSaveData);
 
     int size = 0;
@@ -41,7 +43,7 @@ static int saveData(GlobalData& m_data)
 
 static int saveData2(GlobalData& m_data)
 {
-    DataMap newSaveData = {
+    std::unordered_map<std::string, std::any> newSaveData = {
         {"DAT00", true},
         {"DAT01", 10},
         {"DAT02", 20},
@@ -52,7 +54,7 @@ static int saveData2(GlobalData& m_data)
     };
     m_data.saveManager.save("save/unittest-save2.sav", newSaveData);
 
-    DataMap loadedSaveData;
+    std::unordered_map<std::string, std::any> loadedSaveData;
     m_data.saveManager.load("save/unittest-save2.sav", loadedSaveData);
 
     int size = 0;
