@@ -1,5 +1,9 @@
 #include "GameOfLifeSim.hpp"
 
+GameOfLifeSim::GameOfLifeSim()
+    : m_data(nullptr)
+{}
+
 GameOfLifeSim::GameOfLifeSim(GlobalData* sysData)
     : m_data(sysData)
 {}
@@ -11,11 +15,12 @@ GameOfLifeSim::~GameOfLifeSim()
 
 void GameOfLifeSim::init()
 {
-    float width = static_cast<float>(m_data->Configuration<int>(WIDTH));
-    float height = static_cast<float>(m_data->Configuration<int>(HEIGHT));
+    int width = m_data->Configuration<int>(WIDTH);
+    int height = m_data->Configuration<int>(HEIGHT);
 
     m_gridWorld = std::vector<std::vector<int>>(width, std::vector<int>(height, 0));
     m_buffer = std::vector<std::vector<int>>(m_gridWorld.size(), std::vector<int>(m_gridWorld[0].size(), 0));
+
     for (auto& row : m_gridWorld)
     {
         std::generate(row.begin(), row.end(), []() {
@@ -98,7 +103,7 @@ void GameOfLifeSim::render()
                     sf::RectangleShape rectangle;
                     rectangle.setSize(sf::Vector2f(1, 1));
                     rectangle.setFillColor(sf::Color(50, 168, 82));
-                    rectangle.setPosition(i, j);
+                    rectangle.setPosition(static_cast<float>(i), static_cast<float>(j));
                     sceneRenderTexture.draw(rectangle);
                 }
             }
@@ -229,8 +234,8 @@ void GameOfLifeSim::readFile(std::string_view filename)
     }
     else
     {
-        float w_midWidth = static_cast<float>(m_data->Configuration<int>(WIDTH)) / 2.f;
-        float w_midHeight = static_cast<float>(m_data->Configuration<int>(HEIGHT)) / 2.f;
+        int w_midWidth = m_data->Configuration<int>(WIDTH) / 2;
+        int w_midHeight = m_data->Configuration<int>(HEIGHT) / 2;
         int midWidth = 0;
         int midheight = 0;
 
@@ -241,7 +246,7 @@ void GameOfLifeSim::readFile(std::string_view filename)
         midheight = stoi(line);
 
         std::string pattern;
-        int j = w_midHeight - midheight;
+        int j = static_cast<int>(w_midHeight - midheight);
         while (input >> line) {
             for (int i = 0; i < line.length(); i++)
             {

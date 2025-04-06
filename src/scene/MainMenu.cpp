@@ -1,7 +1,13 @@
 #include "MainMenu.hpp"
 
+MainMenu::MainMenu()
+    : m_data(nullptr)
+    , m_wallpaper(entt::null)
+{}
+
 MainMenu::MainMenu(GlobalData* sysData)
     : m_data(sysData)
+    , m_wallpaper(entt::null)
 {}
 
 void MainMenu::init()

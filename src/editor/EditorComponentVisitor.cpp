@@ -1,10 +1,5 @@
 #include "EditorComponentVisitor.hpp"
 
-// void EditorComponentVisitor::visit(const AnimatedSprite* animatedSprite)
-// {
-// 
-// }
-
 void EditorComponentVisitor::visit(Effects* effects, entt::entity entityID)
 {
 
@@ -51,13 +46,13 @@ void EditorComponentVisitor::visit(EffectsList* effectsList, entt::entity entity
 
         ImGui::SameLine(elDivider1Pos * 3 + 30.f);
 
-        int maxDuration = effect.maxDuration.count();
+        int maxDuration = static_cast<int>(effect.maxDuration.count());
         if (ImGui::InputInt(("##EffectMaxDuration" + std::to_string(index) + ID).c_str(), &maxDuration))
             effect.maxDuration = std::chrono::milliseconds(maxDuration);
 
         ImGui::SameLine(elDivider1Pos * 4 + 40.f);
 
-        int tickRate = effect.tickRate.count();
+        int tickRate = static_cast<int>(effect.tickRate.count());
         if (ImGui::InputInt(("##EffectTickRate" + std::to_string(index) + ID).c_str(), &tickRate))
             effect.tickRate = std::chrono::milliseconds(tickRate);
 
@@ -219,8 +214,8 @@ void EditorComponentVisitor::visit(Sprite* sprite, entt::entity entityID)
 
     float xOrigin = sprite->getOrigin().x;
     float yOrigin = sprite->getOrigin().y;
-    float xTextureWidth = sprite->getTextureRect().width;
-    float yTextureHeight = sprite->getTextureRect().height;
+    int xTextureWidth = sprite->getTextureRect().width;
+    int yTextureHeight = sprite->getTextureRect().height;
     bool isRepeated = sprite->getTexture()->isRepeated();
     int rHexVal = sprite->getColor().r;
     int gHexVal = sprite->getColor().g;
@@ -257,17 +252,17 @@ void EditorComponentVisitor::visit(Sprite* sprite, entt::entity entityID)
 
     auto xOriginInput = ImGui::InputFloat(("X##TfOriginInput" + ID).c_str(), &xOrigin);
     ImGui::SameLine(divider1Pos);
-    auto textureWidthInput = ImGui::InputFloat(("Width##TfTextureInput" + ID).c_str(), &xTextureWidth);
+    auto textureWidthInput = ImGui::InputInt(("Width##TfTextureInput" + ID).c_str(), &xTextureWidth);
 
     auto yOriginInput = ImGui::InputFloat(("Y##TfOriginInput" + ID).c_str(), &yOrigin);
     ImGui::SameLine(divider1Pos);
-    auto textureHeightInput = ImGui::InputFloat(("Height##TfTextureInput" + ID).c_str(), &yTextureHeight);
+    auto textureHeightInput = ImGui::InputInt(("Height##TfTextureInput" + ID).c_str(), &yTextureHeight);
 
     if (xOriginInput || yOriginInput)
         sprite->setOrigin(xOrigin, yOrigin);
 
     if (textureWidthInput || textureHeightInput)
-        sprite->setTextureRect(sf::IntRect(0, 0, static_cast<int>(xTextureWidth), static_cast<int>(yTextureHeight)));
+        sprite->setTextureRect(sf::IntRect(0, 0, xTextureWidth, yTextureHeight));
 
     ImGui::NewLine();
     ImGui::SeparatorText("Transform");
@@ -327,7 +322,7 @@ void EditorComponentVisitor::visit(UpdateEntityEvent* updateEntityEvent, entt::e
     ImGui::PushItemWidth((ImGui::GetWindowWidth() / 4.f) - 25.f);
 
     ImGui::Text("I-Frame duration");
-    int maxDuration = updateEntityEvent->maxDuration.count();
+    int maxDuration = static_cast<int>(updateEntityEvent->maxDuration.count());
     if (ImGui::InputInt(("Sec##EventMaxDurationInput" + ID).c_str(), &maxDuration))
         updateEntityEvent->maxDuration = std::chrono::milliseconds(maxDuration);
 
@@ -345,7 +340,7 @@ void EditorComponentVisitor::visit(UpdateEntityPolling* updateEntityPolling, ent
     ImGui::PushItemWidth((ImGui::GetWindowWidth() / 4.f) - 25.f);
 
     ImGui::Text("I-Frame duration");
-    int maxDuration = updateEntityPolling->maxDuration.count();
+    int maxDuration = static_cast<int>(updateEntityPolling->maxDuration.count());
     if (ImGui::InputInt(("Sec##PollingMaxDurationInput" + ID).c_str(), &maxDuration))
         updateEntityPolling->maxDuration = std::chrono::milliseconds(maxDuration);
 

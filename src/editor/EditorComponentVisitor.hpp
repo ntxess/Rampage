@@ -9,7 +9,6 @@
 class EditorComponentVisitor : public IComponentVisitor
 {
 public:
-    // void visit(const AnimatedSprite* animatedSprite);
     void visit(Effects* effects, entt::entity entityID) override;
     void visit(EffectsList* effectsList, entt::entity entityID) override;
     void visit(EntityStatus* entityStatus, entt::entity entityID) override;

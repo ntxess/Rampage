@@ -19,6 +19,7 @@
 class GameOfLifeSim : public IScene
 {
 public:
+    GameOfLifeSim();
     GameOfLifeSim(GlobalData* sysData);
     ~GameOfLifeSim();
 

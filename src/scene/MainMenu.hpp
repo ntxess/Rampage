@@ -12,6 +12,7 @@
 class MainMenu : public IScene
 {
 public:
+    MainMenu();
     MainMenu(GlobalData* sysData);
 
     void init() override;
