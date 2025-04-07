@@ -105,7 +105,11 @@ void CollisionSystem::collisionUpdate(entt::registry& reg)
     {
         // Query all neighboring entity for collision
         const sf::FloatRect& sourceHitbox = reg.get<Sprite>(sourceID).getGlobalBounds();
+
+        if (!reg.valid(sourceID)) continue;
+
         std::vector<entt::entity> receiverList = m_quadTree->queryRange(reg, sourceHitbox);
+
         const Team& sourceTeamTag = reg.get<TeamTag>(sourceID).tag;
 
         for (const auto& receiverID : receiverList)

@@ -130,10 +130,13 @@ void Sandbox::render()
         const auto& view = m_reg.view<Sprite>();
         for (const auto& entity : view)
         {
-            auto& sceneRenderTexture = m_reg.get<SceneViewRenderer>(sceneTextureID).rd;
-            auto& spriteEntity = view.get<Sprite>(entity).sprite;
-            checkBoundary(sceneRenderTexture.getSize(), spriteEntity);
-            sceneRenderTexture.draw(view.get<Sprite>(entity).sprite);
+            if (m_reg.valid(entity))
+            {
+                auto& sceneRenderTexture = m_reg.get<SceneViewRenderer>(sceneTextureID).rd;
+                auto& spriteEntity = view.get<Sprite>(entity).sprite;
+                checkBoundary(sceneRenderTexture.getSize(), spriteEntity);
+                sceneRenderTexture.draw(view.get<Sprite>(entity).sprite);
+            }
         }
     }
 

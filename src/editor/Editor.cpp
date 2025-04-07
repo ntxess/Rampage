@@ -364,6 +364,7 @@ void Editor::renderPropertiesPanel()
             {
                 // TODO: Remove the sprite component from QuadTree
                 m_reg->remove<Sprite>(entityID);
+                static_cast<Sandbox*>(m_sceneMap[m_selectedSceneKey]->scene.get())->getSystemManager()->getSystem<CollisionSystem>()->remove(*m_reg, entityID);
             }
 
             if (m_reg->all_of<UpdateEntityEvent>(entityID) && ImGui::CollapsingHeader(("UpdateEntityEvent##Header" + ID).c_str(), &closableComponents[entityID][1], ImGuiTreeNodeFlags_DefaultOpen))
