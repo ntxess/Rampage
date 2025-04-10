@@ -11,11 +11,11 @@ constexpr std::string_view WayPointSystem::name() const
 void WayPointSystem::update(entt::registry& reg, const float& dt)
 {
     const auto& group = reg.group<MovementPattern, EntityStatus>(entt::get<Sprite>);
-    for (auto entity : group)
+    for (const auto& entityID : group)
     {
-        auto& wpc = group.get<MovementPattern>(entity);
-        auto& es = group.get<EntityStatus>(entity);
-        auto& sp = group.get<Sprite>(entity);
+        auto& wpc = group.get<MovementPattern>(entityID);
+        auto& es = group.get<EntityStatus>(entityID);
+        auto& sp = group.get<Sprite>(entityID);
 
         //auto [wpc, es, sp] = group.get<MovementPattern, EntityStatus, Sprite>(entity);
 
@@ -51,5 +51,6 @@ void WayPointSystem::update(entt::registry& reg, const float& dt)
         float theta = (std::atan2(velocity.y, velocity.x)) * (180.f / float(std::numbers::pi));
         sp.sprite.setRotation(theta + 90);
         sp.sprite.move(velocity);
+        reg.emplace_or_replace<UpdateEntityEvent>(entityID);
     }
 }

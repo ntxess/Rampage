@@ -67,7 +67,7 @@ void CollisionSystem::collisionUpdate(entt::registry& reg)
                 LOG_TRACE(Logger::get()) << "Entity [" << static_cast<unsigned int>(sourceID) << "] collided with same team";
                 continue;
             }
-            else if (!reg.get<UpdateEntityPolling>(sourceID).isReady())
+            else if (!reg.valid(sourceID) && !reg.get<UpdateEntityPolling>(sourceID).isReady())
             {
                 LOG_TRACE(Logger::get()) << "Entity [" << static_cast<unsigned int>(sourceID) << "] is not ready to collide";
                 continue;
