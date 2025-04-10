@@ -2,8 +2,10 @@
 
 #include "../Components.hpp"
 #include "../interface/ISystem.hpp"
+#include "../util/WayPoint.hpp"
 #include "entt/entity/entity.hpp"
 #include "entt/entity/registry.hpp"
+#include <cmath>
 #include <numbers>
 #include <string_view>
 

@@ -42,4 +42,8 @@ private:
     entt::registry m_reg;
     entt::entity m_player;
     SystemManager m_system;
+
+    std::unique_ptr<WayPoint> m_pointA;
+    std::unique_ptr<WayPoint> m_pointB;
+    std::unique_ptr<WayPoint> m_pointC;
 };

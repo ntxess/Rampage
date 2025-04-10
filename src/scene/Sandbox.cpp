@@ -59,19 +59,39 @@ void Sandbox::init()
     std::mt19937 rng(dev());
     std::uniform_int_distribution<std::mt19937::result_type> dist6(0, static_cast<unsigned int>(width));
 
+    m_pointA = std::make_unique<WayPoint>(sf::Vector2f(float(dist6(rng)), float(dist6(rng))));
+    m_pointB = std::make_unique<WayPoint>(sf::Vector2f(float(dist6(rng)), float(dist6(rng))));
+    m_pointC = std::make_unique<WayPoint>(sf::Vector2f(float(dist6(rng)), float(dist6(rng))));
+
+    m_pointB->link(m_pointC.get());
+    m_pointA->link(m_pointB.get());
+
+    WayPoint* headPtr = m_pointA.get();
+    WayPoint* next;
+    while (headPtr->nextWP != NULL)
+    {
+        next = headPtr->nextWP;
+        headPtr->nextWP->distanceTotal = headPtr->distanceTotal + headPtr->distanceToNext;
+        headPtr = next;
+    }
+
     for (size_t i = 0; i < 10; i++)
     {
         // Entity create and store into the scene's ENTT::entity registry
         entt::entity mob = m_reg.create();
         m_reg.emplace<TeamTag>(mob, Team::ENEMY);
         m_reg.emplace<Sprite>(mob, m_data->textureManager["coin"]);
+        m_reg.emplace<MovementPattern>(mob, m_pointA.get(), true);
+        m_reg.get<MovementPattern>(mob).repeat = true;
         m_reg.emplace<EntityStatus>(mob);
         m_reg.get<EntityStatus>(mob).values["HP"] = 1.f;
+        m_reg.get<EntityStatus>(mob).values["Speed"] = 100.f;
         m_reg.get<Sprite>(mob).setPosition(float(dist6(rng)), float(dist6(rng) % int(height)));
     }
 
     m_system.addSystem<CollisionSystem>(m_reg, sf::Vector2f{ 0.f, 0.f }, m_data->window.getSize());
     m_system.addSystem<EventSystem>(std::chrono::milliseconds(36000));
+    m_system.addSystem<WayPointSystem>();
 }
 
 void Sandbox::processEvent(const sf::Event& event)

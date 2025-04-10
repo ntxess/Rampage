@@ -1,7 +1,7 @@
 #pragma once
 
 #include "EffectType.hpp"
-#include "Effects.h"
+#include "Effects.hpp"
 #include "../interface/IComponent.hpp"
 #include "../interface/IComponentVisitor.hpp"
 #include "entt/entity/entity.hpp"

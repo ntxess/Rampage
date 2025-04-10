@@ -183,6 +183,7 @@
     <ClCompile Include="src\core\component\TeamTag.cpp" />
     <ClCompile Include="src\core\component\UpdateEntityEvent.cpp" />
     <ClCompile Include="src\core\component\UpdateEntityPolling.cpp" />
+    <ClCompile Include="src\core\util\WayPoint.cpp" />
     <ClCompile Include="src\core\Engine.cpp" />
     <ClCompile Include="src\core\manager\AnimationManager.cpp" />
     <ClCompile Include="src\core\manager\EntityManager.cpp" />
@@ -203,6 +204,7 @@
     <ClCompile Include="src\scene\MainMenu.cpp" />
     <ClCompile Include="src\scene\Sandbox.cpp" />
     <ClCompile Include="test\Unittest-Suite.hpp" />
+    <ClCompile Include="src\core\manager\WayPointManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dep\SFML-imgui\include\imconfig-SFML.h" />
@@ -231,6 +233,7 @@
     <ClInclude Include="src\core\component\TeamTag.hpp" />
     <ClInclude Include="src\core\component\UpdateEntityEvent.hpp" />
     <ClInclude Include="src\core\component\UpdateEntityPolling.hpp" />
+    <ClInclude Include="src\core\util\WayPoint.hpp" />
     <ClInclude Include="src\core\Engine.hpp" />
     <ClInclude Include="src\core\GlobalData.hpp" />
     <ClInclude Include="src\core\interface\ICommand.hpp" />
@@ -263,6 +266,7 @@
     <ClInclude Include="src\scene\Sandbox.hpp" />
     <ClInclude Include="src\scene\Scenes.hpp" />
     <ClInclude Include="test\Unittest-SaveManager.hpp" />
+    <ClInclude Include="src\core\manager\WayPointManager.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="config\config.json" />

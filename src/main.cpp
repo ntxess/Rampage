@@ -1,5 +1,6 @@
 #include "core/Engine.hpp"
 #include "editor/Editor.hpp"
+#include <memory>
 
 // #include "../test/Unittest-SaveManager.hpp"
 

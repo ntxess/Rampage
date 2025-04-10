@@ -3,8 +3,8 @@
 #include "../interface/IComponent.hpp"
 #include "../interface/IComponentVisitor.hpp"
 #include "entt/entity/entity.hpp"
-#include <vector>
 #include <utility>
+#include <vector>
 
 enum class EffectType;
 class Effects;
