@@ -1,2 +1,2 @@
-# Rampage
-Fork of the simple game engine with new additions, structural changes
+# Simple Engine 2
+Fork of the original simple game engine with new additions and structural changes
