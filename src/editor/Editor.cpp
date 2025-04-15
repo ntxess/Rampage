@@ -13,6 +13,7 @@ Editor::Editor()
     , m_enableEntityCollider(false)
     , m_enableEntityHeading(false)
     , m_enableQuadTreeVisualizer(false)
+    , m_startButtonEnabled(true)
     , m_totalEntity(0)
     , m_reg(nullptr)
 {}
@@ -30,6 +31,7 @@ Editor::Editor(GlobalData* sysData)
     , m_enableEntityCollider(false)
     , m_enableEntityHeading(false)
     , m_enableQuadTreeVisualizer(false)
+    , m_startButtonEnabled(true)
     , m_totalEntity(0)
     , m_reg(nullptr)
 {}
@@ -76,8 +78,8 @@ void Editor::init()
     std::unique_ptr<IScene> sandbox = std::make_unique<Sandbox>(m_data);
     m_sceneMap["Sandbox"] = std::make_unique<SceneData>(std::move(sandbox), m_data->Configuration<int>(WIDTH), m_data->Configuration<int>(HEIGHT), settings);
 
-    std::unique_ptr<IScene> mainmenu1 = std::make_unique<MainMenu>(m_data);
-    m_sceneMap["MainMenu1"] = std::make_unique<SceneData>(std::move(mainmenu1), m_data->Configuration<int>(WIDTH), m_data->Configuration<int>(HEIGHT), settings);
+    std::unique_ptr<IScene> mainmenu = std::make_unique<MainMenu>(m_data);
+    m_sceneMap["MainMenu"] = std::make_unique<SceneData>(std::move(mainmenu), m_data->Configuration<int>(WIDTH), m_data->Configuration<int>(HEIGHT), settings);
 
     std::unique_ptr<IScene> gameOfLifeSim = std::make_unique<GameOfLifeSim>(m_data);
     m_sceneMap["GameOfLifeSim"] = std::make_unique<SceneData>(std::move(gameOfLifeSim), m_data->Configuration<int>(WIDTH), m_data->Configuration<int>(HEIGHT), settings);
@@ -99,12 +101,14 @@ void Editor::processEvent(const sf::Event& event)
 
 void Editor::processInput()
 {
-    m_sceneMap[m_selectedSceneKey]->scene->processInput();
+    if (m_startButtonEnabled)
+        m_sceneMap[m_selectedSceneKey]->scene->processInput();
 }
 
 void Editor::update()
 {
-    m_sceneMap[m_selectedSceneKey]->scene->update();
+    if (m_startButtonEnabled)
+        m_sceneMap[m_selectedSceneKey]->scene->update();
 }
 
 void Editor::render()
@@ -215,6 +219,22 @@ void Editor::renderDebugPanel()
 
             ImGui::EndTable();
             ImGui::SliderInt("Spawn Entity", &m_totalEntity, 0, 10000);
+
+            const float len = 64 * (ImGui::GetWindowWidth() / ImGui::GetWindowHeight());
+            if (m_startButtonEnabled)
+            {
+                if (ImGui::Button("Pause", { len, len }))
+                {
+                    m_startButtonEnabled = false;
+                }
+            }
+            else
+            {
+                if (ImGui::Button("Play", { len, len }))
+                {
+                    m_startButtonEnabled = true;
+                }
+            } 
         }
     }
 
@@ -339,7 +359,7 @@ void Editor::renderPropertiesPanel()
     ImGui::SetNextWindowSize({ width - (width / 5 + (width / (m_data->aspectRatio))), height }, ImGuiCond_Once);
     ImGui::Begin("Properties Panel", NULL, m_expandablePanelFlags | ImGuiWindowFlags_AlwaysVerticalScrollbar);
     static std::unordered_map<entt::entity, bool> closableGroups;
-    static std::unordered_map<entt::entity, std::array<bool, 5>> closableComponents;
+    static std::unordered_map<entt::entity, std::array<bool, 6>> closableComponents;
 
     const auto& view = m_reg->view<Sprite>();
     for (const auto& entityID : view)
@@ -367,15 +387,16 @@ void Editor::renderPropertiesPanel()
                 static_cast<Sandbox*>(m_sceneMap[m_selectedSceneKey]->scene.get())->getSystemManager()->getSystem<CollisionSystem>()->remove(*m_reg, entityID);
             }
 
-            if (m_reg->all_of<UpdateEntityEvent>(entityID) && ImGui::CollapsingHeader(("UpdateEntityEvent##Header" + ID).c_str(), &closableComponents[entityID][1], ImGuiTreeNodeFlags_DefaultOpen))
-            {
-                auto& updateEntityEvent = m_reg->get<UpdateEntityEvent>(entityID);
-                updateEntityEvent.accept(&m_componentVisitor, entityID);
-            }
-            if (!closableComponents[entityID][1])
-            {
-                m_reg->remove<UpdateEntityEvent>(entityID);
-            }
+            // Unstable
+            //if (m_reg->all_of<UpdateEntityEvent>(entityID) && ImGui::CollapsingHeader(("UpdateEntityEvent##Header" + ID).c_str(), &closableComponents[entityID][1], ImGuiTreeNodeFlags_DefaultOpen))
+            //{
+            //    auto& updateEntityEvent = m_reg->get<UpdateEntityEvent>(entityID);
+            //    updateEntityEvent.accept(&m_componentVisitor, entityID);
+            //}
+            //if (!closableComponents[entityID][1])
+            //{
+            //    m_reg->remove<UpdateEntityEvent>(entityID);
+            //}
 
             if (m_reg->all_of<UpdateEntityPolling>(entityID) && ImGui::CollapsingHeader(("UpdateEntityPolling##Header" + ID).c_str(), &closableComponents[entityID][2], ImGuiTreeNodeFlags_DefaultOpen))
             {
@@ -405,6 +426,16 @@ void Editor::renderPropertiesPanel()
             if (!closableComponents[entityID][4])
             {
                 m_reg->remove<EffectsList>(entityID);
+            }
+
+            if (m_reg->all_of<MovementPattern>(entityID) && ImGui::CollapsingHeader(("MovementPattern##Header" + ID).c_str(), &closableComponents[entityID][5], ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                auto& movementPattern = m_reg->get<MovementPattern>(entityID);
+                movementPattern.accept(&m_componentVisitor, entityID);
+            }
+            if (!closableComponents[entityID][5])
+            {
+                m_reg->remove<MovementPattern>(entityID);
             }
 
             ImGui::EndChild();

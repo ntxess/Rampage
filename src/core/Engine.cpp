@@ -37,7 +37,7 @@ Engine::Engine(std::unique_ptr<IScene> initialScene)
 */
 void Engine::run()
 {
-    LOG_TRACE(Logger::get()) << "----- Main thread started! -----";
+    LOG_INFO(Logger::get()) << "----- Main thread started! -----";
 
     startThreads();
 

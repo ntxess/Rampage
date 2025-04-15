@@ -1,6 +1,7 @@
 #include "WayPointSystem.hpp"
 
-WayPointSystem::WayPointSystem()
+WayPointSystem::WayPointSystem(std::string bindingStatID)
+    : bindingStatID(bindingStatID)
 {}
 
 constexpr std::string_view WayPointSystem::name() const
@@ -13,15 +14,11 @@ void WayPointSystem::update(entt::registry& reg, const float& dt)
     const auto& group = reg.group<MovementPattern, EntityStatus>(entt::get<Sprite>);
     for (const auto& entityID : group)
     {
-        auto& wpc = group.get<MovementPattern>(entityID);
-        auto& es = group.get<EntityStatus>(entityID);
-        auto& sp = group.get<Sprite>(entityID);
+        auto [wpc, es, sp] = group.get<MovementPattern, EntityStatus, Sprite>(entityID);
 
-        //auto [wpc, es, sp] = group.get<MovementPattern, EntityStatus, Sprite>(entity);
-
-        if (!es.values.count("Speed")) return;
+        if (!es.values.count(bindingStatID)) return;
         
-        const float speed = es.values.at("Speed");
+        const float speed = es.values.at(bindingStatID);
 
         WayPoint* headPtr = wpc.currentPath;
         WayPoint* nextPtr = headPtr->nextWP;

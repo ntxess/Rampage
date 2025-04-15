@@ -2,7 +2,7 @@
 
 void EditorComponentVisitor::visit(Effects* effects, entt::entity entityID)
 {
-
+    // Implemented in the EffectsList visitor
 }
 
 void EditorComponentVisitor::visit(EffectsList* effectsList, entt::entity entityID)
@@ -189,6 +189,28 @@ void EditorComponentVisitor::visit(Hitbox* hitbox, entt::entity entityID)
 
 void EditorComponentVisitor::visit(MovementPattern* movementPattern, entt::entity entityID)
 {
+    ImGui::NewLine();
+
+    const std::string ID = std::to_string(static_cast<unsigned int>(entityID));
+    const float ratio = ImGui::GetWindowWidth() / ImGui::GetWindowHeight();
+    
+
+    ImGui::Button(("##PathDesigner" + ID).c_str(), { 64 * ratio, 64 * ratio });
+
+    size_t waypointNum = 0;
+    WayPoint* current = movementPattern->movePattern;
+    while (current != nullptr)
+    {
+        ImGui::SetNextItemWidth(ImGui::GetWindowWidth() / 4.f);
+        ImGui::InputFloat((std::to_string(waypointNum) + "##DistanceToNext" + ID).c_str(), &current->distanceToNext, 64);
+        ImGui::SameLine();
+        ImGui::InputFloat((std::to_string(waypointNum) + "##DistanceTotal" + ID).c_str(), &current->distanceTotal, 64);
+
+        current = current->nextWP;
+        ++waypointNum;
+    }
+
+    ImGui::NewLine();
 }
 
 void EditorComponentVisitor::visit(PlayerInput* playerInput, entt::entity entityID)

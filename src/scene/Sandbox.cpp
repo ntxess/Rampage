@@ -60,7 +60,7 @@ void Sandbox::init()
     std::uniform_int_distribution<std::mt19937::result_type> dist6(0, static_cast<unsigned int>(width));
 
 
-    for (size_t i = 0; i < 150; i++)
+    for (size_t i = 0; i < 10; i++)
     {
         WayPoint* root = nullptr;
         for (size_t j = 0; j <= size_t(dist6(rng)) % 10; j++)
@@ -94,7 +94,7 @@ void Sandbox::init()
 
     m_system.addSystem<CollisionSystem>(m_reg, sf::Vector2f{ 0.f, 0.f }, m_data->window.getSize());
     m_system.addSystem<EventSystem>(std::chrono::milliseconds(36000));
-    m_system.addSystem<WayPointSystem>();
+    m_system.addSystem<WayPointSystem>("Speed");
 }
 
 void Sandbox::processEvent(const sf::Event& event)

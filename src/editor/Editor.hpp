@@ -78,6 +78,7 @@ private:
     bool m_enableEntityCollider;
     bool m_enableEntityHeading;
     bool m_enableQuadTreeVisualizer;
+    std::atomic<bool> m_startButtonEnabled;
     int m_totalEntity;
 
     // Current loaded scene data
