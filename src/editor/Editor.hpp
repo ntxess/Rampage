@@ -58,6 +58,8 @@ private:
     void displayEntityVisualizers();
     void displayCollisionSystemVisualizer();
 
+    void setupDockPanel(const ImVec2& panPos, const ImVec2& panSize, const char* panID, const ImGuiID& dockID);
+
     template<typename... Args>
     entt::entity findEntityID();
 
@@ -66,7 +68,6 @@ private:
 
     sf::Font m_defaultFont;
     ImGuiWindowFlags m_panelFlags;
-    ImGuiWindowFlags m_expandablePanelFlags;
 
     ImGuiID m_dockspaceId1;
     ImGuiID m_dockspaceId2;
