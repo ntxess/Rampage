@@ -3,7 +3,6 @@
 Editor::Editor()
     : m_data(nullptr)
     , m_panelFlags(0)
-    , m_expandablePanelFlags(0)
     , m_dockspaceId1(0)
     , m_dockspaceId2(0)
     , m_dockspaceId3(0)
@@ -21,7 +20,6 @@ Editor::Editor()
 Editor::Editor(GlobalData* sysData)
     : m_data(sysData)
     , m_panelFlags(0)
-    , m_expandablePanelFlags(0)
     , m_dockspaceId1(0)
     , m_dockspaceId2(0)
     , m_dockspaceId3(0)
@@ -55,6 +53,7 @@ void Editor::init()
     settings.majorVersion = 4;
     settings.minorVersion = 3;
 
+    // Disable flags for the dockspace panels; Make panel non-interactive 
     m_panelFlags = 0;
     m_panelFlags |= ImGuiWindowFlags_NoMove;
     m_panelFlags |= ImGuiWindowFlags_NoScrollWithMouse;
@@ -66,9 +65,7 @@ void Editor::init()
     m_panelFlags |= ImGuiWindowFlags_NoNavInputs;
     m_panelFlags |= ImGuiWindowFlags_NoNavFocus;
 
-    m_expandablePanelFlags = 0;
-    //m_expandablePanelFlags |= ImGuiWindowFlags_NoTitleBar;
-
+    // Enable and setup dockspaces
     ImGui::SFML::Init(m_data->window);
     ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     ImGui::GetIO().ConfigWindowsMoveFromTitleBarOnly = true;
@@ -76,13 +73,28 @@ void Editor::init()
 
     // Initializing all the scenes for selection
     std::unique_ptr<IScene> sandbox = std::make_unique<Sandbox>(m_data);
-    m_sceneMap["Sandbox"] = std::make_unique<SceneData>(std::move(sandbox), m_data->Configuration<int>(WIDTH), m_data->Configuration<int>(HEIGHT), settings);
+    m_sceneMap["Sandbox"] = std::make_unique<SceneData>(
+        std::move(sandbox), 
+        m_data->Configuration<int>(WIDTH), 
+        m_data->Configuration<int>(HEIGHT), 
+        settings
+    );
 
     std::unique_ptr<IScene> mainmenu = std::make_unique<MainMenu>(m_data);
-    m_sceneMap["MainMenu"] = std::make_unique<SceneData>(std::move(mainmenu), m_data->Configuration<int>(WIDTH), m_data->Configuration<int>(HEIGHT), settings);
+    m_sceneMap["MainMenu"] = std::make_unique<SceneData>(
+        std::move(mainmenu),
+        m_data->Configuration<int>(WIDTH),
+        m_data->Configuration<int>(HEIGHT), 
+        settings
+    );
 
     std::unique_ptr<IScene> gameOfLifeSim = std::make_unique<GameOfLifeSim>(m_data);
-    m_sceneMap["GameOfLifeSim"] = std::make_unique<SceneData>(std::move(gameOfLifeSim), m_data->Configuration<int>(WIDTH), m_data->Configuration<int>(HEIGHT), settings);
+    m_sceneMap["GameOfLifeSim"] = std::make_unique<SceneData>(
+        std::move(gameOfLifeSim), 
+        m_data->Configuration<int>(WIDTH), 
+        m_data->Configuration<int>(HEIGHT), 
+        settings
+    );
 
     // Load in first scene of map
     m_selectedSceneKey = m_sceneMap.begin()->first;
@@ -150,50 +162,29 @@ entt::registry& Editor::getRegistry()
 
 void Editor::setupDockspace()
 {
-    const float width = static_cast<float>(m_data->window.getSize().x);
-    const float height = static_cast<float>(m_data->window.getSize().y);
-
     m_dockspaceId1 = ImGui::GetID("Dockspace1");
     m_dockspaceId2 = ImGui::GetID("Dockspace2");
     m_dockspaceId3 = ImGui::GetID("Dockspace3");
     m_dockspaceId4 = ImGui::GetID("Dockspace4");
     m_dockspaceId5 = ImGui::GetID("Dockspace5");
 
-    ImGui::SetNextWindowPos({ 0, 0 });
-    ImGui::SetNextWindowSize({ width, height });
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0, 0 });
 
-    ImGui::SetNextWindowPos({ 0, 0 });
-    ImGui::SetNextWindowSize({ width / 5, height / 2 });
-    ImGui::Begin("##LP1", NULL, m_panelFlags);
-    ImGui::DockSpace(m_dockspaceId1, { width / 5, height / 2 }, ImGuiDockNodeFlags_NoResize);
-    ImGui::End();
+    const float width = static_cast<float>(m_data->window.getSize().x);
+    const float height = static_cast<float>(m_data->window.getSize().y);
+    const float fifthWidth = width / 5.f;
+    const float halfHeight = height / 2.f;
+    const float scalingWidth = width / m_data->aspectRatio;
+    const float scalingHeight = height / m_data->aspectRatio;
+    const float scalingFifthWidth = fifthWidth + scalingWidth;
 
-    ImGui::SetNextWindowPos({ 0, height / 2 });
-    ImGui::SetNextWindowSize({ width / 5, height / 2 });
-    ImGui::Begin("##LP2", NULL, m_panelFlags);
-    ImGui::DockSpace(m_dockspaceId2, { width / 5, height / 2 }, ImGuiDockNodeFlags_NoResize);
-    ImGui::End();
-
-    ImGui::SetNextWindowPos({ width / 5, 0 });
-    ImGui::SetNextWindowSize({ width / (m_data->aspectRatio), height / m_data->aspectRatio });
-    ImGui::Begin("##MP1", NULL, m_panelFlags);
-    ImGui::DockSpace(m_dockspaceId3, { width / (m_data->aspectRatio), height / m_data->aspectRatio }, ImGuiDockNodeFlags_NoResize);
-    ImGui::End();
-
-    ImGui::SetNextWindowPos({ (width / 5), height / (m_data->aspectRatio) });
-    ImGui::SetNextWindowSize({ width / (m_data->aspectRatio), height - (height / (m_data->aspectRatio)) });
-    ImGui::Begin("##MP2", NULL, m_panelFlags);
-    ImGui::DockSpace(m_dockspaceId4, { width / (m_data->aspectRatio), height - (height / (m_data->aspectRatio)) }, ImGuiDockNodeFlags_NoResize);
-    ImGui::End();
-
-    ImGui::SetNextWindowPos({ width / 5 + (width / (m_data->aspectRatio)), 0 });
-    ImGui::SetNextWindowSize({ width - (width / 5 + (width / (m_data->aspectRatio))), height });
-    ImGui::Begin("##RP1", NULL, m_panelFlags);
-    ImGui::DockSpace(m_dockspaceId5, { width - (width / 5 + (width / (m_data->aspectRatio))), height }, ImGuiDockNodeFlags_NoResize);
-    ImGui::End();
+    setupDockPanel({ 0, 0 }, { fifthWidth, halfHeight }, "##LP1", m_dockspaceId1);
+    setupDockPanel({ 0, halfHeight }, { fifthWidth, halfHeight }, "##LP2", m_dockspaceId2);
+    setupDockPanel({ fifthWidth, 0 }, { scalingWidth, scalingHeight }, "##MP1", m_dockspaceId3);
+    setupDockPanel({ fifthWidth, scalingHeight }, { scalingWidth, height - scalingHeight }, "##MP2", m_dockspaceId4);
+    setupDockPanel({ scalingFifthWidth, 0 }, { width - scalingFifthWidth, height }, "##RP1", m_dockspaceId5);
 
     ImGui::PopStyleVar(3);
 }
@@ -206,7 +197,7 @@ void Editor::renderDebugPanel()
     ImGui::SetNextWindowDockID(m_dockspaceId1, ImGuiCond_Once);
     ImGui::SetNextWindowPos({ 0, 0 }, ImGuiCond_Once);
     ImGui::SetNextWindowSize({ width / 5, height / 2 }, ImGuiCond_Once);
-    ImGui::Begin("Debug Panel", NULL, m_expandablePanelFlags);
+    ImGui::Begin("Debug Panel", NULL, 0);
 
     if (ImGui::CollapsingHeader("Scene View Option"))
     {
@@ -276,7 +267,7 @@ void Editor::renderPerformancePanel()
     ImGui::SetNextWindowDockID(m_dockspaceId1, ImGuiCond_Once);
     ImGui::SetNextWindowPos({ 0, 0 }, ImGuiCond_Once);
     ImGui::SetNextWindowSize({ width / 5, height / 2 }, ImGuiCond_Once);
-    ImGui::Begin("Performance Panel", NULL, m_expandablePanelFlags);
+    ImGui::Begin("Performance Panel", NULL, 0);
 
     ImGui::End();
 }
@@ -289,7 +280,7 @@ void Editor::renderLogViewPanel()
     ImGui::SetNextWindowDockID(m_dockspaceId2, ImGuiCond_Once);
     ImGui::SetNextWindowPos({ 0, height / 2 }, ImGuiCond_Once);
     ImGui::SetNextWindowSize({ width / 5, height / 2 }, ImGuiCond_Once);
-    ImGui::Begin("Log View Panel", NULL, m_expandablePanelFlags);
+    ImGui::Begin("Log View Panel", NULL, 0);
 
     ImGui::End();
 }
@@ -317,7 +308,7 @@ void Editor::renderSceneViewPanel()
         (void*)&aspectRatio
     );
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0, 0 });
-    ImGui::Begin("Scene View Panel", NULL, m_expandablePanelFlags);
+    ImGui::Begin("Scene View Panel", NULL, 0);
     ImGui::PopStyleVar();
 
     m_reg->get<SceneViewRenderer>(m_sceneMap[m_selectedSceneKey]->renderTextureID).rd.clear();
@@ -344,7 +335,7 @@ void Editor::renderFileExplorerPanel()
     ImGui::SetNextWindowDockID(m_dockspaceId4, ImGuiCond_Once);
     ImGui::SetNextWindowPos({ (width / 5), height / (m_data->aspectRatio) }, ImGuiCond_Once);
     ImGui::SetNextWindowSize({ width / (m_data->aspectRatio), height - (height / (m_data->aspectRatio)) }, ImGuiCond_Once);
-    ImGui::Begin("FileExplorer Panel", NULL, m_expandablePanelFlags);
+    ImGui::Begin("FileExplorer Panel", NULL, 0);
 
 
     ImGui::End();
@@ -357,7 +348,7 @@ void Editor::renderPropertiesPanel()
     ImGui::SetNextWindowDockID(m_dockspaceId5, ImGuiCond_Once);
     ImGui::SetNextWindowPos({ width / 5 + (width / (m_data->aspectRatio)), 0 }, ImGuiCond_Once);
     ImGui::SetNextWindowSize({ width - (width / 5 + (width / (m_data->aspectRatio))), height }, ImGuiCond_Once);
-    ImGui::Begin("Properties Panel", NULL, m_expandablePanelFlags | ImGuiWindowFlags_AlwaysVerticalScrollbar);
+    ImGui::Begin("Properties Panel", NULL, ImGuiWindowFlags_AlwaysVerticalScrollbar);
     static std::unordered_map<entt::entity, bool> closableGroups;
     static std::unordered_map<entt::entity, std::array<bool, 6>> closableComponents;
 
@@ -498,4 +489,13 @@ void Editor::displayCollisionSystemVisualizer()
         auto manager = static_cast<Sandbox*>(m_sceneMap[m_selectedSceneKey]->scene.get())->getSystemManager();
         manager->getSystem<CollisionSystem>()->draw(sceneRenderTexture);
     }
+}
+
+void Editor::setupDockPanel(const ImVec2& panPos, const ImVec2& panSize, const char* panID, const ImGuiID& dockID)
+{
+    ImGui::SetNextWindowPos(panPos);
+    ImGui::SetNextWindowSize(panSize);
+    ImGui::Begin(panID, NULL, m_panelFlags);
+    ImGui::DockSpace(dockID, panSize, ImGuiDockNodeFlags_NoResize);
+    ImGui::End();
 }
