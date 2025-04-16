@@ -99,6 +99,7 @@ void Editor::init()
     // Load in first scene of map
     m_selectedSceneKey = m_sceneMap.begin()->first;
     m_reg = &m_sceneMap[m_selectedSceneKey]->scene->getRegistry();
+    m_gameView.setTexture(m_reg->get<SceneViewRenderer>(m_sceneMap[m_selectedSceneKey]->renderTextureID).rd.getTexture());
 }
 
 void Editor::processEvent(const sf::Event& event)
@@ -296,18 +297,42 @@ void Editor::renderSceneViewPanel(const ImVec2& pos, const ImVec2& size)
     ImGui::Begin("Scene View Panel", NULL, 0);
     ImGui::PopStyleVar();
 
-    m_reg->get<SceneViewRenderer>(m_sceneMap[m_selectedSceneKey]->renderTextureID).rd.clear();
+    auto& renderTexture = m_reg->get<SceneViewRenderer>(m_sceneMap[m_selectedSceneKey]->renderTextureID).rd;
 
-    // Call to the actual scenes render function
+    // Clear the previous buffer then call to the actual scenes render function
+    renderTexture.clear();
     m_sceneMap[m_selectedSceneKey]->scene->render();
 
     displayEntityVisualizers();
     displayCollisionSystemVisualizer();
 
-    sf::Sprite gameView;
-    gameView.setTexture(m_reg->get<SceneViewRenderer>(m_sceneMap[m_selectedSceneKey]->renderTextureID).rd.getTexture());
-    gameView.setScale(ImGui::GetWindowWidth() / size.x, (ImGui::GetWindowHeight() - ImGui::GetFrameHeight()) / size.y);
-    ImGui::Image(gameView);
+    // Get free space inside the window and calculate size that scaled with ratio
+    ImVec2 region = ImGui::GetContentRegionAvail(); 
+    const float aspect = m_data->aspectRatio;
+    float drawWidth = region.x;
+    float drawHeight = drawWidth / aspect;
+    if (drawHeight > region.y)
+    {
+        drawHeight = region.y;
+        drawWidth = drawHeight * aspect;
+    }
+
+    //Draw the scene texture with correct scaling
+    m_gameView.setTexture(renderTexture.getTexture(), true);
+    m_gameView.setScale(
+        drawWidth / m_gameView.getTexture()->getSize().x,
+        drawHeight / m_gameView.getTexture()->getSize().y
+    );
+
+    // Center the image in the window content area
+    ImVec2 cursorPos = ImGui::GetCursorScreenPos();
+    ImVec2 imagePos = {
+        cursorPos.x + (region.x - drawWidth) * 0.5f,
+        cursorPos.y + (region.y - drawHeight) * 0.5f
+    };
+    ImGui::SetCursorScreenPos(imagePos);
+
+    ImGui::Image(m_gameView);
 
     ImGui::End();
     ImGui::GetIO().ConfigDockingAlwaysTabBar = true;

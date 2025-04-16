@@ -86,6 +86,10 @@ private:
     std::string m_selectedSceneKey;
     entt::registry* m_reg;
 
+    sf::Sprite m_gameView;
+    float m_viewScaleX;
+    float m_viewScaleY;
+
     EditorComponentVisitor m_componentVisitor;
     EditorSceneVisitor m_sceneVisitor;
 };
