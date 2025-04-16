@@ -127,13 +127,38 @@ void Editor::render()
 {
     ImGui::SFML::Update(m_data->window, sf::seconds(m_data->deltaTime));
 
-    setupDockspace();
-    renderDebugPanel();
-    renderPerformancePanel();
-    renderLogViewPanel();
-    renderSceneViewPanel();
-    renderFileExplorerPanel();
-    renderPropertiesPanel();
+    m_dockspaceId1 = ImGui::GetID("Dockspace1");
+    m_dockspaceId2 = ImGui::GetID("Dockspace2");
+    m_dockspaceId3 = ImGui::GetID("Dockspace3");
+    m_dockspaceId4 = ImGui::GetID("Dockspace4");
+    m_dockspaceId5 = ImGui::GetID("Dockspace5");
+
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0.f, 0.f });
+
+    const float width = static_cast<float>(m_data->window.getSize().x);
+    const float height = static_cast<float>(m_data->window.getSize().y);
+    const float fifthWidth = width / 5.f;
+    const float halfHeight = height / 2.f;
+    const float scalingWidth = width / m_data->aspectRatio;
+    const float scalingHeight = height / m_data->aspectRatio;
+    const float scalingFifthWidth = fifthWidth + scalingWidth;
+
+    setupDockPanel({ 0.f, 0.f }, { fifthWidth, halfHeight }, "##LP1", m_dockspaceId1);
+    setupDockPanel({ 0.f, halfHeight }, { fifthWidth, halfHeight }, "##LP2", m_dockspaceId2);
+    setupDockPanel({ fifthWidth, 0.f }, { scalingWidth, scalingHeight }, "##MP1", m_dockspaceId3);
+    setupDockPanel({ fifthWidth, scalingHeight }, { scalingWidth, height - scalingHeight }, "##MP2", m_dockspaceId4);
+    setupDockPanel({ scalingFifthWidth, 0.f }, { width - scalingFifthWidth, height }, "##RP1", m_dockspaceId5);
+
+    ImGui::PopStyleVar(3);
+
+    renderDebugPanel({ 0.f, 0.f }, { fifthWidth, halfHeight });
+    renderPerformancePanel({ 0.f, 0.f }, { fifthWidth, halfHeight });
+    renderLogViewPanel({ 0.f, halfHeight }, { fifthWidth, halfHeight });
+    renderSceneViewPanel({ fifthWidth, 0.f }, { width, height });
+    renderFileExplorerPanel({ fifthWidth, scalingHeight }, { scalingWidth, height - scalingHeight });
+    renderPropertiesPanel({ scalingFifthWidth, 0.f }, { width - scalingFifthWidth, height });
     ImGui::ShowDemoWindow();
 
     ImGui::SFML::Render(m_data->window);
@@ -160,45 +185,11 @@ entt::registry& Editor::getRegistry()
     return *m_reg;
 }
 
-void Editor::setupDockspace()
+void Editor::renderDebugPanel(const ImVec2& pos, const ImVec2& size)
 {
-    m_dockspaceId1 = ImGui::GetID("Dockspace1");
-    m_dockspaceId2 = ImGui::GetID("Dockspace2");
-    m_dockspaceId3 = ImGui::GetID("Dockspace3");
-    m_dockspaceId4 = ImGui::GetID("Dockspace4");
-    m_dockspaceId5 = ImGui::GetID("Dockspace5");
-
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 1.0f);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0, 0 });
-
-    const float width = static_cast<float>(m_data->window.getSize().x);
-    const float height = static_cast<float>(m_data->window.getSize().y);
-    const float fifthWidth = width / 5.f;
-    const float halfHeight = height / 2.f;
-    const float scalingWidth = width / m_data->aspectRatio;
-    const float scalingHeight = height / m_data->aspectRatio;
-    const float scalingFifthWidth = fifthWidth + scalingWidth;
-
-    setupDockPanel({ 0, 0 }, { fifthWidth, halfHeight }, "##LP1", m_dockspaceId1);
-    setupDockPanel({ 0, halfHeight }, { fifthWidth, halfHeight }, "##LP2", m_dockspaceId2);
-    setupDockPanel({ fifthWidth, 0 }, { scalingWidth, scalingHeight }, "##MP1", m_dockspaceId3);
-    setupDockPanel({ fifthWidth, scalingHeight }, { scalingWidth, height - scalingHeight }, "##MP2", m_dockspaceId4);
-    setupDockPanel({ scalingFifthWidth, 0 }, { width - scalingFifthWidth, height }, "##RP1", m_dockspaceId5);
-
-    ImGui::PopStyleVar(3);
-}
-
-void Editor::renderDebugPanel()
-{
-    const float width = static_cast<float>(m_data->window.getSize().x);
-    const float height = static_cast<float>(m_data->window.getSize().y);
-    const float fifthWidth = width / 5.f;
-    const float halfHeight = height / 2.f;
-
     ImGui::SetNextWindowDockID(m_dockspaceId1, ImGuiCond_Once);
-    ImGui::SetNextWindowPos({ 0, 0 }, ImGuiCond_Once);
-    ImGui::SetNextWindowSize({ fifthWidth, halfHeight }, ImGuiCond_Once);
+    ImGui::SetNextWindowPos(pos, ImGuiCond_Once);
+    ImGui::SetNextWindowSize(size, ImGuiCond_Once);
     ImGui::Begin("Debug Panel", NULL, 0);
 
     if (ImGui::CollapsingHeader("Scene View Option"))
@@ -261,31 +252,21 @@ void Editor::renderDebugPanel()
     ImGui::End();
 }
 
-void Editor::renderPerformancePanel()
+void Editor::renderPerformancePanel(const ImVec2& pos, const ImVec2& size)
 {
-    const float width = static_cast<float>(m_data->window.getSize().x);
-    const float height = static_cast<float>(m_data->window.getSize().y);
-    const float fifthWidth = width / 5.f;
-    const float halfHeight = height / 2.f;
-
     ImGui::SetNextWindowDockID(m_dockspaceId1, ImGuiCond_Once);
-    ImGui::SetNextWindowPos({ 0, 0 }, ImGuiCond_Once);
-    ImGui::SetNextWindowSize({ fifthWidth, halfHeight }, ImGuiCond_Once);
+    ImGui::SetNextWindowPos(pos, ImGuiCond_Once);
+    ImGui::SetNextWindowSize(size, ImGuiCond_Once);
     ImGui::Begin("Performance Panel", NULL, 0);
 
     ImGui::End();
 }
 
-void Editor::renderLogViewPanel()
+void Editor::renderLogViewPanel(const ImVec2& pos, const ImVec2& size)
 {
-    const float width = static_cast<float>(m_data->window.getSize().x);
-    const float height = static_cast<float>(m_data->window.getSize().y);
-    const float fifthWidth = width / 5.f;
-    const float halfHeight = height / 2.f;
-
     ImGui::SetNextWindowDockID(m_dockspaceId2, ImGuiCond_Once);
-    ImGui::SetNextWindowPos({ 0, halfHeight }, ImGuiCond_Once);
-    ImGui::SetNextWindowSize({ fifthWidth, halfHeight }, ImGuiCond_Once);
+    ImGui::SetNextWindowPos(pos, ImGuiCond_Once);
+    ImGui::SetNextWindowSize(size, ImGuiCond_Once);
     ImGui::Begin("Log View Panel", NULL, 0);
 
     ImGui::End();
@@ -298,26 +279,20 @@ static void constrainedByAspectRatio(ImGuiSizeCallbackData* data)
     LOG_TRACE(Logger::get()) << "ImGuiSizeCallback(): Desired Window Size: " << data->DesiredSize.x << " x " << data->DesiredSize.y;
 }
 
-void Editor::renderSceneViewPanel()
+void Editor::renderSceneViewPanel(const ImVec2& pos, const ImVec2& size)
 {
-    const float width = static_cast<float>(m_data->window.getSize().x);
-    const float height = static_cast<float>(m_data->window.getSize().y);
-    const float fifthWidth = width / 5.f;
-    const float halfHeight = height / 2.f;
-    const float scalingWidth = width / m_data->aspectRatio;
-    const float scalingHeight = height / m_data->aspectRatio;
-
     ImGui::GetIO().ConfigDockingAlwaysTabBar = false;
     ImGui::SetNextWindowDockID(m_dockspaceId3, ImGuiCond_Once);
-    ImGui::SetNextWindowPos({ fifthWidth, 0 }, ImGuiCond_Once);
+    ImGui::SetNextWindowPos(pos, ImGuiCond_Once);
     ImGui::SetNextWindowSizeConstraints
     (
-        { scalingWidth, scalingHeight },
+        { size.x / m_data->aspectRatio, size.y / m_data->aspectRatio },
         { FLT_MAX, FLT_MAX },
         constrainedByAspectRatio,
         (void*)&m_data->aspectRatio
     );
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0, 0 });
+    
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0.f, 0.f });
     ImGui::Begin("Scene View Panel", NULL, 0);
     ImGui::PopStyleVar();
 
@@ -331,33 +306,28 @@ void Editor::renderSceneViewPanel()
 
     sf::Sprite gameView;
     gameView.setTexture(m_reg->get<SceneViewRenderer>(m_sceneMap[m_selectedSceneKey]->renderTextureID).rd.getTexture());
-    gameView.setScale(ImGui::GetWindowWidth() / width, (ImGui::GetWindowHeight() - ImGui::GetFrameHeight()) / height);
+    gameView.setScale(ImGui::GetWindowWidth() / size.x, (ImGui::GetWindowHeight() - ImGui::GetFrameHeight()) / size.y);
     ImGui::Image(gameView);
 
     ImGui::End();
     ImGui::GetIO().ConfigDockingAlwaysTabBar = true;
 }
 
-void Editor::renderFileExplorerPanel()
+void Editor::renderFileExplorerPanel(const ImVec2& pos, const ImVec2& size)
 {
-    const float width = static_cast<float>(m_data->window.getSize().x);
-    const float height = static_cast<float>(m_data->window.getSize().y);
     ImGui::SetNextWindowDockID(m_dockspaceId4, ImGuiCond_Once);
-    ImGui::SetNextWindowPos({ (width / 5), height / (m_data->aspectRatio) }, ImGuiCond_Once);
-    ImGui::SetNextWindowSize({ width / (m_data->aspectRatio), height - (height / (m_data->aspectRatio)) }, ImGuiCond_Once);
+    ImGui::SetNextWindowPos(pos, ImGuiCond_Once);
+    ImGui::SetNextWindowSize(size, ImGuiCond_Once);
     ImGui::Begin("FileExplorer Panel", NULL, 0);
-
 
     ImGui::End();
 }
 
-void Editor::renderPropertiesPanel()
+void Editor::renderPropertiesPanel(const ImVec2& pos, const ImVec2& size)
 {
-    const float width = static_cast<float>(m_data->window.getSize().x);
-    const float height = static_cast<float>(m_data->window.getSize().y);
     ImGui::SetNextWindowDockID(m_dockspaceId5, ImGuiCond_Once);
-    ImGui::SetNextWindowPos({ width / 5 + (width / (m_data->aspectRatio)), 0 }, ImGuiCond_Once);
-    ImGui::SetNextWindowSize({ width - (width / 5 + (width / (m_data->aspectRatio))), height }, ImGuiCond_Once);
+    ImGui::SetNextWindowPos(pos, ImGuiCond_Once);
+    ImGui::SetNextWindowSize(size, ImGuiCond_Once);
     ImGui::Begin("Properties Panel", NULL, ImGuiWindowFlags_AlwaysVerticalScrollbar);
     static std::unordered_map<entt::entity, bool> closableGroups;
     static std::unordered_map<entt::entity, std::array<bool, 6>> closableComponents;

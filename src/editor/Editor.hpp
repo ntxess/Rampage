@@ -48,13 +48,12 @@ public:
     entt::registry& getRegistry() override;
 
 private:
-    void setupDockspace();
-    void renderDebugPanel();
-    void renderPerformancePanel();
-    void renderLogViewPanel();
-    void renderSceneViewPanel();
-    void renderFileExplorerPanel();
-    void renderPropertiesPanel();
+    void renderDebugPanel(const ImVec2& pos, const ImVec2& size);
+    void renderPerformancePanel(const ImVec2& pos, const ImVec2& size);
+    void renderLogViewPanel(const ImVec2& pos, const ImVec2& size);
+    void renderSceneViewPanel(const ImVec2& pos, const ImVec2& size);
+    void renderFileExplorerPanel(const ImVec2& pos, const ImVec2& size);
+    void renderPropertiesPanel(const ImVec2& pos, const ImVec2& size);
     void displayEntityVisualizers();
     void displayCollisionSystemVisualizer();
 
