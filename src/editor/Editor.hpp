@@ -62,6 +62,9 @@ private:
     template<typename... Args>
     entt::entity findEntityID();
 
+    template<typename T>
+    void renderComponentProperties(const entt::entity& entityID, std::string_view componentID, bool& visible, EditorComponentVisitor& visitor);
+
 private:
     GlobalData* m_data;
 
@@ -79,6 +82,7 @@ private:
     bool m_enableEntityHeading;
     bool m_enableQuadTreeVisualizer;
     std::atomic<bool> m_startButtonEnabled;
+    std::atomic<bool> m_forwardFrameEnabled;
     int m_totalEntity;
 
     // Current loaded scene data
@@ -87,8 +91,6 @@ private:
     entt::registry* m_reg;
 
     sf::Sprite m_gameView;
-    float m_viewScaleX;
-    float m_viewScaleY;
 
     EditorComponentVisitor m_componentVisitor;
     EditorSceneVisitor m_sceneVisitor;
@@ -105,4 +107,21 @@ inline entt::entity Editor::findEntityID()
     }
 
     return entt::null;
+}
+
+template<typename T>
+inline void Editor::renderComponentProperties(const entt::entity& entityID, std::string_view componentID, bool& visible, EditorComponentVisitor& visitor)
+{
+    if (m_reg->all_of<T>(entityID) && ImGui::CollapsingHeader(componentID.data(), &visible, ImGuiTreeNodeFlags_DefaultOpen))
+    {
+        auto& component = m_reg->get<T>(entityID);
+        component.accept(&visitor, entityID);
+    }
+
+    if (!visible)
+    {
+        // TODO: Remove the sprite component from QuadTree
+        m_reg->remove<T>(entityID);
+        //static_cast<Sandbox*>(m_sceneMap[m_selectedSceneKey]->scene.get())->getSystemManager()->getSystem<CollisionSystem>()->remove(*m_reg, entityID);
+    }
 }

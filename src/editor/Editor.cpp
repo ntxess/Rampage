@@ -69,7 +69,10 @@ void Editor::init()
     ImGui::SFML::Init(m_data->window);
     ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     ImGui::GetIO().ConfigWindowsMoveFromTitleBarOnly = true;
-    ImGui::GetIO().ConfigDockingAlwaysTabBar = true; // ImGUI bug: Setting this true, will prevent you from using SetNextWindowSizeConstraints
+
+    // ImGUI bug: Setting this true, will prevent you from using SetNextWindowSizeConstraints
+    // which is needed for ratio-resizing of the scene view rendering panel
+    ImGui::GetIO().ConfigDockingAlwaysTabBar = true;
 
     // Initializing all the scenes for selection
     std::unique_ptr<IScene> sandbox = std::make_unique<Sandbox>(m_data);
@@ -104,11 +107,6 @@ void Editor::init()
 
 void Editor::processEvent(const sf::Event& event)
 {
-    if (event.type == sf::Event::KeyPressed)
-    {
-
-    }
-
     ImGui::SFML::ProcessEvent(m_data->window, event);
 }
 
@@ -121,7 +119,14 @@ void Editor::processInput()
 void Editor::update()
 {
     if (m_startButtonEnabled)
+    {
         m_sceneMap[m_selectedSceneKey]->scene->update();
+    }
+    else if (m_forwardFrameEnabled)
+    {
+        m_sceneMap[m_selectedSceneKey]->scene->update();
+        m_forwardFrameEnabled = false;
+    }
 }
 
 void Editor::render()
@@ -193,33 +198,46 @@ void Editor::renderDebugPanel(const ImVec2& pos, const ImVec2& size)
     ImGui::SetNextWindowSize(size, ImGuiCond_Once);
     ImGui::Begin("Debug Panel", NULL, 0);
 
+    const float totalWidth = ImGui::GetContentRegionAvail().x - 16.f;
+    const float buttonWidth = totalWidth / 3.f;
+    const float buttonHeight = 20.f;
+
+    if (ImGui::Button("Play", ImVec2(buttonWidth, buttonHeight))) 
+    {
+        m_startButtonEnabled = true;
+        m_forwardFrameEnabled = false;
+    }
+    ImGui::SameLine();
+
+    if (ImGui::Button("Pause", ImVec2(buttonWidth, buttonHeight))) 
+    {
+        m_startButtonEnabled = false;
+        m_forwardFrameEnabled = false;
+    }
+    ImGui::SameLine();
+
+    if (ImGui::Button("Forward", ImVec2(buttonWidth, buttonHeight))) 
+    {
+        m_startButtonEnabled = false;
+        m_forwardFrameEnabled = true;
+    }
+
+
     if (ImGui::CollapsingHeader("Scene View Option"))
     {
         if (ImGui::BeginTable("split", 1))
         {
-            ImGui::TableNextColumn(); ImGui::Checkbox("Display Entity ID", &m_enableEntityID);
-            ImGui::TableNextColumn(); ImGui::Checkbox("Display Entity Box Visualizer", &m_enableEntityCollider);
-            ImGui::TableNextColumn(); ImGui::Checkbox("Display Entity Heading", &m_enableEntityHeading);
-            ImGui::TableNextColumn(); ImGui::Checkbox("Display Quad-Tree Visualizer", &m_enableQuadTreeVisualizer);
+            ImGui::TableNextColumn(); 
+            ImGui::Checkbox("Display Entity ID", &m_enableEntityID);
+            ImGui::TableNextColumn(); 
+            ImGui::Checkbox("Display Entity Box Visualizer", &m_enableEntityCollider);
+            ImGui::TableNextColumn(); 
+            ImGui::Checkbox("Display Entity Heading", &m_enableEntityHeading);
+            ImGui::TableNextColumn(); 
+            ImGui::Checkbox("Display Quad-Tree Visualizer", &m_enableQuadTreeVisualizer);
 
             ImGui::EndTable();
             ImGui::SliderInt("Spawn Entity", &m_totalEntity, 0, 10000);
-
-            const float len = 64 * (ImGui::GetWindowWidth() / ImGui::GetWindowHeight());
-            if (m_startButtonEnabled)
-            {
-                if (ImGui::Button("Pause", { len, len }))
-                {
-                    m_startButtonEnabled = false;
-                }
-            }
-            else
-            {
-                if (ImGui::Button("Play", { len, len }))
-                {
-                    m_startButtonEnabled = true;
-                }
-            } 
         }
     }
 
@@ -277,12 +295,15 @@ static void constrainedByAspectRatio(ImGuiSizeCallbackData* data)
 {
     float aspectRatio = *(float*)data->UserData;
     data->DesiredSize.y = (float)(int)(data->DesiredSize.x / aspectRatio);
-    LOG_TRACE(Logger::get()) << "ImGuiSizeCallback(): Desired Window Size: " << data->DesiredSize.x << " x " << data->DesiredSize.y;
+    LOG_INFO(Logger::get()) 
+        << "ImGuiSizeCallback(): Desired Window Size: " 
+        << data->DesiredSize.x 
+        << " x " 
+        << data->DesiredSize.y;
 }
 
 void Editor::renderSceneViewPanel(const ImVec2& pos, const ImVec2& size)
 {
-    ImGui::GetIO().ConfigDockingAlwaysTabBar = false;
     ImGui::SetNextWindowDockID(m_dockspaceId3, ImGuiCond_Once);
     ImGui::SetNextWindowPos(pos, ImGuiCond_Once);
     ImGui::SetNextWindowSizeConstraints
@@ -326,16 +347,16 @@ void Editor::renderSceneViewPanel(const ImVec2& pos, const ImVec2& size)
 
     // Center the image in the window content area
     ImVec2 cursorPos = ImGui::GetCursorScreenPos();
-    ImVec2 imagePos = {
+    ImVec2 viewPos(
         cursorPos.x + (region.x - drawWidth) * 0.5f,
         cursorPos.y + (region.y - drawHeight) * 0.5f
-    };
-    ImGui::SetCursorScreenPos(imagePos);
+    );
+    ImGui::SetCursorScreenPos(viewPos);
 
+    // Render the selected scene as an image inside ImGui window
     ImGui::Image(m_gameView);
 
     ImGui::End();
-    ImGui::GetIO().ConfigDockingAlwaysTabBar = true;
 }
 
 void Editor::renderFileExplorerPanel(const ImVec2& pos, const ImVec2& size)
@@ -354,12 +375,14 @@ void Editor::renderPropertiesPanel(const ImVec2& pos, const ImVec2& size)
     ImGui::SetNextWindowPos(pos, ImGuiCond_Once);
     ImGui::SetNextWindowSize(size, ImGuiCond_Once);
     ImGui::Begin("Properties Panel", NULL, ImGuiWindowFlags_AlwaysVerticalScrollbar);
+
     static std::unordered_map<entt::entity, bool> closableGroups;
-    static std::unordered_map<entt::entity, std::array<bool, 6>> closableComponents;
+    static std::unordered_map<entt::entity, std::array<bool, 7>> closableComponents;
 
     const auto& view = m_reg->view<Sprite>();
     for (const auto& entityID : view)
     {
+        // Initialize the closable groups and components if it is a new entityID
         if (!closableGroups.count(entityID) || !closableComponents.count(entityID))
         {
             closableGroups[entityID] = true;
@@ -369,72 +392,60 @@ void Editor::renderPropertiesPanel(const ImVec2& pos, const ImVec2& size)
         std::string ID = "Entity " + std::to_string(static_cast<unsigned int>(entityID));
         if (ImGui::CollapsingHeader(ID.c_str(), &closableGroups[entityID]))
         {
+            ImGui::BeginDisabled(m_startButtonEnabled);
             ImGui::BeginChild(("##EntityColm" + ID).c_str(), { ImGui::GetWindowWidth() - 26.f, 0.f }, ImGuiChildFlags_AutoResizeY);
 
-            if (m_reg->all_of<Sprite>(entityID) && ImGui::CollapsingHeader(("Sprite##Header" + ID).c_str(), &closableComponents[entityID][0], ImGuiTreeNodeFlags_DefaultOpen))
-            {
-                auto& sprite = m_reg->get<Sprite>(entityID);
-                sprite.accept(&m_componentVisitor, entityID);
-            }
-            if (!closableComponents[entityID][0])
-            {
-                // TODO: Remove the sprite component from QuadTree
-                m_reg->remove<Sprite>(entityID);
-                static_cast<Sandbox*>(m_sceneMap[m_selectedSceneKey]->scene.get())->getSystemManager()->getSystem<CollisionSystem>()->remove(*m_reg, entityID);
-            }
+            renderComponentProperties<Sprite>(
+                entityID, 
+                "Sprite##" + ID, 
+                closableComponents[entityID][0], 
+                m_componentVisitor
+            );
 
-            // Unstable
-            //if (m_reg->all_of<UpdateEntityEvent>(entityID) && ImGui::CollapsingHeader(("UpdateEntityEvent##Header" + ID).c_str(), &closableComponents[entityID][1], ImGuiTreeNodeFlags_DefaultOpen))
-            //{
-            //    auto& updateEntityEvent = m_reg->get<UpdateEntityEvent>(entityID);
-            //    updateEntityEvent.accept(&m_componentVisitor, entityID);
-            //}
-            //if (!closableComponents[entityID][1])
-            //{
-            //    m_reg->remove<UpdateEntityEvent>(entityID);
-            //}
+            renderComponentProperties<UpdateEntityPolling>(
+                entityID, 
+                "UpdateEntityPolling##" + ID, 
+                closableComponents[entityID][1], 
+                m_componentVisitor
+            );
 
-            if (m_reg->all_of<UpdateEntityPolling>(entityID) && ImGui::CollapsingHeader(("UpdateEntityPolling##Header" + ID).c_str(), &closableComponents[entityID][2], ImGuiTreeNodeFlags_DefaultOpen))
-            {
-                auto& updateEntityPolling = m_reg->get<UpdateEntityPolling>(entityID);
-                updateEntityPolling.accept(&m_componentVisitor, entityID);
-            }
-            if (!closableComponents[entityID][2])
-            {
-                m_reg->remove<UpdateEntityPolling>(entityID);
-            }
+            renderComponentProperties<UpdateEntityEvent>(
+                entityID,
+                "UpdateEntityEvent##" + ID,
+                closableComponents[entityID][2],
+                m_componentVisitor
+            );
 
-            if (m_reg->all_of<EntityStatus>(entityID) && ImGui::CollapsingHeader(("EntityStatus##Header" + ID).c_str(), &closableComponents[entityID][3], ImGuiTreeNodeFlags_DefaultOpen))
-            {
-                auto& entityStatus = m_reg->get<EntityStatus>(entityID);
-                entityStatus.accept(&m_componentVisitor, entityID);
-            }
-            if (!closableComponents[entityID][3])
-            {
-                m_reg->remove<EntityStatus>(entityID);
-            }
+            renderComponentProperties<EntityStatus>(
+                entityID, 
+                "EntityStatus##" + ID,
+                closableComponents[entityID][3],
+                m_componentVisitor
+            );
 
-            if (m_reg->all_of<EffectsList>(entityID) && ImGui::CollapsingHeader(("EffectsList##Header" + ID).c_str(), &closableComponents[entityID][4], ImGuiTreeNodeFlags_DefaultOpen))
-            {
-                auto& effectsList = m_reg->get<EffectsList>(entityID);
-                effectsList.accept(&m_componentVisitor, entityID);
-            }
-            if (!closableComponents[entityID][4])
-            {
-                m_reg->remove<EffectsList>(entityID);
-            }
+            renderComponentProperties<EffectsList>(
+                entityID, 
+                "EffectsList##" + ID, 
+                closableComponents[entityID][4], 
+                m_componentVisitor
+            );
 
-            if (m_reg->all_of<MovementPattern>(entityID) && ImGui::CollapsingHeader(("MovementPattern##Header" + ID).c_str(), &closableComponents[entityID][5], ImGuiTreeNodeFlags_DefaultOpen))
-            {
-                auto& movementPattern = m_reg->get<MovementPattern>(entityID);
-                movementPattern.accept(&m_componentVisitor, entityID);
-            }
-            if (!closableComponents[entityID][5])
-            {
-                m_reg->remove<MovementPattern>(entityID);
-            }
+            renderComponentProperties<MovementPattern>(
+                entityID, 
+                "MovementPattern##" + ID, 
+                closableComponents[entityID][5], 
+                m_componentVisitor
+            );
+
+            renderComponentProperties<TeamTag>(
+                entityID,
+                "TeamTag##" + ID,
+                closableComponents[entityID][6],
+                m_componentVisitor
+            );
 
             ImGui::EndChild();
+            ImGui::EndDisabled();
         }
     }
 
@@ -453,7 +464,10 @@ void Editor::displayEntityVisualizers()
         {
             sf::String ID(std::to_string(static_cast<int>(entityID)));
             sf::Text IDText(ID, m_defaultFont, 14);
-            IDText.setPosition(spriteEntity.getPosition().x + spriteEntity.getGlobalBounds().getSize().x, spriteEntity.getPosition().y + spriteEntity.getGlobalBounds().getSize().y);
+            IDText.setPosition(
+                spriteEntity.getPosition().x + spriteEntity.getGlobalBounds().getSize().x, 
+                spriteEntity.getPosition().y + spriteEntity.getGlobalBounds().getSize().y
+            );
             sceneRenderTexture.rd.draw(IDText);
         }
 
@@ -465,10 +479,13 @@ void Editor::displayEntityVisualizers()
             border.setFillColor(sf::Color::Transparent);
             border.setPosition(spriteEntity.getPosition().x, spriteEntity.getPosition().y);
             border.setOrigin({ spriteEntity.getOrigin().x, spriteEntity.getOrigin().y });
+            border.setRotation(spriteEntity.getRotation());
             border.setOutlineThickness(2);
 
             entt::entity player = findEntityID<PlayerInput>();
-            if (player != entt::null && player != entityID && m_reg->get<Sprite>(player).getGlobalBounds().intersects(spriteEntity.getGlobalBounds()))
+            if (player != entt::null && 
+                player != entityID && 
+                m_reg->get<Sprite>(player).getGlobalBounds().intersects(spriteEntity.getGlobalBounds()))
             {
                 border.setOutlineColor(sf::Color::Red);
                 LOG_TRACE(Logger::get())

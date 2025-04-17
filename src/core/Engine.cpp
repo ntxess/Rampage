@@ -203,10 +203,10 @@ void Engine::audioThread()
 {
     LOG_INFO(Logger::get()) << "----- Audio thread started! -----";
 
-    while (m_windowActive)
-    {
+    //while (m_windowActive)
+    //{
 
-    }
+    //}
 
     LOG_INFO(Logger::get()) << "----- Audio thread ended! -----";
 }
@@ -218,10 +218,10 @@ void Engine::resourceThread()
 {
     LOG_INFO(Logger::get()) << "----- Resource thread started! -----";
 
-    while (m_windowActive)
-    {
+    //while (m_windowActive)
+    //{
 
-    }
+    //}
 
     LOG_INFO(Logger::get()) << "----- Resource thread ended! -----";
 }

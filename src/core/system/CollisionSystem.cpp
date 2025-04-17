@@ -47,13 +47,12 @@ void CollisionSystem::quadTreeUpdate(entt::registry& reg)
 void CollisionSystem::collisionUpdate(entt::registry& reg)
 {
     // Event-driven collision update
-    const auto& eventView = reg.view<Sprite, UpdateEntityEvent>();
+    const auto& eventView = reg.view<Sprite, TeamTag, EffectsList, UpdateEntityEvent>();
     for (const auto& sourceID : eventView)
     {
         // Query all neighboring entity for collision
         const sf::FloatRect& sourceHitbox = reg.get<Sprite>(sourceID).getGlobalBounds();
         std::vector<entt::entity> receiverList = m_quadTree->queryRange(reg, sourceHitbox);
-        const Team& sourceTeamTag = reg.get<TeamTag>(sourceID).tag;
 
         for (const auto& receiverID : receiverList)
         {
@@ -62,7 +61,7 @@ void CollisionSystem::collisionUpdate(entt::registry& reg)
                 LOG_TRACE(Logger::get()) << "Entity [" << static_cast<unsigned int>(sourceID) << "] collided with self";
                 continue;
             }
-            else if (Team receiverTeamTag = reg.get<TeamTag>(receiverID).tag; sourceTeamTag == receiverTeamTag)
+            else if (reg.get<TeamTag>(sourceID).tag == reg.get<TeamTag>(receiverID).tag)
             {
                 LOG_TRACE(Logger::get()) << "Entity [" << static_cast<unsigned int>(sourceID) << "] collided with same team";
                 continue;
@@ -100,7 +99,7 @@ void CollisionSystem::collisionUpdate(entt::registry& reg)
     }
 
     // Polling collision update
-    const auto& pollingView = reg.view<Sprite, UpdateEntityPolling>();
+    const auto& pollingView = reg.view<Sprite, TeamTag, EffectsList, UpdateEntityPolling>();
     for (const auto& sourceID : pollingView)
     {
         // Query all neighboring entity for collision
@@ -110,8 +109,6 @@ void CollisionSystem::collisionUpdate(entt::registry& reg)
 
         std::vector<entt::entity> receiverList = m_quadTree->queryRange(reg, sourceHitbox);
 
-        const Team& sourceTeamTag = reg.get<TeamTag>(sourceID).tag;
-
         for (const auto& receiverID : receiverList)
         {
             if (sourceID == receiverID)
@@ -119,7 +116,7 @@ void CollisionSystem::collisionUpdate(entt::registry& reg)
                 LOG_TRACE(Logger::get()) << "Entity [" << static_cast<unsigned int>(sourceID) << "] collided with self";
                 continue;
             }
-            else if (Team receiverTeamTag = reg.get<TeamTag>(receiverID).tag; sourceTeamTag == receiverTeamTag)
+            else if (reg.get<TeamTag>(sourceID).tag == reg.get<TeamTag>(receiverID).tag)
             {
                 LOG_TRACE(Logger::get()) << "Entity [" << static_cast<unsigned int>(sourceID) << "] collided with same team";
                 continue;
