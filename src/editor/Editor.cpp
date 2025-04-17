@@ -77,9 +77,9 @@ void Editor::init()
     // Initializing all the scenes for selection
     std::unique_ptr<IScene> sandbox = std::make_unique<Sandbox>(m_data);
     m_sceneMap["Sandbox"] = std::make_unique<SceneData>(
-        std::move(sandbox), 
-        m_data->Configuration<int>(WIDTH), 
-        m_data->Configuration<int>(HEIGHT), 
+        std::move(sandbox),
+        m_data->Configuration<int>(WIDTH),
+        m_data->Configuration<int>(HEIGHT),
         settings
     );
 
@@ -87,15 +87,15 @@ void Editor::init()
     m_sceneMap["MainMenu"] = std::make_unique<SceneData>(
         std::move(mainmenu),
         m_data->Configuration<int>(WIDTH),
-        m_data->Configuration<int>(HEIGHT), 
+        m_data->Configuration<int>(HEIGHT),
         settings
     );
 
     std::unique_ptr<IScene> gameOfLifeSim = std::make_unique<GameOfLifeSim>(m_data);
     m_sceneMap["GameOfLifeSim"] = std::make_unique<SceneData>(
-        std::move(gameOfLifeSim), 
-        m_data->Configuration<int>(WIDTH), 
-        m_data->Configuration<int>(HEIGHT), 
+        std::move(gameOfLifeSim),
+        m_data->Configuration<int>(WIDTH),
+        m_data->Configuration<int>(HEIGHT),
         settings
     );
 
@@ -202,21 +202,21 @@ void Editor::renderDebugPanel(const ImVec2& pos, const ImVec2& size)
     const float buttonWidth = totalWidth / 3.f;
     const float buttonHeight = 20.f;
 
-    if (ImGui::Button("Play", ImVec2(buttonWidth, buttonHeight))) 
+    if (ImGui::Button("Play", ImVec2(buttonWidth, buttonHeight)))
     {
         m_startButtonEnabled = true;
         m_forwardFrameEnabled = false;
     }
     ImGui::SameLine();
 
-    if (ImGui::Button("Pause", ImVec2(buttonWidth, buttonHeight))) 
+    if (ImGui::Button("Pause", ImVec2(buttonWidth, buttonHeight)))
     {
         m_startButtonEnabled = false;
         m_forwardFrameEnabled = false;
     }
     ImGui::SameLine();
 
-    if (ImGui::Button("Forward", ImVec2(buttonWidth, buttonHeight))) 
+    if (ImGui::Button("Forward", ImVec2(buttonWidth, buttonHeight)))
     {
         m_startButtonEnabled = false;
         m_forwardFrameEnabled = true;
@@ -227,13 +227,13 @@ void Editor::renderDebugPanel(const ImVec2& pos, const ImVec2& size)
     {
         if (ImGui::BeginTable("split", 1))
         {
-            ImGui::TableNextColumn(); 
+            ImGui::TableNextColumn();
             ImGui::Checkbox("Display Entity ID", &m_enableEntityID);
-            ImGui::TableNextColumn(); 
+            ImGui::TableNextColumn();
             ImGui::Checkbox("Display Entity Box Visualizer", &m_enableEntityCollider);
-            ImGui::TableNextColumn(); 
+            ImGui::TableNextColumn();
             ImGui::Checkbox("Display Entity Heading", &m_enableEntityHeading);
-            ImGui::TableNextColumn(); 
+            ImGui::TableNextColumn();
             ImGui::Checkbox("Display Quad-Tree Visualizer", &m_enableQuadTreeVisualizer);
 
             ImGui::EndTable();
@@ -295,10 +295,10 @@ static void constrainedByAspectRatio(ImGuiSizeCallbackData* data)
 {
     float aspectRatio = *(float*)data->UserData;
     data->DesiredSize.y = (float)(int)(data->DesiredSize.x / aspectRatio);
-    LOG_INFO(Logger::get()) 
-        << "ImGuiSizeCallback(): Desired Window Size: " 
-        << data->DesiredSize.x 
-        << " x " 
+    LOG_INFO(Logger::get())
+        << "ImGuiSizeCallback(): Desired Window Size: "
+        << data->DesiredSize.x
+        << " x "
         << data->DesiredSize.y;
 }
 
@@ -313,7 +313,7 @@ void Editor::renderSceneViewPanel(const ImVec2& pos, const ImVec2& size)
         constrainedByAspectRatio,
         (void*)&m_data->aspectRatio
     );
-    
+
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0.f, 0.f });
     ImGui::Begin("Scene View Panel", NULL, 0);
     ImGui::PopStyleVar();
@@ -328,7 +328,7 @@ void Editor::renderSceneViewPanel(const ImVec2& pos, const ImVec2& size)
     displayCollisionSystemVisualizer();
 
     // Get free space inside the window and calculate size that scaled with ratio
-    ImVec2 region = ImGui::GetContentRegionAvail(); 
+    ImVec2 region = ImGui::GetContentRegionAvail();
     const float aspect = m_data->aspectRatio;
     float drawWidth = region.x;
     float drawHeight = drawWidth / aspect;
@@ -396,16 +396,16 @@ void Editor::renderPropertiesPanel(const ImVec2& pos, const ImVec2& size)
             ImGui::BeginChild(("##EntityColm" + ID).c_str(), { ImGui::GetWindowWidth() - 26.f, 0.f }, ImGuiChildFlags_AutoResizeY);
 
             renderComponentProperties<Sprite>(
-                entityID, 
-                "Sprite##" + ID, 
-                closableComponents[entityID][0], 
+                entityID,
+                "Sprite##" + ID,
+                closableComponents[entityID][0],
                 m_componentVisitor
             );
 
             renderComponentProperties<UpdateEntityPolling>(
-                entityID, 
-                "UpdateEntityPolling##" + ID, 
-                closableComponents[entityID][1], 
+                entityID,
+                "UpdateEntityPolling##" + ID,
+                closableComponents[entityID][1],
                 m_componentVisitor
             );
 
@@ -417,23 +417,23 @@ void Editor::renderPropertiesPanel(const ImVec2& pos, const ImVec2& size)
             );
 
             renderComponentProperties<EntityStatus>(
-                entityID, 
+                entityID,
                 "EntityStatus##" + ID,
                 closableComponents[entityID][3],
                 m_componentVisitor
             );
 
             renderComponentProperties<EffectsList>(
-                entityID, 
-                "EffectsList##" + ID, 
-                closableComponents[entityID][4], 
+                entityID,
+                "EffectsList##" + ID,
+                closableComponents[entityID][4],
                 m_componentVisitor
             );
 
             renderComponentProperties<MovementPattern>(
-                entityID, 
-                "MovementPattern##" + ID, 
-                closableComponents[entityID][5], 
+                entityID,
+                "MovementPattern##" + ID,
+                closableComponents[entityID][5],
                 m_componentVisitor
             );
 
@@ -465,7 +465,7 @@ void Editor::displayEntityVisualizers()
             sf::String ID(std::to_string(static_cast<int>(entityID)));
             sf::Text IDText(ID, m_defaultFont, 14);
             IDText.setPosition(
-                spriteEntity.getPosition().x + spriteEntity.getGlobalBounds().getSize().x, 
+                spriteEntity.getPosition().x + spriteEntity.getGlobalBounds().getSize().x,
                 spriteEntity.getPosition().y + spriteEntity.getGlobalBounds().getSize().y
             );
             sceneRenderTexture.rd.draw(IDText);
@@ -483,8 +483,8 @@ void Editor::displayEntityVisualizers()
             border.setOutlineThickness(2);
 
             entt::entity player = findEntityID<PlayerInput>();
-            if (player != entt::null && 
-                player != entityID && 
+            if (player != entt::null &&
+                player != entityID &&
                 m_reg->get<Sprite>(player).getGlobalBounds().intersects(spriteEntity.getGlobalBounds()))
             {
                 border.setOutlineColor(sf::Color::Red);

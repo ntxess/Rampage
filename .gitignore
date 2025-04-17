@@ -363,4 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 *.sav
 /dep/Boost_1_87_0
-imgui.ini
+/imgui.ini

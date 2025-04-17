@@ -108,7 +108,7 @@ void EditorComponentVisitor::visit(EffectsList* effectsList, entt::entity entity
                     std::chrono::milliseconds(newMaxDuration),
                     std::chrono::milliseconds(newTickRate
                 )}
-            });
+                });
 
             newStatusToModify[0] = '\0';
             newEffectVal = 0.f;
@@ -185,7 +185,7 @@ void EditorComponentVisitor::visit(MovementPattern* movementPattern, entt::entit
 
     const std::string ID = std::to_string(static_cast<unsigned int>(entityID));
     const float ratio = ImGui::GetWindowWidth() / ImGui::GetWindowHeight();
-    
+
     //ImGui::Button(("##PathDesigner" + ID).c_str(), { 64 * ratio, 64 * ratio });
 
     ImGui::Text("Way Point");
