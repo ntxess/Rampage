@@ -11,10 +11,12 @@
 #include "entt/entity/entity.hpp"
 #include "entt/entity/registry.hpp"
 #include "SFML/Graphics/RectangleShape.hpp"
-#include <random>
-#include <fstream>
 #include <algorithm>
-#include <sstream>
+#include <random>
+#include <vector>
+#include <future>
+
+using Grid = std::vector<uint8_t>;
 
 class GameOfLifeSim : public IScene
 {
@@ -34,16 +36,26 @@ public:
     void accept(ISceneVisitor* visitor) override;
     entt::registry& getRegistry() override;
 
-    void drawOptions();
-    int getNeighbors(std::vector<std::vector<int>>& board, int i, int j);
-    void readFile(std::string_view fileName);
+private:
+    const Grid& getCurrentGrid() const;
+
+    inline int index(int x, int y) const
+    {
+        return y * m_width + x;
+    }
+
+    inline uint8_t getCell(const Grid& grid, int x, int y) const
+    {
+        if (x < 0 || x >= m_width || y < 0 || y >= m_height) return 0;
+        return grid[index(x, y)];
+    }
 
 private:
     GlobalData* m_data;
     entt::registry m_reg;
 
-    std::vector<std::vector<int>> m_gridWorld;
-    std::vector<std::vector<int>> m_buffer;
-    bool drawMode = false;
-    bool mouseHold = false;
+    int m_width;
+    int m_height;
+    Grid m_grids[2];
+    std::atomic<int> m_currentReadBuffer{ 0 };
 };

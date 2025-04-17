@@ -2,11 +2,21 @@
 
 GameOfLifeSim::GameOfLifeSim()
     : m_data(nullptr)
-{}
+    , m_width()
+    , m_height()
+{
+    m_grids[0].resize(1920 * 1080, 0);
+    m_grids[1].resize(1920 * 1080, 0);
+}
 
 GameOfLifeSim::GameOfLifeSim(GlobalData* sysData)
     : m_data(sysData)
-{}
+    , m_width(m_data->Configuration<int>(WIDTH))
+    , m_height(m_data->Configuration<int>(HEIGHT))
+{
+    m_grids[0].resize(m_width * m_height, 0);
+    m_grids[1].resize(m_width * m_height, 0);
+}
 
 GameOfLifeSim::~GameOfLifeSim()
 {
@@ -15,95 +25,139 @@ GameOfLifeSim::~GameOfLifeSim()
 
 void GameOfLifeSim::init()
 {
-    int width = m_data->Configuration<int>(WIDTH);
-    int height = m_data->Configuration<int>(HEIGHT);
+    const float aliveProbability = 0.07f;
+    std::random_device dev;
+    std::mt19937 rng(dev());
+    std::bernoulli_distribution dist(aliveProbability);
 
-    m_gridWorld = std::vector<std::vector<int>>(width, std::vector<int>(height, 0));
-    m_buffer = std::vector<std::vector<int>>(m_gridWorld.size(), std::vector<int>(m_gridWorld[0].size(), 0));
-
-    for (auto& row : m_gridWorld)
+    Grid& grid = m_grids[0];
+    for (int y = 0; y < m_height; ++y)
     {
-        std::generate(row.begin(), row.end(), []() {
-            return rand() % 10 == 0 ? 1 : 0;
-            });
+        for (int x = 0; x < m_width; ++x)
+        {
+            grid[index(x, y)] = dist(rng) ? 1 : 0;
+        }
     }
+
+    m_currentReadBuffer.store(0, std::memory_order_relaxed);
 }
 
 void GameOfLifeSim::processEvent(const sf::Event& event)
-{
-    if (drawMode)
-    {
-        if (event.type == sf::Event::MouseButtonPressed)
-            mouseHold = true;
-
-        if (drawMode && event.type == sf::Event::MouseButtonReleased)
-            mouseHold = false;
-    }
-}
+{}
 
 void GameOfLifeSim::processInput()
 {}
 
 void GameOfLifeSim::update()
 {
-    for (int i = 0; i < m_gridWorld.size(); i++) {
-        for (int j = 0; j < m_gridWorld[i].size(); j++) {
-            int neighbors = getNeighbors(m_gridWorld, i, j);
-            if (m_gridWorld[i][j] && neighbors < 2)
-                m_buffer[i][j] = 0;
-            else if (m_gridWorld[i][j] && (neighbors == 2 || neighbors == 3))
-                m_buffer[i][j] = m_gridWorld[i][j];
-            else if (m_gridWorld[i][j] && neighbors > 3)
-                m_buffer[i][j] = 0;
-            else if (!m_gridWorld[i][j] && neighbors == 3)
-                m_buffer[i][j] = 1;
-        }
+    //int readIndex = m_currentReadBuffer.load(std::memory_order_acquire);
+    //int writeIndex = 1 - readIndex;
+
+    //const Grid& readGrid = m_grids[readIndex];
+    //Grid& writeGrid = m_grids[writeIndex];
+
+    //for (int y = 0; y < m_height; ++y)
+    //{
+    //    for (int x = 0; x < m_width; ++x)
+    //    {
+    //        int aliveNeighbors =
+    //            getCell(readGrid, x - 1, y - 1) + 
+    //            getCell(readGrid, x, y - 1) + 
+    //            getCell(readGrid, x + 1, y - 1) + 
+    //            getCell(readGrid, x - 1, y) + 
+    //            getCell(readGrid, x + 1, y)+ 
+    //            getCell(readGrid, x - 1, y + 1) + 
+    //            getCell(readGrid, x, y + 1) + 
+    //            getCell(readGrid, x + 1, y + 1);
+
+    //        uint8_t currentState = getCell(readGrid, x, y);
+
+    //        if (currentState == 1)
+    //        {
+    //            writeGrid[index(x, y)] = (aliveNeighbors == 2 || aliveNeighbors == 3) ? 1 : 0;
+    //        }
+    //        else
+    //        {
+    //            writeGrid[index(x, y)] = (aliveNeighbors == 3) ? 1 : 0;
+    //        }
+    //    }
+    //}
+
+    //// Atomically swap
+    //m_currentReadBuffer.store(writeIndex, std::memory_order_release);
+
+    int readIndex = m_currentReadBuffer.load(std::memory_order_acquire);
+    int writeIndex = 1 - readIndex;
+
+    const Grid& readGrid = m_grids[readIndex];
+    Grid& writeGrid = m_grids[writeIndex];
+
+    const int numThreads = std::thread::hardware_concurrency(); // Usually # of cores
+    const int rowsPerThread = m_height / numThreads;
+
+    std::vector<std::future<void>> futures;
+
+    for (int t = 0; t < numThreads; ++t)
+    {
+        int startY = t * rowsPerThread;
+        int endY = (t == numThreads - 1) ? m_height : (t + 1) * rowsPerThread;
+
+        futures.push_back(std::async(std::launch::async, [=, &readGrid, &writeGrid]()
+            {
+                for (int y = startY; y < endY; ++y)
+                {
+                    for (int x = 0; x < m_width; ++x)
+                    {
+                        int aliveNeighbors =
+                            getCell(readGrid, x - 1, y - 1) + 
+                            getCell(readGrid, x, y - 1) + 
+                            getCell(readGrid, x + 1, y - 1) + 
+                            getCell(readGrid, x - 1, y) + 
+                            getCell(readGrid, x + 1, y)+ 
+                            getCell(readGrid, x - 1, y + 1) + 
+                            getCell(readGrid, x, y + 1) + 
+                            getCell(readGrid, x + 1, y + 1);
+
+                        uint8_t currentState = getCell(readGrid, x, y);
+
+                        if (currentState == 1)
+                        {
+                            writeGrid[index(x, y)] = (aliveNeighbors == 2 || aliveNeighbors == 3) ? 1 : 0;
+                        }
+                        else
+                        {
+                            writeGrid[index(x, y)] = (aliveNeighbors == 3) ? 1 : 0;
+                        }
+                    }
+                }
+            }));
     }
-    m_gridWorld = m_buffer;
+
+    for (auto& f : futures)
+        f.get();
+
+    m_currentReadBuffer.store(writeIndex, std::memory_order_release);
 }
 
 void GameOfLifeSim::render()
 {
-    //drawOptions();
-
-    //if (drawMode)
-    //{
-    //	if (mouseHold)
-    //	{
-    //		int posX = sf::Mouse::getPosition(m_data->window).x;
-    //		int posY = sf::Mouse::getPosition(m_data->window).y;
-    //		m_gridWorld[posX][posY] = 1;
-    //	}
-    //}
-    //else
-    //{
-    //	//for (int i = 0; i < m_gridWorld.size(); i++) {
-    //	//	for (int j = 0; j < m_gridWorld[i].size(); j++) {
-    //	//		int neighbors = getNeighbors(m_gridWorld, i, j);
-    //	//		if (m_gridWorld[i][j] && neighbors < 2)
-    //	//			m_buffer[i][j] = 0;
-    //	//		else if (m_gridWorld[i][j] && (neighbors == 2 || neighbors == 3))
-    //	//			m_buffer[i][j] = m_gridWorld[i][j];
-    //	//		else if (m_gridWorld[i][j] && neighbors > 3)
-    //	//			m_buffer[i][j] = 0;
-    //	//		else if (!m_gridWorld[i][j] && neighbors == 3)
-    //	//			m_buffer[i][j] = 1;
-    //	//	}
-    //	//}
-    //	//m_gridWorld = m_buffer;
-    //}
-
     const auto& scrView = m_reg.view<SceneViewRenderer>();
     for (const auto& sceneTextureID : scrView)
     {
         auto& sceneRenderTexture = m_reg.get<SceneViewRenderer>(sceneTextureID).rd;
-        for (int i = 0; i < m_gridWorld.size(); i++) {
-            for (int j = 0; j < m_gridWorld[i].size(); j++) {
-                if (m_gridWorld[i][j]) {
+        int readIndex = m_currentReadBuffer.load(std::memory_order_acquire);
+        const Grid& readGrid = m_grids[readIndex];
+
+        for (int y = 0; y < m_height; ++y)
+        {
+            for (int x = 0; x < m_width; ++x)
+            {
+                if (readGrid[index(x, y)] == 1)
+                {
                     sf::RectangleShape rectangle;
                     rectangle.setSize(sf::Vector2f(1, 1));
                     rectangle.setFillColor(sf::Color(50, 168, 82));
-                    rectangle.setPosition(static_cast<float>(i), static_cast<float>(j));
+                    rectangle.setPosition(static_cast<float>(x), static_cast<float>(y));
                     sceneRenderTexture.draw(rectangle);
                 }
             }
@@ -132,131 +186,8 @@ entt::registry& GameOfLifeSim::getRegistry()
     return m_reg;
 }
 
-void GameOfLifeSim::drawOptions()
+const Grid& GameOfLifeSim::getCurrentGrid() const
 {
-    //ImGui::SFML::Update(*_data->_window, sf::seconds(deltaTime));
-    //ImGui::SetNextWindowPos(ImVec2(0, 0));
-    //ImGui::SetWindowSize({ 10, 50 });
-    //ImGui::Begin("Demo", NULL, _windowFlags);
-
-    //if (ImGui::Button("Max"))
-    //{
-    //	gridWorld = std::vector<std::vector<int>>(gridWorld.size(), std::vector<int>(gridWorld[0].size(), 0));
-    //	buffer = std::vector<std::vector<int>>(gridWorld.size(), std::vector<int>(gridWorld[0].size(), 0));
-    //	ReadFile("resources/gameOfLifePatterns/max.txt");
-    //}
-
-    //if (ImGui::Button("Half Max"))
-    //{
-    //	gridWorld = std::vector<std::vector<int>>(gridWorld.size(), std::vector<int>(gridWorld[0].size(), 0));
-    //	buffer = std::vector<std::vector<int>>(gridWorld.size(), std::vector<int>(gridWorld[0].size(), 0));
-    //	ReadFile("resources/gameOfLifePatterns/halfmax.txt");
-    //}
-
-    //if (ImGui::Button("Space Filler 1"))
-    //{
-    //	gridWorld = std::vector<std::vector<int>>(gridWorld.size(), std::vector<int>(gridWorld[0].size(), 0));
-    //	buffer = std::vector<std::vector<int>>(gridWorld.size(), std::vector<int>(gridWorld[0].size(), 0));
-    //	ReadFile("resources/gameOfLifePatterns/spacefill1.txt");
-    //}
-
-    //if (ImGui::Button("Space Filler 2"))
-    //{
-    //	gridWorld = std::vector<std::vector<int>>(gridWorld.size(), std::vector<int>(gridWorld[0].size(), 0));
-    //	buffer = std::vector<std::vector<int>>(gridWorld.size(), std::vector<int>(gridWorld[0].size(), 0));
-    //	ReadFile("resources/gameOfLifePatterns/spacefill2.txt");
-    //}
-
-    //if (ImGui::Button("Random"))
-    //{
-    //	gridWorld = std::vector<std::vector<int>>(_data->_window->getSize().x, std::vector<int>(_data->_window->getSize().y, 0));
-    //	buffer = std::vector<std::vector<int>>(gridWorld.size(), std::vector<int>(gridWorld[0].size(), 0));
-    //	for (auto& row : gridWorld) {
-    //		std::generate(row.begin(), row.end(), []() {
-    //			return rand() % 10 == 0 ? 1 : 0;
-    //			});
-    //	}
-    //}
-
-    //if (ImGui::Button("Draw Mode"))
-    //{
-    //	drawMode = true;
-    //}
-    //ImGui::SameLine();
-    //if (ImGui::Button("Apply"))
-    //{
-    //	drawMode = false;
-    //}
-
-    //ImGui::End();
-    //ImGui::SFML::Render(*_data->_window);
-}
-
-int GameOfLifeSim::getNeighbors(std::vector<std::vector<int>>& board, int i, int j) {
-    int neighbors = 0;
-
-    // top row
-    if (i - 1 >= 0 && j - 1 >= 0 && board[i - 1][j - 1])
-        neighbors++;
-
-    if (i - 1 >= 0 && board[i - 1][j])
-        neighbors++;
-
-    if (i - 1 >= 0 && j + 1 < board[i - 1].size() && board[i - 1][j + 1])
-        neighbors++;
-
-    // mid row
-    if (j - 1 >= 0 && board[i][j - 1])
-        neighbors++;
-
-    if (j + 1 < board[i].size() && board[i][j + 1])
-        neighbors++;
-
-    // bot row
-    if (i + 1 < board.size() && j - 1 >= 0 && board[i + 1][j - 1])
-        neighbors++;
-
-    if (i + 1 < board.size() && board[i + 1][j])
-        neighbors++;
-
-    if (i + 1 < board.size() && j + 1 < board[i + 1].size() && board[i + 1][j + 1])
-        neighbors++;
-
-    return neighbors;
-}
-
-void GameOfLifeSim::readFile(std::string_view filename)
-{
-    std::ifstream input(filename.data());
-    if (!input.is_open())
-    {
-        std::cout << "Failed to open: " << filename << "\n";
-    }
-    else
-    {
-        int w_midWidth = m_data->Configuration<int>(WIDTH) / 2;
-        int w_midHeight = m_data->Configuration<int>(HEIGHT) / 2;
-        int midWidth = 0;
-        int midheight = 0;
-
-        std::string line;
-        input >> line;
-        midWidth = stoi(line) / 2;
-        input >> line;
-        midheight = stoi(line);
-
-        std::string pattern;
-        int j = static_cast<int>(w_midHeight - midheight);
-        while (input >> line) {
-            for (int i = 0; i < line.length(); i++)
-            {
-                if (line[i] == 'O')
-                {
-                    m_gridWorld[i + (w_midWidth - midWidth)][j] = 1;
-                }
-            }
-            j++;
-            pattern += line;
-        }
-    }
+    int readIndex = m_currentReadBuffer.load(std::memory_order_acquire);
+    return m_grids[readIndex];
 }
