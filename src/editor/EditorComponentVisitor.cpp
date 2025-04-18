@@ -186,8 +186,6 @@ void EditorComponentVisitor::visit(MovementPattern* movementPattern, entt::entit
     const std::string ID = std::to_string(static_cast<unsigned int>(entityID));
     const float ratio = ImGui::GetWindowWidth() / ImGui::GetWindowHeight();
 
-    //ImGui::Button(("##PathDesigner" + ID).c_str(), { 64 * ratio, 64 * ratio });
-
     ImGui::Text("Way Point");
     ImGui::SameLine(ImGui::GetWindowWidth() / 3.f);
     ImGui::Text("Distance To Next");
@@ -203,8 +201,8 @@ void EditorComponentVisitor::visit(MovementPattern* movementPattern, entt::entit
         std::string wpNumText = std::to_string(waypointNum);
         if (current->distanceTotal < movementPattern->distance && current->nextWP && movementPattern->distance < current->nextWP->distanceTotal)
         {
-            ImGui::TextColored(ImVec4(0.f, 1.f, 0.f, 1.f), (wpNumText + "  Current").c_str());
-            ImGui::SameLine(ImGui::GetWindowWidth() / 7.f);
+            ImGui::TextColored(ImVec4(0.f, 1.f, 0.f, 1.f), (wpNumText + "  Run ").c_str());
+            ImGui::SameLine(ImGui::GetWindowWidth() / 8.f);
             ImGui::TextColored(ImVec4(0.f, 1.f, 0.f, 1.f), std::to_string(movementPattern->distance - current->distanceTotal).c_str());
         }
         else

@@ -291,28 +291,11 @@ void Editor::renderLogViewPanel(const ImVec2& pos, const ImVec2& size)
     ImGui::End();
 }
 
-static void constrainedByAspectRatio(ImGuiSizeCallbackData* data)
-{
-    float aspectRatio = *(float*)data->UserData;
-    data->DesiredSize.y = (float)(int)(data->DesiredSize.x / aspectRatio);
-    LOG_INFO(Logger::get())
-        << "ImGuiSizeCallback(): Desired Window Size: "
-        << data->DesiredSize.x
-        << " x "
-        << data->DesiredSize.y;
-}
-
 void Editor::renderSceneViewPanel(const ImVec2& pos, const ImVec2& size)
 {
     ImGui::SetNextWindowDockID(m_dockspaceId3, ImGuiCond_Once);
     ImGui::SetNextWindowPos(pos, ImGuiCond_Once);
-    ImGui::SetNextWindowSizeConstraints
-    (
-        { size.x / m_data->aspectRatio, size.y / m_data->aspectRatio },
-        { FLT_MAX, FLT_MAX },
-        constrainedByAspectRatio,
-        (void*)&m_data->aspectRatio
-    );
+    ImGui::SetNextWindowSize(size, ImGuiCond_Once);
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0.f, 0.f });
     ImGui::Begin("Scene View Panel", NULL, 0);
@@ -377,70 +360,85 @@ void Editor::renderPropertiesPanel(const ImVec2& pos, const ImVec2& size)
     ImGui::Begin("Properties Panel", NULL, ImGuiWindowFlags_AlwaysVerticalScrollbar);
 
     static std::unordered_map<entt::entity, bool> closableGroups;
-    static std::unordered_map<entt::entity, std::array<bool, 7>> closableComponents;
+    static std::unordered_map<entt::entity, ComponentPropData> entities;
 
     const auto& view = m_reg->view<Sprite>();
     for (const auto& entityID : view)
     {
         // Initialize the closable groups and components if it is a new entityID
-        if (!closableGroups.count(entityID) || !closableComponents.count(entityID))
+        if (!closableGroups.count(entityID) || !entities.count(entityID))
         {
             closableGroups[entityID] = true;
-            closableComponents[entityID].fill(true);
+            entities.emplace(entityID, ComponentPropData(entityID));
         }
 
-        std::string ID = "Entity " + std::to_string(static_cast<unsigned int>(entityID));
-        if (ImGui::CollapsingHeader(ID.c_str(), &closableGroups[entityID]))
+        //std::string ID = "Entity " + std::to_string(static_cast<unsigned int>(entityID));
+        if (ImGui::CollapsingHeader(entities[entityID].name.c_str(), &closableGroups[entityID]))
         {
             ImGui::BeginDisabled(m_startButtonEnabled);
-            ImGui::BeginChild(("##EntityColm" + ID).c_str(), { ImGui::GetWindowWidth() - 26.f, 0.f }, ImGuiChildFlags_AutoResizeY);
+            ImGui::BeginChild(("##EntityColm" + entities[entityID].name).c_str(), { ImGui::GetWindowWidth() - 26.f, 0.f }, ImGuiChildFlags_AutoResizeY);
 
             renderComponentProperties<Sprite>(
                 entityID,
-                "Sprite##" + ID,
-                closableComponents[entityID][0],
+                "Sprite##" + entities[entityID].name,
+                entities[entityID].closableComponents[0],
                 m_componentVisitor
             );
 
             renderComponentProperties<UpdateEntityPolling>(
                 entityID,
-                "UpdateEntityPolling##" + ID,
-                closableComponents[entityID][1],
+                "UpdateEntityPolling##" + entities[entityID].name,
+                entities[entityID].closableComponents[1],
                 m_componentVisitor
             );
 
             renderComponentProperties<UpdateEntityEvent>(
                 entityID,
-                "UpdateEntityEvent##" + ID,
-                closableComponents[entityID][2],
+                "UpdateEntityEvent##" + entities[entityID].name,
+                entities[entityID].closableComponents[2],
                 m_componentVisitor
             );
 
             renderComponentProperties<EntityStatus>(
                 entityID,
-                "EntityStatus##" + ID,
-                closableComponents[entityID][3],
+                "EntityStatus##" + entities[entityID].name,
+                entities[entityID].closableComponents[3],
                 m_componentVisitor
             );
 
             renderComponentProperties<EffectsList>(
                 entityID,
-                "EffectsList##" + ID,
-                closableComponents[entityID][4],
+                "EffectsList##" + entities[entityID].name,
+                entities[entityID].closableComponents[4],
                 m_componentVisitor
             );
 
-            renderComponentProperties<MovementPattern>(
+            if (renderComponentProperties<MovementPattern>(
                 entityID,
-                "MovementPattern##" + ID,
-                closableComponents[entityID][5],
+                "MovementPattern##" + entities[entityID].name,
+                entities[entityID].closableComponents[5],
                 m_componentVisitor
-            );
+            ))
+            {
+                if (ImGui::Button(
+                    ("Set New Path##PathDesigner" + entities[entityID].name).c_str(), 
+                    { ImGui::GetWindowWidth(), 22.f }
+                ))
+                {
+                    entities[entityID].isWaypointEditorOpen = true;
+                }
+                ImGui::NewLine();
+
+                if (entities[entityID].isWaypointEditorOpen)
+                {
+                    displayCanvas(entities[entityID]);
+                }
+            }
 
             renderComponentProperties<TeamTag>(
                 entityID,
-                "TeamTag##" + ID,
-                closableComponents[entityID][6],
+                "TeamTag##" + entities[entityID].name,
+                entities[entityID].closableComponents[6],
                 m_componentVisitor
             );
 
@@ -513,7 +511,89 @@ void Editor::displayCollisionSystemVisualizer()
     }
 }
 
-void Editor::setupDockPanel(const ImVec2& panPos, const ImVec2& panSize, const char* panID, const ImGuiID& dockID)
+void Editor::displayCanvas(ComponentPropData& cmpntData)
+{
+    ImGui::Begin(("WayPoint Editor | " + cmpntData.name).c_str(), &cmpntData.isWaypointEditorOpen);
+
+    ImGui::Text("Mouse Left: drag to add lines, Mouse Right: drag to scroll, click for context menu.");
+
+    // Using InvisibleButton() as a convenience 1) it will advance the layout cursor and 2) allows us to use IsItemHovered()/IsItemActive()
+    ImVec2 canvas_p0 = ImGui::GetCursorScreenPos();      // ImDrawList API uses screen coordinates!
+    ImVec2 canvas_sz = ImGui::GetContentRegionAvail();   // Resize canvas to what's available
+    if (canvas_sz.x < 50.0f) canvas_sz.x = 50.0f;
+    if (canvas_sz.y < 50.0f) canvas_sz.y = 50.0f;
+    ImVec2 canvas_p1 = ImVec2(canvas_p0.x + canvas_sz.x, canvas_p0.y + canvas_sz.y);
+
+    // Draw border and background color
+    ImGuiIO& io = ImGui::GetIO();
+    ImDrawList* draw_list = ImGui::GetWindowDrawList();
+    draw_list->AddRectFilled(canvas_p0, canvas_p1, IM_COL32(50, 50, 50, 255));
+    draw_list->AddRect(canvas_p0, canvas_p1, IM_COL32(255, 255, 255, 255));
+
+    // This will catch our interactions
+    ImGui::InvisibleButton("canvas", canvas_sz, ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_MouseButtonRight);
+    const bool is_hovered = ImGui::IsItemHovered(); // Hovered
+    const bool is_active = ImGui::IsItemActive();   // Held
+    const ImVec2 origin(canvas_p0.x + cmpntData.scrolling.x, canvas_p0.y + cmpntData.scrolling.y); // Lock scrolled origin
+    const ImVec2 mouse_pos_in_canvas(io.MousePos.x - origin.x, io.MousePos.y - origin.y);
+
+    // Add first and second point
+    if (is_hovered && !cmpntData.adding_line && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+    {
+        cmpntData.points.push_back(mouse_pos_in_canvas);
+        cmpntData.points.push_back(mouse_pos_in_canvas);
+        cmpntData.adding_line = true;
+    }
+    if (cmpntData.adding_line)
+    {
+        cmpntData.points.back() = mouse_pos_in_canvas;
+        if (!ImGui::IsMouseDown(ImGuiMouseButton_Left))
+            cmpntData.adding_line = false;
+    }
+
+    // Pan (we use a zero mouse threshold when there's no context menu)
+    // You may decide to make that threshold dynamic based on whether the mouse is hovering something etc.
+    const float mouse_threshold_for_pan = -1.0f;
+    if (is_active && ImGui::IsMouseDragging(ImGuiMouseButton_Right, mouse_threshold_for_pan))
+    {
+        cmpntData.scrolling.x += io.MouseDelta.x;
+        cmpntData.scrolling.y += io.MouseDelta.y;
+    }
+
+    // Context menu (under default mouse threshold)
+    ImVec2 drag_delta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Right);
+
+    if (drag_delta.x == 0.0f && drag_delta.y == 0.0f)
+        ImGui::OpenPopupOnItemClick("context", ImGuiPopupFlags_MouseButtonRight);
+
+    if (ImGui::BeginPopup("context"))
+    {
+        if (cmpntData.adding_line)
+            cmpntData.points.resize(cmpntData.points.size() - 2);
+
+        cmpntData.adding_line = false;
+        if (ImGui::MenuItem("Remove one", NULL, false, cmpntData.points.Size > 0)) { cmpntData.points.resize(cmpntData.points.size() - 2); }
+        if (ImGui::MenuItem("Remove all", NULL, false, cmpntData.points.Size > 0)) { cmpntData.points.clear(); }
+        ImGui::EndPopup();
+    }
+
+    // Draw grid + all lines in the canvas
+    draw_list->PushClipRect(canvas_p0, canvas_p1, true);
+
+    const float GRID_STEP = 64.0f;
+    for (float x = fmodf(cmpntData.scrolling.x, GRID_STEP); x < canvas_sz.x; x += GRID_STEP)
+        draw_list->AddLine(ImVec2(canvas_p0.x + x, canvas_p0.y), ImVec2(canvas_p0.x + x, canvas_p1.y), IM_COL32(200, 200, 200, 40));
+    for (float y = fmodf(cmpntData.scrolling.y, GRID_STEP); y < canvas_sz.y; y += GRID_STEP)
+        draw_list->AddLine(ImVec2(canvas_p0.x, canvas_p0.y + y), ImVec2(canvas_p1.x, canvas_p0.y + y), IM_COL32(200, 200, 200, 40));
+
+    for (int n = 0; n < cmpntData.points.Size; n += 2)
+        draw_list->AddLine(ImVec2(origin.x + cmpntData.points[n].x, origin.y + cmpntData.points[n].y), ImVec2(origin.x + cmpntData.points[n + 1].x, origin.y + cmpntData.points[n + 1].y), IM_COL32(255, 255, 0, 255), 2.0f);
+    draw_list->PopClipRect();
+
+    ImGui::End();
+}
+
+void Editor::setupDockPanel(const ImVec2& panPos, const ImVec2& panSize, const char* panID, const ImGuiID& dockID) const
 {
     ImGui::SetNextWindowPos(panPos);
     ImGui::SetNextWindowSize(panSize);

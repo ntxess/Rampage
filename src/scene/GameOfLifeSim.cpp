@@ -50,93 +50,93 @@ void GameOfLifeSim::processInput()
 
 void GameOfLifeSim::update()
 {
-    //int readIndex = m_currentReadBuffer.load(std::memory_order_acquire);
-    //int writeIndex = 1 - readIndex;
-
-    //const Grid& readGrid = m_grids[readIndex];
-    //Grid& writeGrid = m_grids[writeIndex];
-
-    //for (int y = 0; y < m_height; ++y)
-    //{
-    //    for (int x = 0; x < m_width; ++x)
-    //    {
-    //        int aliveNeighbors =
-    //            getCell(readGrid, x - 1, y - 1) + 
-    //            getCell(readGrid, x, y - 1) + 
-    //            getCell(readGrid, x + 1, y - 1) + 
-    //            getCell(readGrid, x - 1, y) + 
-    //            getCell(readGrid, x + 1, y)+ 
-    //            getCell(readGrid, x - 1, y + 1) + 
-    //            getCell(readGrid, x, y + 1) + 
-    //            getCell(readGrid, x + 1, y + 1);
-
-    //        uint8_t currentState = getCell(readGrid, x, y);
-
-    //        if (currentState == 1)
-    //        {
-    //            writeGrid[index(x, y)] = (aliveNeighbors == 2 || aliveNeighbors == 3) ? 1 : 0;
-    //        }
-    //        else
-    //        {
-    //            writeGrid[index(x, y)] = (aliveNeighbors == 3) ? 1 : 0;
-    //        }
-    //    }
-    //}
-
-    //// Atomically swap
-    //m_currentReadBuffer.store(writeIndex, std::memory_order_release);
-
     int readIndex = m_currentReadBuffer.load(std::memory_order_acquire);
     int writeIndex = 1 - readIndex;
 
     const Grid& readGrid = m_grids[readIndex];
     Grid& writeGrid = m_grids[writeIndex];
 
-    const int numThreads = std::thread::hardware_concurrency(); // Usually # of cores
-    const int rowsPerThread = m_height / numThreads;
-
-    std::vector<std::future<void>> futures;
-
-    for (int t = 0; t < numThreads; ++t)
+    for (int y = 0; y < m_height; ++y)
     {
-        int startY = t * rowsPerThread;
-        int endY = (t == numThreads - 1) ? m_height : (t + 1) * rowsPerThread;
+        for (int x = 0; x < m_width; ++x)
+        {
+            int aliveNeighbors =
+                getCell(readGrid, x - 1, y - 1) + 
+                getCell(readGrid, x, y - 1) + 
+                getCell(readGrid, x + 1, y - 1) + 
+                getCell(readGrid, x - 1, y) + 
+                getCell(readGrid, x + 1, y)+ 
+                getCell(readGrid, x - 1, y + 1) + 
+                getCell(readGrid, x, y + 1) + 
+                getCell(readGrid, x + 1, y + 1);
 
-        futures.push_back(std::async(std::launch::async, [=, &readGrid, &writeGrid]()
+            uint8_t currentState = getCell(readGrid, x, y);
+
+            if (currentState == 1)
             {
-                for (int y = startY; y < endY; ++y)
-                {
-                    for (int x = 0; x < m_width; ++x)
-                    {
-                        int aliveNeighbors =
-                            getCell(readGrid, x - 1, y - 1) + 
-                            getCell(readGrid, x, y - 1) + 
-                            getCell(readGrid, x + 1, y - 1) + 
-                            getCell(readGrid, x - 1, y) + 
-                            getCell(readGrid, x + 1, y)+ 
-                            getCell(readGrid, x - 1, y + 1) + 
-                            getCell(readGrid, x, y + 1) + 
-                            getCell(readGrid, x + 1, y + 1);
-
-                        uint8_t currentState = getCell(readGrid, x, y);
-
-                        if (currentState == 1)
-                        {
-                            writeGrid[index(x, y)] = (aliveNeighbors == 2 || aliveNeighbors == 3) ? 1 : 0;
-                        }
-                        else
-                        {
-                            writeGrid[index(x, y)] = (aliveNeighbors == 3) ? 1 : 0;
-                        }
-                    }
-                }
-            }));
+                writeGrid[index(x, y)] = (aliveNeighbors == 2 || aliveNeighbors == 3) ? 1 : 0;
+            }
+            else
+            {
+                writeGrid[index(x, y)] = (aliveNeighbors == 3) ? 1 : 0;
+            }
+        }
     }
 
-    for (auto& f : futures)
-        f.get();
-
+    // Atomically swap
     m_currentReadBuffer.store(writeIndex, std::memory_order_release);
+
+    //int readIndex = m_currentReadBuffer.load(std::memory_order_acquire);
+    //int writeIndex = 1 - readIndex;
+
+    //const Grid& readGrid = m_grids[readIndex];
+    //Grid& writeGrid = m_grids[writeIndex];
+
+    //const int numThreads = std::thread::hardware_concurrency(); // Usually # of cores
+    //const int rowsPerThread = m_height / numThreads;
+
+    //std::vector<std::future<void>> futures;
+
+    //for (int t = 0; t < numThreads; ++t)
+    //{
+    //    int startY = t * rowsPerThread;
+    //    int endY = (t == numThreads - 1) ? m_height : (t + 1) * rowsPerThread;
+
+    //    futures.push_back(std::async(std::launch::async, [=, &readGrid, &writeGrid]()
+    //        {
+    //            for (int y = startY; y < endY; ++y)
+    //            {
+    //                for (int x = 0; x < m_width; ++x)
+    //                {
+    //                    int aliveNeighbors =
+    //                        getCell(readGrid, x - 1, y - 1) + 
+    //                        getCell(readGrid, x, y - 1) + 
+    //                        getCell(readGrid, x + 1, y - 1) + 
+    //                        getCell(readGrid, x - 1, y) + 
+    //                        getCell(readGrid, x + 1, y)+ 
+    //                        getCell(readGrid, x - 1, y + 1) + 
+    //                        getCell(readGrid, x, y + 1) + 
+    //                        getCell(readGrid, x + 1, y + 1);
+
+    //                    uint8_t currentState = getCell(readGrid, x, y);
+
+    //                    if (currentState == 1)
+    //                    {
+    //                        writeGrid[index(x, y)] = (aliveNeighbors == 2 || aliveNeighbors == 3) ? 1 : 0;
+    //                    }
+    //                    else
+    //                    {
+    //                        writeGrid[index(x, y)] = (aliveNeighbors == 3) ? 1 : 0;
+    //                    }
+    //                }
+    //            }
+    //        }));
+    //}
+
+    //for (auto& f : futures)
+    //    f.get();
+
+    //m_currentReadBuffer.store(writeIndex, std::memory_order_release);
 }
 
 void GameOfLifeSim::render()
