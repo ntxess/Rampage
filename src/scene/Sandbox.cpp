@@ -3,12 +3,14 @@
 Sandbox::Sandbox()
     : m_data(nullptr)
     , m_player(entt::null)
-{}
+{
+}
 
 Sandbox::Sandbox(GlobalData* sysData)
     : m_data(sysData)
     , m_player(entt::null)
-{}
+{
+}
 
 Sandbox::~Sandbox()
 {
