@@ -6,9 +6,9 @@
 
 int main()
 {
-    Engine engine(std::make_unique<Editor>());
-    engine.run();
+	Engine engine(std::make_unique<Editor>());
+	engine.run();
 
-    // test_saveManager();
-    return 0;
-}  
+	// test_saveManager();
+	return 0;
+}

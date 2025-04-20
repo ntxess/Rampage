@@ -9,6 +9,7 @@
 #include "../core/util/Logger.hpp"
 #include "../scene/Scenes.hpp"
 #include "imgui.h"
+#include "imgui_internal.h"
 #include "imgui-SFML.h"
 #include "entt/entity/entity.hpp"
 #include "entt/entity/registry.hpp"
@@ -41,7 +42,7 @@ class Editor : public IScene
 		bool isWaypointEditorOpen{ false };
 		ImVector<ImVec2> points;
 		ImVec2 scrolling{ 0.f, 0.f };
-		bool adding_line{ false };
+		float zoom = 1.0f;
 
 		ComponentPropData() = default;
 		ComponentPropData(entt::entity entityID)
@@ -69,6 +70,7 @@ public:
 	entt::registry& getRegistry() override;
 
 private:
+	void setupDockPanel(const ImVec2& panPos, const ImVec2& panSize, const char* panID, const ImGuiID& dockID) const;
 	void renderDebugPanel(const ImVec2& pos, const ImVec2& size);
 	void renderPerformancePanel(const ImVec2& pos, const ImVec2& size);
 	void renderLogViewPanel(const ImVec2& pos, const ImVec2& size);
@@ -77,8 +79,9 @@ private:
 	void renderPropertiesPanel(const ImVec2& pos, const ImVec2& size);
 	void displayEntityVisualizers();
 	void displayCollisionSystemVisualizer();
-	void displayCanvas(ComponentPropData& cmpntData);
-	void setupDockPanel(const ImVec2& panPos, const ImVec2& panSize, const char* panID, const ImGuiID& dockID) const;
+	void displayWayPointCanvas(const entt::entity& entityID, ComponentPropData& cmpntData);
+	void updateWayPointCanvas(const entt::entity& entityID, ComponentPropData& cmpntData);
+	void updateWayPointComponent(const entt::entity& entityID, ComponentPropData& cmpntData, bool reset = false);
 
 	template<typename... Args>
 	entt::entity findEntityID();
@@ -101,10 +104,15 @@ private:
 	bool m_enableEntityID;
 	bool m_enableEntityCollider;
 	bool m_enableEntityHeading;
+	bool m_enableEntityPosition;
 	bool m_enableQuadTreeVisualizer;
+	float m_sceneDrawScaleX;
+	float m_sceneDrawScaleY;
+	ImVec2 m_sceneDrawOffset;
+	int m_totalEntity;
+
 	std::atomic<bool> m_startButtonEnabled;
 	std::atomic<bool> m_forwardFrameEnabled;
-	int m_totalEntity;
 
 	// Current loaded scene data
 	std::unordered_map<std::string, std::unique_ptr<SceneData>> m_sceneMap;
@@ -112,6 +120,9 @@ private:
 	entt::registry* m_reg;
 
 	sf::Sprite m_gameView;
+
+	// Component Data used for modifying properties in PropertiesPanel
+	std::unordered_map<entt::entity, ComponentPropData> m_entities;
 
 	EditorComponentVisitor m_componentVisitor;
 	EditorSceneVisitor m_sceneVisitor;
