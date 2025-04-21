@@ -13,8 +13,8 @@
   },
   "video-settings": {
     "resolution": {
-        "width": 2560,
-        "height": 1440
+        "width": 1920,
+        "height": 1080
     },
     "frame-rate": 160.0,
     "fullscreen": false,

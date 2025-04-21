@@ -13,6 +13,7 @@ Editor::Editor()
     , m_enableEntityHeading(false)
     , m_enableEntityPosition(false)
     , m_enableQuadTreeVisualizer(false)
+    , m_enableLogViewer(false)
     , m_sceneDrawScaleX(0.f)
     , m_sceneDrawScaleY(0.f)
     , m_sceneDrawOffset{ 0.f, 0.f }
@@ -20,30 +21,12 @@ Editor::Editor()
     , m_startButtonEnabled(false)
     , m_forwardFrameEnabled(false)
     , m_reg(nullptr)
-{
-}
+{}
 
 Editor::Editor(GlobalData* sysData)
-    : m_data(sysData)
-    , m_panelFlags(0)
-    , m_dockspaceId1(0)
-    , m_dockspaceId2(0)
-    , m_dockspaceId3(0)
-    , m_dockspaceId4(0)
-    , m_dockspaceId5(0)
-    , m_enableEntityID(false)
-    , m_enableEntityCollider(false)
-    , m_enableEntityHeading(false)
-    , m_enableEntityPosition(false)
-    , m_enableQuadTreeVisualizer(false)
-    , m_sceneDrawScaleX(0.f)
-    , m_sceneDrawScaleY(0.f)
-    , m_sceneDrawOffset{ 0.f, 0.f }
-    , m_totalEntity(0)
-    , m_startButtonEnabled(false)
-    , m_forwardFrameEnabled(false)
-    , m_reg(nullptr)
+    : Editor()
 {
+    m_data = sysData;
 }
 
 Editor::~Editor()
@@ -307,7 +290,46 @@ void Editor::renderLogViewPanel(const ImVec2& pos, const ImVec2& size)
     ImGui::SetNextWindowDockID(m_dockspaceId2, ImGuiCond_Once);
     ImGui::SetNextWindowPos(pos, ImGuiCond_Once);
     ImGui::SetNextWindowSize(size, ImGuiCond_Once);
-    ImGui::Begin("Log View Panel", nullptr, 0);
+    ImGui::Begin("Log View Panel", nullptr);
+
+    static bool autoScroll = true;
+
+    if (ImGui::Button(m_enableLogViewer ? "Disable Log Viewer" : "Enable Log Viewer"))
+    {
+        m_enableLogViewer = !m_enableLogViewer;
+        m_logStream.open(Logger::getFileName());
+    }
+    ImGui::SameLine();
+    ImGui::Checkbox("Enable Auto-Scrolling", &autoScroll);
+
+    if (m_enableLogViewer)
+    {
+        ImGui::BeginChild("##Log", ImVec2(0, 0), 0, ImGuiWindowFlags_HorizontalScrollbar);
+
+        m_logStream.update();
+
+        for (const auto& log : m_logStream.getLog())
+        {
+            ImVec4 color;
+            switch (log.type)
+            {
+            case LogStream::LogType::None:    color = ImVec4(1.0f, 1.0f, 1.0f, 1.0f); break; // White
+            case LogStream::LogType::Trace:   color = ImVec4(1.0f, 1.0f, 1.0f, 1.0f); break; // White
+            case LogStream::LogType::Debug:   color = ImVec4(0.5f, 0.5f, 1.0f, 1.0f); break; // Light blue
+            case LogStream::LogType::Info:    color = ImVec4(0.5f, 0.5f, 1.0f, 1.0f); break; // Light blue
+            case LogStream::LogType::Warning: color = ImVec4(1.0f, 1.0f, 0.0f, 1.0f); break; // Yellow
+            case LogStream::LogType::Error:   color = ImVec4(1.0f, 0.0f, 0.0f, 1.0f); break; // Red
+            case LogStream::LogType::Fatal:   color = ImVec4(1.0f, 0.0f, 0.0f, 1.0f); break; // Red
+            }
+
+            ImGui::TextColored(color, "%s", log.text.c_str());
+        }
+
+        if (autoScroll && ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
+            ImGui::SetScrollHereY(1.0f);
+
+        ImGui::EndChild();
+    }
 
     ImGui::End();
 }

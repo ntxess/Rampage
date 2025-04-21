@@ -37,6 +37,7 @@ class Logger
 public:
     static Logger& getInstance();
     static boost::log::sources::severity_logger<boost::log::trivial::severity_level>& get();
+    static std::string getFileName();
     void toggleLogging(bool option);
     void setupConsoleLog();
     void setupFileLog(const std::string logPath);
@@ -56,4 +57,5 @@ private:
     bool m_enableLogging;
     std::string m_severityLevel;
     boost::log::sources::severity_logger<boost::log::trivial::severity_level> m_slg;
+    std::string m_fileName;
 };

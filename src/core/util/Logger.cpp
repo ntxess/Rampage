@@ -16,6 +16,11 @@ boost::log::sources::severity_logger<boost::log::trivial::severity_level>& Logge
     return Logger::getInstance().m_slg;
 }
 
+std::string Logger::getFileName()
+{
+    return Logger::getInstance().m_fileName;
+}
+
 void Logger::toggleLogging(bool option)
 {
     m_enableLogging = option;
@@ -39,9 +44,10 @@ void Logger::setupConsoleLog()
 
 void Logger::setupFileLog(const std::string logPath)
 {
+    m_fileName = logPath + generateFilename();
     boost::log::add_file_log
     (
-        logPath + generateFilename(),
+        m_fileName,
         boost::log::keywords::format = boost::log::expressions::format("[%1%] %2%: [%3%:%4%] %5%")
         % boost::log::expressions::max_size_decor<char>(26)[boost::log::expressions::stream << std::setw(26) << boost::log::expressions::format_date_time<boost::posix_time::ptime>("TimeStamp", "%Y-%m-%d %H:%M:%S.%f")]
         % boost::log::expressions::max_size_decor<char>(7)[boost::log::expressions::stream << std::setw(7) << boost::log::trivial::severity]

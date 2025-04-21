@@ -7,6 +7,7 @@
 #include "../core/Systems.hpp"
 #include "../core/interface/IScene.hpp"
 #include "../core/util/Logger.hpp"
+#include "../core/util/LogStream.hpp"
 #include "../scene/Scenes.hpp"
 #include "imgui.h"
 #include "imgui_internal.h"
@@ -100,6 +101,7 @@ private:
 private:
     GlobalData* m_data;
 
+    LogStream m_logStream;
     sf::Font m_defaultFont;
     ImGuiWindowFlags m_panelFlags;
 
@@ -114,6 +116,7 @@ private:
     bool m_enableEntityHeading;
     bool m_enableEntityPosition;
     bool m_enableQuadTreeVisualizer;
+    bool m_enableLogViewer;
     float m_sceneDrawScaleX;
     float m_sceneDrawScaleY;
     ImVec2 m_sceneDrawOffset;
