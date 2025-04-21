@@ -84,7 +84,7 @@ private:
     void renderPerformancePanel(const ImVec2& pos, const ImVec2& size);
     void renderLogViewPanel(const ImVec2& pos, const ImVec2& size);
     void renderSceneViewPanel(const ImVec2& pos, const ImVec2& size);
-    void renderFileExplorerPanel(const ImVec2& pos, const ImVec2& size);
+    void renderAssetsExplorerPanel(const ImVec2& pos, const ImVec2& size);
     void renderPropertiesPanel(const ImVec2& pos, const ImVec2& size);
     void displayEntityVisualizers();
     void displayCollisionSystemVisualizer();
@@ -92,11 +92,20 @@ private:
     void updateWayPointCanvas(const entt::entity& entityID, ComponentPropData& cmpntData);
     void updateWayPointComponent(const entt::entity& entityID, ComponentPropData& cmpntData, WayPointEditMode mode);
 
+    // Callback functions
+    void wayPointCanvasCallback(const entt::entity& entityID);
+
     template<typename... Args>
     entt::entity findEntityID();
 
     template<typename T>
-    bool renderComponentProperties(const entt::entity& entityID, std::string_view componentID, bool& visible, EditorComponentVisitor& visitor);
+    bool renderComponentProperties(
+        const entt::entity& entityID, 
+        std::string_view componentID, 
+        bool& visible, 
+        EditorComponentVisitor& visitor,
+        std::function<void(const entt::entity&)> callback = nullptr
+    );
 
 private:
     GlobalData* m_data;
@@ -153,7 +162,7 @@ inline entt::entity Editor::findEntityID()
 }
 
 template<typename T>
-inline bool Editor::renderComponentProperties(const entt::entity& entityID, std::string_view componentID, bool& visible, EditorComponentVisitor& visitor)
+inline bool Editor::renderComponentProperties(const entt::entity& entityID, std::string_view componentID, bool& visible, EditorComponentVisitor& visitor, std::function<void(const entt::entity&)> callback)
 {
     if (!m_reg->all_of<T>(entityID))
     {
@@ -164,13 +173,19 @@ inline bool Editor::renderComponentProperties(const entt::entity& entityID, std:
     {
         auto& component = m_reg->get<T>(entityID);
         component.accept(&visitor, entityID);
+
+        if (callback)
+        {
+            callback(entityID);
+        }
     }
 
     if (!visible)
     {
         // TODO: Remove the sprite component from QuadTree
         m_reg->remove<T>(entityID);
-        //static_cast<Sandbox*>(m_sceneMap[m_selectedSceneKey]->scene.get())->getSystemManager()->getSystem<CollisionSystem>()->remove(*m_reg, entityID);
+        //static_cast<Sandbox*>(
+        // m_sceneMap[m_selectedSceneKey]->scene.get())->getSystemManager()->getSystem<CollisionSystem>()->remove(*m_reg, entityID);
         return false;
     }
 

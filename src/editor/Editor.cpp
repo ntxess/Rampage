@@ -152,7 +152,7 @@ void Editor::render()
     renderPerformancePanel({ 0.f, 0.f }, { fifthWidth, halfHeight });
     renderLogViewPanel({ 0.f, halfHeight }, { fifthWidth, halfHeight });
     renderSceneViewPanel({ fifthWidth, 0.f }, { width, height });
-    renderFileExplorerPanel({ fifthWidth, scalingHeight }, { scalingWidth, height - scalingHeight });
+    renderAssetsExplorerPanel({ fifthWidth, scalingHeight }, { scalingWidth, height - scalingHeight });
     renderPropertiesPanel({ scalingFifthWidth, 0.f }, { width - scalingFifthWidth, height });
 
     ImGui::ShowDemoWindow();
@@ -390,12 +390,12 @@ void Editor::renderSceneViewPanel(const ImVec2& pos, const ImVec2& size)
     ImGui::End();
 }
 
-void Editor::renderFileExplorerPanel(const ImVec2& pos, const ImVec2& size)
+void Editor::renderAssetsExplorerPanel(const ImVec2& pos, const ImVec2& size)
 {
     ImGui::SetNextWindowDockID(m_dockspaceId4, ImGuiCond_Once);
     ImGui::SetNextWindowPos(pos, ImGuiCond_Once);
     ImGui::SetNextWindowSize(size, ImGuiCond_Once);
-    ImGui::Begin("FileExplorer Panel", nullptr, 0);
+    ImGui::Begin("AssetsExplorer Panel", nullptr, 0);
 
     ImGui::End();
 }
@@ -461,27 +461,15 @@ void Editor::renderPropertiesPanel(const ImVec2& pos, const ImVec2& size)
                 m_componentVisitor
             );
 
-            if (renderComponentProperties<MovementPattern>(
+            renderComponentProperties<MovementPattern>(
                 entityID,
                 "MovementPattern##" + m_entities[entityID].name,
                 m_entities[entityID].closableComponents[5],
-                m_componentVisitor
-            ))
-            {
-                if (ImGui::Button(
-                    ("Set New Path##PathDesigner" + m_entities[entityID].name).c_str(),
-                    { ImGui::GetWindowWidth(), 22.f }
-                ))
-                {
-                    m_entities[entityID].isWaypointEditorOpen = true;
+                m_componentVisitor,
+                [this](const entt::entity& entity) {
+                    this->wayPointCanvasCallback(entity);
                 }
-                ImGui::NewLine();
-
-                if (m_entities[entityID].isWaypointEditorOpen)
-                {
-                    displayWayPointCanvas(entityID, m_entities[entityID]);
-                }
-            }
+            );
 
             renderComponentProperties<TeamTag>(
                 entityID,
@@ -811,5 +799,22 @@ void Editor::updateWayPointComponent(const entt::entity& entityID, ComponentProp
                 }
             }
         }
+    }
+}
+
+void Editor::wayPointCanvasCallback(const entt::entity& entityID)
+{
+    if (ImGui::Button(
+        ("Set New Path##PathDesigner" + m_entities[entityID].name).c_str(),
+        { ImGui::GetWindowWidth(), 22.f }
+    ))
+    {
+        m_entities[entityID].isWaypointEditorOpen = true;
+    }
+    ImGui::NewLine();
+
+    if (m_entities[entityID].isWaypointEditorOpen)
+    {
+        displayWayPointCanvas(entityID, m_entities[entityID]);
     }
 }
