@@ -19,6 +19,7 @@
 
 class Editor : public IScene
 {
+private:
     struct SceneData
     {
         std::unique_ptr<IScene> scene;
@@ -53,6 +54,13 @@ class Editor : public IScene
         }
     };
 
+    enum class WayPointEditMode
+    {
+        Add,
+        RemoveLast,
+        Clear
+    };
+
 public:
     Editor();
     Editor(GlobalData* sysData);
@@ -81,7 +89,7 @@ private:
     void displayCollisionSystemVisualizer();
     void displayWayPointCanvas(const entt::entity& entityID, ComponentPropData& cmpntData);
     void updateWayPointCanvas(const entt::entity& entityID, ComponentPropData& cmpntData);
-    void updateWayPointComponent(const entt::entity& entityID, ComponentPropData& cmpntData, bool append = true);
+    void updateWayPointComponent(const entt::entity& entityID, ComponentPropData& cmpntData, WayPointEditMode mode);
 
     template<typename... Args>
     entt::entity findEntityID();

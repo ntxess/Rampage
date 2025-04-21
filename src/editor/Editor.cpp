@@ -605,13 +605,13 @@ void Editor::displayWayPointCanvas(const entt::entity& entityID, ComponentPropDa
         if (ImGui::MenuItem("Remove one", nullptr, false, cmpntData.points.Size > 0))
         {
             cmpntData.points.resize(cmpntData.points.size() - 1);
-            updateWayPointComponent(entityID, cmpntData, false);
+            updateWayPointComponent(entityID, cmpntData, WayPointEditMode::RemoveLast);
         }
 
         if (ImGui::MenuItem("Remove all", nullptr, false, cmpntData.points.Size > 0))
         {
             cmpntData.points.clear();
-            updateWayPointComponent(entityID, cmpntData, false);
+            updateWayPointComponent(entityID, cmpntData, WayPointEditMode::Clear);
         }
 
         if (ImGui::MenuItem("Reset Camera", nullptr, false))
@@ -626,7 +626,7 @@ void Editor::displayWayPointCanvas(const entt::entity& entityID, ComponentPropDa
     if (isHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
     {
         cmpntData.points.push_back(mousePosInCanvas);
-        updateWayPointComponent(entityID, cmpntData);
+        updateWayPointComponent(entityID, cmpntData, WayPointEditMode::Add);
     }
 
     if (isHovered && io.MouseWheel != 0)
@@ -723,46 +723,71 @@ void Editor::updateWayPointCanvas(const entt::entity& entityID, ComponentPropDat
     }
 }
 
-void Editor::updateWayPointComponent(const entt::entity& entityID, ComponentPropData& cmpntData, bool append)
+void Editor::updateWayPointComponent(const entt::entity& entityID, ComponentPropData& cmpntData, WayPointEditMode mode)
 {
     if (m_reg->all_of<MovementPattern, Sprite>(entityID))
     {
         auto& sprite = m_reg->get<Sprite>(entityID);
         auto& movement = m_reg->get<MovementPattern>(entityID);
 
-        // If the waypoint canvas editor is empty, set the initial point to the current position of the sprite
+        // If the waypoint canvas editor is empty, set the starting waypoint to the current position of the sprite
+        // This syncs the waypoint component with the waypoint canvas
         if (cmpntData.points.empty())
         {
             cmpntData.points.push_back({ sprite.getPosition().x, sprite.getPosition().y });
         }
 
-        if (append) // Append mode
-        {
-            // Reset the current movement progress 
-            WayPoint* current = movement.movePattern.get(); 
-            movement.currentPath = movement.movePattern.get();
-            movement.distance = 0.f;
-            sprite.setPosition(current->coordinate.x, current->coordinate.y);
-
-            // Traverse to the last node to append new waypoint
-            while (current->next() != nullptr) 
-            {
-                current = current->next();
-            }
-            
-            // Setup and link the new waypoint
-            const auto& coord = cmpntData.points.back();
-            std::unique_ptr<WayPoint> newPoint = std::make_unique<WayPoint>(sf::Vector2f{ coord.x, coord.y });
-            current->link(std::move(newPoint));
-            current->nextWP->distanceTotal = current->distanceTotal + current->distanceToNext;
-        }
-        else // Clear mode
+        if (mode == WayPointEditMode::Clear)
         {
             // Sprite with a waypoint component but no next waypoint will still have the initial position of the sprite as its sole waypoint
             std::unique_ptr<WayPoint> root = std::make_unique<WayPoint>(sf::Vector2f{ sprite.getPosition().x, sprite.getPosition().y });
             movement.currentPath = root.get();
             movement.distance = 0.f;
-            m_reg->emplace_or_replace<MovementPattern>(entityID, std::move(root), true);         
+            m_reg->emplace_or_replace<MovementPattern>(entityID, std::move(root), true);
+        }
+        else
+        {
+            // Always reset the current movement progress to keep sprite position consistant 
+            WayPoint* current = movement.movePattern.get();
+            movement.currentPath = movement.movePattern.get();
+            movement.distance = 0.f;
+            sprite.setPosition(current->coordinate.x, current->coordinate.y);
+
+            // Find last and second to last waypoint
+            WayPoint* prev = nullptr;
+            while (current && current->next())
+            {
+                prev = current;
+                current = current->next();
+            }
+
+            if (mode == WayPointEditMode::Add)
+            {
+                // Setup and link the new waypoint
+                const auto& coord = cmpntData.points.back();
+                std::unique_ptr<WayPoint> newPoint = std::make_unique<WayPoint>(sf::Vector2f{ coord.x, coord.y });
+
+                // Sanity check but not required as there should always be atleast one waypoint in the movement pattern (the current sprite pos)
+                if (current)
+                {
+                    current->link(std::move(newPoint));
+                    current->nextWP->distanceTotal = current->distanceTotal + current->distanceToNext;
+                }
+            }
+            else if (mode == WayPointEditMode::RemoveLast)
+            {
+                if (prev)
+                {
+                    // Delete the last node
+                    prev->nextWP.reset();
+                }
+                else
+                {
+                    // Reset movement pattern to the current pos of sprite if last waypoint is removed
+                    movement.movePattern = std::make_unique<WayPoint>(sf::Vector2f{ sprite.getPosition().x, sprite.getPosition().y });
+                    movement.currentPath = movement.movePattern.get();
+                }
+            }
         }
     }
 }
