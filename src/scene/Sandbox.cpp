@@ -68,7 +68,7 @@ void Sandbox::init()
 
         for (size_t j = 0; j <= size_t(dist6(rng)) % 10; j++)
         {
-            std::unique_ptr<WayPoint> point = std::make_unique<WayPoint>(sf::Vector2f(float(dist6(rng) % int(width / 2.f)), float(dist6(rng) % int(height / 2.f))));
+            std::unique_ptr<WayPoint> point = std::make_unique<WayPoint>(sf::Vector2f{ float(dist6(rng) % int(width / 2.f)), float(dist6(rng) % int(height / 2.f)) });
 
             if (j != 0)
             {

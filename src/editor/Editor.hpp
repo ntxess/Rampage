@@ -81,7 +81,7 @@ private:
     void displayCollisionSystemVisualizer();
     void displayWayPointCanvas(const entt::entity& entityID, ComponentPropData& cmpntData);
     void updateWayPointCanvas(const entt::entity& entityID, ComponentPropData& cmpntData);
-    void updateWayPointComponent(const entt::entity& entityID, ComponentPropData& cmpntData, bool reset = false);
+    void updateWayPointComponent(const entt::entity& entityID, ComponentPropData& cmpntData, bool append = true);
 
     template<typename... Args>
     entt::entity findEntityID();
