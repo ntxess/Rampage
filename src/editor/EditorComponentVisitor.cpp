@@ -195,7 +195,7 @@ void EditorComponentVisitor::visit(MovementPattern* movementPattern, entt::entit
     ImGui::PushItemWidth(ImGui::GetWindowWidth() / 4.f);
 
     size_t waypointNum = 0;
-    WayPoint* current = movementPattern->movePattern;
+    WayPoint* current = movementPattern->movePattern.get();
     while (current != nullptr)
     {
         std::string wpNumText = std::to_string(waypointNum);
@@ -209,12 +209,13 @@ void EditorComponentVisitor::visit(MovementPattern* movementPattern, entt::entit
         {
             ImGui::Text(wpNumText.c_str());
         }
+
         ImGui::SameLine(ImGui::GetWindowWidth() / 3.f);
         ImGui::InputFloat(("##DistanceToNext" + wpNumText + ID).c_str(), &current->distanceToNext);
         ImGui::SameLine(ImGui::GetWindowWidth() * 4.f / 6.f);
         ImGui::InputFloat(("##DistanceTotal" + wpNumText + ID).c_str(), &current->distanceTotal);
 
-        current = current->nextWP;
+        current = current->next();
         ++waypointNum;
     }
 
