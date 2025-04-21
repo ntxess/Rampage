@@ -35,8 +35,12 @@ void MainMenu::render()
     for (const auto& sceneTextureID : scrView)
     {
         auto& sceneRenderTexture = m_reg.get<SceneViewRenderer>(sceneTextureID).rd;
-        auto& spriteEntity = m_reg.get<Sprite>(m_wallpaper).sprite;
-        sceneRenderTexture.draw(spriteEntity);
+
+        if (m_reg.all_of<Sprite>(m_wallpaper))
+        {
+            auto& spriteEntity = m_reg.get<Sprite>(m_wallpaper).sprite;
+            sceneRenderTexture.draw(spriteEntity);
+        }
     }
 }
 
