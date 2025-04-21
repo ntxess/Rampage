@@ -14,9 +14,14 @@ WayPoint::WayPoint(sf::Vector2f coordinate)
 	, nextWP(nullptr)
 {}
 
-WayPoint* WayPoint::link(WayPoint* waypoint)
+WayPoint* WayPoint::next() const
+{ 
+	return nextWP.get();
+}
+
+WayPoint* WayPoint::link(std::unique_ptr<WayPoint> waypoint)
 {
-	nextWP = waypoint;
+	nextWP = std::move(waypoint);
 
 	distanceToNext = sqrt(
 		(nextWP->coordinate.x - coordinate.x) * 
@@ -25,5 +30,5 @@ WayPoint* WayPoint::link(WayPoint* waypoint)
 		(nextWP->coordinate.y - coordinate.y)
 	);
 
-	return nextWP;
+	return nextWP.get();
 }

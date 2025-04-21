@@ -124,7 +124,7 @@ void Engine::configureWindow(std::unique_ptr<IScene> initialScene)
     m_sysData->deltaTime = static_cast<float>(1.f / m_sysData->Configuration<double>(FRAMERATE));
     m_sysData->window.create(sf::VideoMode(width, height), name, sf::Style::Default, settings);
     m_sysData->window.setActive(false);
-    m_sysData->window.setFramerateLimit(m_sysData->Configuration<double>(FRAMERATE));
+    m_sysData->window.setFramerateLimit(static_cast<unsigned int>(m_sysData->Configuration<double>(FRAMERATE)));
     m_sysData->sceneManager.addScene(std::move(initialScene), true, m_sysData.get());
     m_sysData->sceneManager.processChange();
 

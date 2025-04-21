@@ -21,13 +21,13 @@ void WayPointSystem::update(entt::registry& reg, const float& dt)
         const float speed = es.values.at(bindingStatID);
 
         WayPoint* headPtr = wpc.currentPath;
-        WayPoint* nextPtr = headPtr->nextWP;
+        WayPoint* nextPtr = headPtr->next();
 
         if (nextPtr == nullptr)
         {
             if (wpc.repeat)
             {
-                wpc.currentPath = wpc.movePattern;
+                wpc.currentPath = wpc.movePattern.get();
                 wpc.distance = 0.f;
             }
             continue;

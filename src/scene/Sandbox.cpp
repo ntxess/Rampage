@@ -63,34 +63,35 @@ void Sandbox::init()
 
     for (size_t i = 0; i < 10; i++)
     {
-        WayPoint* root = nullptr;
+        std::unique_ptr<WayPoint> root = nullptr;
+        WayPoint* last = nullptr;
+
         for (size_t j = 0; j <= size_t(dist6(rng)) % 10; j++)
         {
             std::unique_ptr<WayPoint> point = std::make_unique<WayPoint>(sf::Vector2f(float(dist6(rng) % int(width / 2.f)), float(dist6(rng) % int(height / 2.f))));
 
             if (j != 0)
             {
-                m_wayPointPatterns.back()->link(point.get());
-                m_wayPointPatterns.back()->nextWP->distanceTotal = m_wayPointPatterns.back()->distanceTotal + m_wayPointPatterns.back()->distanceToNext;
+                last->link(std::move(point));
+                last->nextWP->distanceTotal = last->distanceTotal + last->distanceToNext;
+                last = last->next();
             }
             else
             {
-                root = point.get();
+                root = std::move(point);
+                last = root.get();
             }
-
-            m_wayPointPatterns.emplace_back(std::move(point));
         }
 
         // Entity create and store into the scene's ENTT::entity registry
         entt::entity mob = m_reg.create();
-        m_reg.emplace<TeamTag>(mob, Team::ENEMY);
         m_reg.emplace<Sprite>(mob, m_data->textureManager["player"]);
-        m_reg.emplace<MovementPattern>(mob, root, true);
-        m_reg.get<MovementPattern>(mob).repeat = true;
+        m_reg.get<Sprite>(mob).setPosition(root->coordinate.x, root->coordinate.y);
         m_reg.emplace<EntityStatus>(mob);
         m_reg.get<EntityStatus>(mob).values["HP"] = 1.f;
         m_reg.get<EntityStatus>(mob).values["Speed"] = 250.f;
-        m_reg.get<Sprite>(mob).setPosition(root->coordinate.x, root->coordinate.y);
+        m_reg.emplace<TeamTag>(mob, Team::ENEMY);
+        m_reg.emplace<MovementPattern>(mob, std::move(root), true);
     }
 
     m_system.addSystem<CollisionSystem>(m_reg, sf::Vector2f{ 0.f, 0.f }, m_data->window.getSize());

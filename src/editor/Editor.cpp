@@ -708,7 +708,7 @@ void Editor::updateWayPointCanvas(const entt::entity& entityID, ComponentPropDat
     {
         auto& movement = m_reg->get<MovementPattern>(entityID);
 
-        WayPoint* current = movement.movePattern;
+        WayPoint* current = movement.movePattern.get();
 
         if (!current) return;
 
@@ -717,7 +717,7 @@ void Editor::updateWayPointCanvas(const entt::entity& entityID, ComponentPropDat
 
         while (current->nextWP != nullptr)
         {
-            current = current->nextWP;
+            current = current->next();
             cmpntData.points.push_back({ current->coordinate.x, current->coordinate.y });
         }
     }

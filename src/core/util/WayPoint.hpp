@@ -10,11 +10,12 @@ public:
 	WayPoint();
 	WayPoint(sf::Vector2f coordinate);
 
-	WayPoint* link(WayPoint* waypoint);
+	WayPoint* next() const;
+	WayPoint* link(std::unique_ptr<WayPoint> waypoint);
 
 public:
 	const sf::Vector2f coordinate;
 	float distanceToNext;
 	float distanceTotal;
-	WayPoint* nextWP;
+	std::unique_ptr<WayPoint> nextWP;
 };

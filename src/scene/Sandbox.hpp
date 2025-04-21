@@ -42,5 +42,4 @@ private:
     entt::registry m_reg;
     entt::entity m_player;
     SystemManager m_system;
-    std::vector<std::unique_ptr<WayPoint>> m_wayPointPatterns;
 };
