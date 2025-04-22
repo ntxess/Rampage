@@ -88,12 +88,18 @@ private:
     void renderPropertiesPanel(const ImVec2& pos, const ImVec2& size);
     void displayEntityVisualizers();
     void displayCollisionSystemVisualizer();
-    void displayWayPointCanvas(const entt::entity& entityID, ComponentPropData& cmpntData);
+
+    ImVec2 scaleSize(const ImVec2& region, const float& aspectRatio);
+    ImVec2 getCenteredTLPos(const ImVec2& region, const float& aspectRatio);
+
+    // WayPoint Canvas
+    void wayPointCanvasCallback(const entt::entity& entityID);
+    void drawWayPointCanvas(const entt::entity& entityID, ComponentPropData& cmpntData);
+    void drawWayPoints(const ImVec2& tlBound, const ImVec2& brBound, const ImVec2& size, const ImVec2& origin, ComponentPropData& cmpntData);
+    void drawWayPointContextMenu(const entt::entity& entityID, ComponentPropData& cmpntData);
     void updateWayPointCanvas(const entt::entity& entityID, ComponentPropData& cmpntData);
     void updateWayPointComponent(const entt::entity& entityID, ComponentPropData& cmpntData, WayPointEditMode mode);
-
-    // Callback functions
-    void wayPointCanvasCallback(const entt::entity& entityID);
+    void processWayPointCanvasInput(const ImVec2& size, const ImVec2& origin, const entt::entity& entityID, ComponentPropData& cmpntData);
 
     template<typename... Args>
     entt::entity findEntityID();
@@ -126,9 +132,7 @@ private:
     bool m_enableEntityPosition;
     bool m_enableQuadTreeVisualizer;
     bool m_enableLogViewer;
-    float m_sceneDrawScaleX;
-    float m_sceneDrawScaleY;
-    ImVec2 m_sceneDrawOffset;
+    ImVec2 m_sceneDrawScale;
     int m_totalEntity;
 
     std::atomic<bool> m_startButtonEnabled;

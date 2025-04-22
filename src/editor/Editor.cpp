@@ -14,9 +14,6 @@ Editor::Editor()
     , m_enableEntityPosition(false)
     , m_enableQuadTreeVisualizer(false)
     , m_enableLogViewer(false)
-    , m_sceneDrawScaleX(0.f)
-    , m_sceneDrawScaleY(0.f)
-    , m_sceneDrawOffset{ 0.f, 0.f }
     , m_totalEntity(0)
     , m_startButtonEnabled(false)
     , m_forwardFrameEnabled(false)
@@ -353,39 +350,25 @@ void Editor::renderSceneViewPanel(const ImVec2& pos, const ImVec2& size)
     displayEntityVisualizers();
     displayCollisionSystemVisualizer();
 
-    // Get free space inside the window and calculate size that scaled with ratio
+    // Get free space inside the window and calculate scene size and scale with aspect ratio
     ImVec2 region = ImGui::GetContentRegionAvail();
-    const float aspect = m_data->aspectRatio;
-    float drawWidth = region.x;
-    float drawHeight = drawWidth / aspect;
-    if (drawHeight > region.y)
-    {
-        drawHeight = region.y;
-        drawWidth = drawHeight * aspect;
-    }
+    ImVec2 drawSize = scaleSize(region, m_data->aspectRatio);
+    ImVec2 viewPos = getCenteredTLPos(region, m_data->aspectRatio);
 
-    //Draw the scene texture with correct scaling
+    // Draw the scene texture with correct scaling
     m_gameView.setTexture(renderTexture.getTexture(), true);
     m_gameView.setScale(
-        drawWidth / m_gameView.getTexture()->getSize().x,
-        drawHeight / m_gameView.getTexture()->getSize().y
+        drawSize.x / m_gameView.getTexture()->getSize().x,
+        drawSize.y / m_gameView.getTexture()->getSize().y
     );
-
-    // Center the image in the window content area
-    ImVec2 cursorPos = ImGui::GetCursorScreenPos();
-    ImVec2 viewPos(
-        cursorPos.x + (region.x - drawWidth) * 0.5f,
-        cursorPos.y + (region.y - drawHeight) * 0.5f
-    );
-
-    m_sceneDrawScaleX = drawWidth / m_gameView.getTexture()->getSize().x;
-    m_sceneDrawScaleY = drawHeight / m_gameView.getTexture()->getSize().y;
-    m_sceneDrawOffset = viewPos;
-
-    ImGui::SetCursorScreenPos(viewPos);
 
     // Render the selected scene as an image inside ImGui window
+    ImGui::SetCursorScreenPos(viewPos);
     ImGui::Image(m_gameView);
+
+    // Update the memeber variables for the WayPoint Canvas to stay consistant with scene view size and scale
+    m_sceneDrawScale.x = drawSize.x / m_gameView.getTexture()->getSize().x;
+    m_sceneDrawScale.y = drawSize.y / m_gameView.getTexture()->getSize().y;
 
     ImGui::End();
 }
@@ -515,6 +498,7 @@ void Editor::displayEntityVisualizers()
             border.setFillColor(sf::Color::Transparent);
             border.setOutlineThickness(2);
 
+            // TODO: Remove findEntityID for a more robust solution, think visitor for scenes (maybe)
             entt::entity player = findEntityID<PlayerInput>();
             if (player != entt::null &&
                 player != entityID &&
@@ -557,59 +541,146 @@ void Editor::displayCollisionSystemVisualizer()
     }
 }
 
-void Editor::displayWayPointCanvas(const entt::entity& entityID, ComponentPropData& cmpntData)
+ImVec2 Editor::scaleSize(const ImVec2& region, const float& aspectRatio)
+{
+    float drawWidth = region.x;
+    float drawHeight = drawWidth / aspectRatio;
+    if (drawHeight > region.y)
+    {
+        drawHeight = region.y;
+        drawWidth = drawHeight * aspectRatio;
+    }
+    return { drawWidth, drawHeight };
+}
+
+ImVec2 Editor::getCenteredTLPos(const ImVec2& region, const float& aspectRatio)
+{
+    ImVec2 drawSize = scaleSize(region, aspectRatio);
+
+    // Center the image in the window content area
+    ImVec2 cursorPos = ImGui::GetCursorScreenPos();
+    ImVec2 viewPos(
+        cursorPos.x + (region.x - drawSize.x) / 2.f,
+        cursorPos.y + (region.y - drawSize.y) / 2.f
+    );
+
+    return viewPos;
+}
+
+void Editor::wayPointCanvasCallback(const entt::entity& entityID)
+{
+    if (ImGui::Button(
+        ("Set New Path##PathDesigner" + m_entities[entityID].name).c_str(),
+        { ImGui::GetWindowWidth(), 22.f }
+    ))
+    {
+        m_entities[entityID].isWaypointEditorOpen = true;
+    }
+    ImGui::NewLine();
+
+    if (m_entities[entityID].isWaypointEditorOpen)
+    {
+        drawWayPointCanvas(entityID, m_entities[entityID]);
+    }
+}
+
+void Editor::drawWayPointCanvas(const entt::entity& entityID, ComponentPropData& cmpntData)
 {
     ImGui::SetNextWindowDockID(m_dockspaceId3, ImGuiCond_Once);
-    ImGui::SetNextWindowBgAlpha(0.4f);
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0.f, 0.f });
     ImGui::Begin(("WayPoint Editor | " + cmpntData.name).c_str(), &cmpntData.isWaypointEditorOpen, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
     ImGui::PopStyleVar();
 
     // Center the image in the window content area
-    ImVec2 region = ImGui::GetContentRegionAvail();
-    ImVec2 canvasSize = {
-        m_gameView.getTexture()->getSize().x * m_sceneDrawScaleX,
-        m_gameView.getTexture()->getSize().y * m_sceneDrawScaleY
-    };
-
-    // Same offset as scene
-    ImVec2 canvasPosTL = m_sceneDrawOffset;
+    ImVec2 gameViewSize = { static_cast<float>(m_gameView.getTexture()->getSize().x), static_cast<float>(m_gameView.getTexture()->getSize().y) };
+    ImVec2 canvasSize = { gameViewSize.x * m_sceneDrawScale.x, gameViewSize.y * m_sceneDrawScale.y };
+    ImVec2 canvasPosTL = getCenteredTLPos(ImGui::GetContentRegionAvail(), m_data->aspectRatio);
     ImVec2 canvasPosBR = { canvasPosTL.x + canvasSize.x, canvasPosTL.y + canvasSize.y };
+    ImVec2 origin = { canvasPosTL.x + cmpntData.scrolling.x, canvasPosTL.y + cmpntData.scrolling.y };
 
-    // Draw border and background color
-    ImGuiIO& io = ImGui::GetIO();
+    // Process the inputs
+    processWayPointCanvasInput(canvasSize, origin, entityID, cmpntData);
+
+    // Draw the render scene as the background, pan and zoom alongside canvas
+    ImGui::SetCursorScreenPos({ canvasPosTL.x + cmpntData.scrolling.x, canvasPosTL.y + cmpntData.scrolling.y });
+    ImGui::Image(m_gameView, { canvasSize.x * cmpntData.zoom, canvasSize.y * cmpntData.zoom });
+
+    // Draw the canvas
+    drawWayPointContextMenu(entityID, cmpntData);
+    drawWayPoints(canvasPosTL, canvasPosBR, canvasSize, origin, cmpntData);
+
+    ImGui::SetCursorScreenPos(canvasPosTL);
+    ImGui::Text(" Mouse Left: click to add waypoints, Mouse Right: drag to pan, click for context menu.");
+    ImGui::SameLine();
+
+    ImGui::End();
+}
+
+void Editor::drawWayPoints(const ImVec2& tlBound, const ImVec2& brBound, const ImVec2& size, const ImVec2& origin, ComponentPropData& cmpntData)
+{
+    // Draw grid lines
     ImDrawList* drawList = ImGui::GetWindowDrawList();
+    drawList->PushClipRect(tlBound, brBound, true);
 
-    // Canvas is a large button that will used to catch mouse interactions
-    ImGui::InvisibleButton("canvas", canvasSize, ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_MouseButtonRight);
-    const bool isHovered = ImGui::IsItemHovered();
-    const bool isActive = ImGui::IsItemActive();
-
-    const ImVec2 origin(
-        canvasPosTL.x + cmpntData.scrolling.x,
-        canvasPosTL.y + cmpntData.scrolling.y
-    );
-
-    const ImVec2 mousePosInCanvas(
-        (io.MousePos.x - origin.x) / (cmpntData.zoom * m_sceneDrawScaleX),
-        (io.MousePos.y - origin.y) / (cmpntData.zoom * m_sceneDrawScaleY)
-    );
-
-    // Adjust camera scrolling using change in mouse position in canvas
-    const float mouseThresholdForPan = -1.0f;
-    if (isActive && ImGui::IsMouseDragging(ImGuiMouseButton_Right, mouseThresholdForPan))
+    const float gridStep = 32.0f;
+    for (float x = fmodf(cmpntData.scrolling.x * cmpntData.zoom, gridStep * cmpntData.zoom); x < size.x; x += gridStep * cmpntData.zoom)
     {
-        cmpntData.scrolling.x += io.MouseDelta.x;
-        cmpntData.scrolling.y += io.MouseDelta.y;
+        drawList->AddLine(
+            { tlBound.x + x, tlBound.y },
+            { tlBound.x + x, brBound.y },
+            IM_COL32(200, 200, 200, 40));
     }
 
-    // Context menu (under default mouse threshold)
-    ImVec2 dragDelta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Right);
+    for (float y = fmodf(cmpntData.scrolling.y * cmpntData.zoom, gridStep * cmpntData.zoom); y < size.y; y += gridStep * cmpntData.zoom)
+    {
+        drawList->AddLine(
+            { tlBound.x, tlBound.y + y },
+            { brBound.x, tlBound.y + y },
+            IM_COL32(200, 200, 200, 40));
+    }
 
-    if (dragDelta.x == 0.0f && dragDelta.y == 0.0f)
-        ImGui::OpenPopupOnItemClick("context", ImGuiPopupFlags_MouseButtonRight);
+    // Draw lines from points
+    for (int i = 0; i < cmpntData.points.Size; i++)
+    {
+        if (i < cmpntData.points.Size - 1)
+        {
+            drawList->AddLine(
+                {
+                    origin.x + cmpntData.points[i].x * m_sceneDrawScale.x * cmpntData.zoom,
+                    origin.y + cmpntData.points[i].y * m_sceneDrawScale.y * cmpntData.zoom
+                },
+                {
+                    origin.x + cmpntData.points[i + 1].x * m_sceneDrawScale.x * cmpntData.zoom,
+                    origin.y + cmpntData.points[i + 1].y * m_sceneDrawScale.y * cmpntData.zoom
+                },
+                IM_COL32(255, 255, 0, 255), 2.0f
+            );
+        }
 
+        // Set the draw cursor for rendering the label next to the point 
+        ImVec2 labelPos = {
+            origin.x + cmpntData.points[i].x * m_sceneDrawScale.x * cmpntData.zoom,
+            origin.y + cmpntData.points[i].y * m_sceneDrawScale.y * cmpntData.zoom
+        };
+
+        ImGui::SetCursorScreenPos(labelPos);
+
+        // Draw the coordinate label
+        ImVec4 color = ImVec4(1.f, 1.f, 1.f, 1.f); // Default white
+        if (i == 0)                                // First waypoint will always be green
+            color = ImVec4(0.f, 1.f, 0.f, 1.f);
+        else if (i == cmpntData.points.Size - 1)   // Last waypoint will alaywas be red
+            color = ImVec4(1.f, 0.f, 0.f, 1.f);
+
+        ImGui::TextColored(color, "(%.2f, %.2f)", cmpntData.points[i].x, cmpntData.points[i].y);
+    }
+
+    drawList->PopClipRect();
+}
+
+void Editor::drawWayPointContextMenu(const entt::entity& entityID, ComponentPropData& cmpntData)
+{
     if (ImGui::BeginPopup("context"))
     {
         if (ImGui::MenuItem("Remove one", nullptr, false, cmpntData.points.Size > 0))
@@ -632,84 +703,6 @@ void Editor::displayWayPointCanvas(const entt::entity& entityID, ComponentPropDa
 
         ImGui::EndPopup();
     }
-
-    if (isHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-    {
-        cmpntData.points.push_back(mousePosInCanvas);
-        updateWayPointComponent(entityID, cmpntData, WayPointEditMode::Add);
-    }
-
-    if (isHovered && io.MouseWheel != 0)
-    {
-        const float zoomSpeed = 0.1f;
-        cmpntData.zoom += io.MouseWheel * zoomSpeed;
-
-        // Clamp zoom to prevent flipping or disappearing
-        cmpntData.zoom = ImClamp(cmpntData.zoom, 0.1f, 10.0f);
-    }
-
-    // Draw grid + all lines in the canvas
-    drawList->PushClipRect(canvasPosTL, canvasPosBR, true);
-
-    const float gridStep = 32.0f;
-    for (float x = fmodf(cmpntData.scrolling.x * cmpntData.zoom, gridStep * cmpntData.zoom); x < canvasSize.x; x += gridStep * cmpntData.zoom)
-    {
-        drawList->AddLine(
-            { canvasPosTL.x + x, canvasPosTL.y },
-            { canvasPosTL.x + x, canvasPosBR.y },
-            IM_COL32(200, 200, 200, 40));
-    }
-
-    for (float y = fmodf(cmpntData.scrolling.y * cmpntData.zoom, gridStep * cmpntData.zoom); y < canvasSize.y; y += gridStep * cmpntData.zoom)
-    {
-        drawList->AddLine(
-            { canvasPosTL.x, canvasPosTL.y + y },
-            { canvasPosBR.x, canvasPosTL.y + y },
-            IM_COL32(200, 200, 200, 40));
-    }
-
-    for (int i = 0; i < cmpntData.points.Size; i++)
-    {
-        // Draw a line to next point, but only if n < Size-1
-        if (i < cmpntData.points.Size - 1)
-        {
-            drawList->AddLine(
-                {
-                    origin.x + cmpntData.points[i].x * m_sceneDrawScaleX * cmpntData.zoom,
-                    origin.y + cmpntData.points[i].y * m_sceneDrawScaleY * cmpntData.zoom
-                },
-                {
-                    origin.x + cmpntData.points[i + 1].x * m_sceneDrawScaleX * cmpntData.zoom,
-                    origin.y + cmpntData.points[i + 1].y * m_sceneDrawScaleY * cmpntData.zoom
-                },
-                IM_COL32(255, 255, 0, 255), 2.0f
-            );
-        }
-
-        // Set the draw cursor for rendering the label next to the point 
-        ImVec2 labelPos = {
-            origin.x + cmpntData.points[i].x * m_sceneDrawScaleX * cmpntData.zoom,
-            origin.y + cmpntData.points[i].y * m_sceneDrawScaleY * cmpntData.zoom
-        };
-
-        ImGui::SetCursorScreenPos(labelPos);
-
-        ImVec4 color = ImVec4(1.f, 1.f, 1.f, 1.f); // Default white
-        if (i == 0) // First waypoint will always be green
-            color = ImVec4(0.f, 1.f, 0.f, 1.f);
-        else if (i == cmpntData.points.Size - 1) // Last waypoint will alaywas be red
-            color = ImVec4(1.f, 0.f, 0.f, 1.f);
-
-        ImGui::TextColored(color, "(%.2f, %.2f)", cmpntData.points[i].x, cmpntData.points[i].y);
-    }
-
-    drawList->PopClipRect();
-
-    ImGui::SetCursorScreenPos(canvasPosTL);
-    ImGui::Text(" Mouse Left: click to add waypoints, Mouse Right: drag to pan, click for context menu.");
-    ImGui::SameLine();
-
-    ImGui::End();
 }
 
 void Editor::updateWayPointCanvas(const entt::entity& entityID, ComponentPropData& cmpntData)
@@ -802,19 +795,45 @@ void Editor::updateWayPointComponent(const entt::entity& entityID, ComponentProp
     }
 }
 
-void Editor::wayPointCanvasCallback(const entt::entity& entityID)
+void Editor::processWayPointCanvasInput(const ImVec2& size, const ImVec2& origin, const entt::entity& entityID, ComponentPropData& cmpntData)
 {
-    if (ImGui::Button(
-        ("Set New Path##PathDesigner" + m_entities[entityID].name).c_str(),
-        { ImGui::GetWindowWidth(), 22.f }
-    ))
-    {
-        m_entities[entityID].isWaypointEditorOpen = true;
-    }
-    ImGui::NewLine();
+    // Canvas is a large button that will used to catch mouse interactions
+    ImGui::InvisibleButton("canvas", size, ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_MouseButtonRight);
+    const bool isHovered = ImGui::IsItemHovered();
+    const bool isActive = ImGui::IsItemActive();
 
-    if (m_entities[entityID].isWaypointEditorOpen)
+    ImGuiIO& io = ImGui::GetIO();
+    const ImVec2 mousePosInCanvas(
+        (io.MousePos.x - origin.x) / (cmpntData.zoom * m_sceneDrawScale.x),
+        (io.MousePos.y - origin.y) / (cmpntData.zoom * m_sceneDrawScale.y)
+    );
+
+    // Adjust camera scrolling using change in mouse position in canvas
+    const float mouseThresholdForPan = -1.0f;
+    if (isActive && ImGui::IsMouseDragging(ImGuiMouseButton_Right, mouseThresholdForPan))
     {
-        displayWayPointCanvas(entityID, m_entities[entityID]);
+        cmpntData.scrolling.x += io.MouseDelta.x;
+        cmpntData.scrolling.y += io.MouseDelta.y;
+    }
+
+    // Context menu (under default mouse threshold)
+    ImVec2 dragDelta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Right);
+
+    if (dragDelta.x == 0.0f && dragDelta.y == 0.0f)
+        ImGui::OpenPopupOnItemClick("context", ImGuiPopupFlags_MouseButtonRight);
+
+    if (isHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+    {
+        cmpntData.points.push_back(mousePosInCanvas);
+        updateWayPointComponent(entityID, cmpntData, WayPointEditMode::Add);
+    }
+
+    if (isHovered && io.MouseWheel != 0)
+    {
+        const float zoomSpeed = 0.1f;
+        cmpntData.zoom += io.MouseWheel * zoomSpeed;
+
+        // Clamp zoom to prevent flipping or disappearing
+        cmpntData.zoom = ImClamp(cmpntData.zoom, 0.1f, 10.0f);
     }
 }

@@ -219,6 +219,8 @@ void EditorComponentVisitor::visit(MovementPattern* movementPattern, entt::entit
         ++waypointNum;
     }
 
+    ImGui::Checkbox(("Repeat##" + ID).c_str(), &movementPattern->repeat);
+
     ImGui::PopItemWidth();
 
     ImGui::NewLine();

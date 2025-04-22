@@ -61,7 +61,7 @@ void Sandbox::init()
     std::mt19937 rng(dev());
     std::uniform_int_distribution<std::mt19937::result_type> dist6(0, static_cast<unsigned int>(width));
 
-    for (size_t i = 0; i < 10; i++)
+    for (size_t i = 0; i < 3; i++)
     {
         std::unique_ptr<WayPoint> root = nullptr;
         WayPoint* last = nullptr;
@@ -88,7 +88,7 @@ void Sandbox::init()
         m_reg.emplace<Sprite>(mob, m_data->textureManager["player"]);
         m_reg.get<Sprite>(mob).setPosition(root->coordinate.x, root->coordinate.y);
         m_reg.emplace<EntityStatus>(mob);
-        m_reg.get<EntityStatus>(mob).values["HP"] = 1.f;
+        m_reg.get<EntityStatus>(mob).values["HP"] = 100.f;
         m_reg.get<EntityStatus>(mob).values["Speed"] = 250.f;
         m_reg.emplace<TeamTag>(mob, Team::ENEMY);
         m_reg.emplace<MovementPattern>(mob, std::move(root), true);

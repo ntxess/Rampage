@@ -14,23 +14,23 @@
 #include "SFML/Graphics/RectangleShape.hpp"
 #include <random>
 
-class Sandbox : public IScene
+class Sandbox final : public IScene
 {
 public:
     Sandbox();
     Sandbox(GlobalData* sysData);
     ~Sandbox();
 
-    void init() override;
-    void processEvent(const sf::Event& event) override;
-    void processInput() override;
-    void update() override;
-    void render() override;
-    void pause() override;
-    void resume() override;
-    void addData(GlobalData* data) override;
-    void accept(ISceneVisitor* visitor) override;
-    entt::registry& getRegistry() override;
+    void init() override final;
+    void processEvent(const sf::Event& event) override final;
+    void processInput() override final;
+    void update() override final;
+    void render() override final;
+    void pause() override final;
+    void resume() override final;
+    void addData(GlobalData* data) override final;
+    void accept(ISceneVisitor* visitor) override final;
+    entt::registry& getRegistry() override final;
 
     SystemManager* getSystemManager();
 

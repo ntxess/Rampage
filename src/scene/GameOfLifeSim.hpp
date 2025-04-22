@@ -18,23 +18,23 @@
 
 using Grid = std::vector<uint8_t>;
 
-class GameOfLifeSim : public IScene
+class GameOfLifeSim final : public IScene
 {
 public:
     GameOfLifeSim();
     GameOfLifeSim(GlobalData* sysData);
     ~GameOfLifeSim();
 
-    void init() override;
-    void processEvent(const sf::Event& event) override;
-    void processInput() override;
-    void update() override;
-    void render() override;
-    void pause() override;
-    void resume() override;
-    void addData(GlobalData* data) override;
-    void accept(ISceneVisitor* visitor) override;
-    entt::registry& getRegistry() override;
+    void init() override final;
+    void processEvent(const sf::Event& event) override final;
+    void processInput() override final;
+    void update() override final;
+    void render() override final;
+    void pause() override final;
+    void resume() override final;
+    void addData(GlobalData* data) override final;
+    void accept(ISceneVisitor* visitor) override final;
+    entt::registry& getRegistry() override final;
 
 private:
     const Grid& getCurrentGrid() const;
