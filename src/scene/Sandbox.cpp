@@ -1,13 +1,13 @@
 #include "Sandbox.hpp"
 
 Sandbox::Sandbox()
-    : m_data(nullptr)
+    : m_appContext(nullptr)
     , m_player(entt::null)
 {
 }
 
-Sandbox::Sandbox(GlobalData* sysData)
-    : m_data(sysData)
+Sandbox::Sandbox(ApplicationContext* sysData)
+    : m_appContext(sysData)
     , m_player(entt::null)
 {
 }
@@ -19,13 +19,13 @@ Sandbox::~Sandbox()
 
 void Sandbox::init()
 {
-    std::unordered_map<std::string, std::any> texturePath;
-    m_data->saveManager.load("config/texture.json", texturePath);     // Load config file
-    m_data->textureManager.load(texturePath, thor::Resources::Reuse); // Load the texture from loaded paths
+    DataStore texturePath;
+    m_appContext->configDataSerializer.load("config/texture.json", texturePath);     // Load config file
+    m_appContext->textureManager.load(texturePath, thor::Resources::Reuse); // Load the texture from loaded paths
 
     // Create the main player object
     m_player = m_reg.create();
-    m_reg.emplace<Sprite>(m_player, m_data->textureManager["player"]);
+    m_reg.emplace<Sprite>(m_player, m_appContext->textureManager["player"]);
     m_reg.emplace<TeamTag>(m_player, Team::FRIENDLY);
     m_reg.emplace<PlayerInput>(m_player);
     m_reg.emplace<EffectsList>(m_player);
@@ -40,8 +40,8 @@ void Sandbox::init()
         { sf::Keyboard::D, new Movement(m_player, { 1,  0 }) }
     };
 
-    float width = static_cast<float>(m_data->Configuration<int>(WIDTH));
-    float height = static_cast<float>(m_data->Configuration<int>(HEIGHT));
+    float width = static_cast<float>(m_appContext->configData.get<int>("width").value());
+    float height = static_cast<float>(m_appContext->configData.get<int>("height").value());
 
     m_reg.get<Sprite>(m_player).setPosition(0, 0);
 
@@ -85,7 +85,7 @@ void Sandbox::init()
 
         // Entity create and store into the scene's ENTT::entity registry
         entt::entity mob = m_reg.create();
-        m_reg.emplace<Sprite>(mob, m_data->textureManager["player"]);
+        m_reg.emplace<Sprite>(mob, m_appContext->textureManager["player"]);
         m_reg.get<Sprite>(mob).setPosition(root->coordinate.x, root->coordinate.y);
         m_reg.emplace<EntityStatus>(mob);
         m_reg.get<EntityStatus>(mob).values["HP"] = 100.f;
@@ -94,7 +94,7 @@ void Sandbox::init()
         m_reg.emplace<MovementPattern>(mob, std::move(root), true);
     }
 
-    m_system.addSystem<CollisionSystem>(m_reg, sf::Vector2f{ 0.f, 0.f }, m_data->window.getSize());
+    m_system.addSystem<CollisionSystem>(m_reg, sf::Vector2f{ 0.f, 0.f }, m_appContext->window.getSize());
     m_system.addSystem<EventSystem>(std::chrono::milliseconds(36000));
     m_system.addSystem<WayPointSystem>("Speed");
 }
@@ -104,7 +104,7 @@ void Sandbox::processEvent(const sf::Event& event)
     if (event.type == sf::Event::KeyPressed)
     {
         if (event.key.code == sf::Keyboard::Escape)
-            m_data->sceneManager.addScene(std::make_unique<MainMenu>(m_data));
+            m_appContext->sceneManager.addScene(std::make_unique<MainMenu>(m_appContext));
 
         //auto& controller = m_reg.get<PlayerInput>(m_player);
         //for (auto& [key, action] : controller.input)
@@ -127,7 +127,7 @@ void Sandbox::update()
 {
     LOG_TRACE(Logger::get()) << "Entering update()";
 
-    m_system.update(m_reg, m_data->deltaTime);
+    m_system.update(m_reg, m_appContext->deltaTime);
 
     // Delete anything that has zero or less HP
     const auto& view = m_reg.view<EntityStatus>();
@@ -169,8 +169,8 @@ void Sandbox::render()
     //for (const auto& entity : view)
     //{
     //    auto& spriteEntity = view.get<Sprite>(entity).sprite;
-    //    checkBoundary(m_data->window.getSize(), spriteEntity);
-    //    m_data->window.draw(view.get<Sprite>(entity).sprite);
+    //    checkBoundary(m_appContext->window.getSize(), spriteEntity);
+    //    m_appContext->window.draw(view.get<Sprite>(entity).sprite);
     //}
 
     LOG_TRACE(Logger::get()) << "Leaving render()";
@@ -186,9 +186,9 @@ void Sandbox::resume()
 
 }
 
-void Sandbox::addData(GlobalData* data)
+void Sandbox::setApplicationContext(ApplicationContext* context)
 {
-    m_data = data;
+    m_appContext = context;
 }
 
 void Sandbox::accept(ISceneVisitor* visitor)

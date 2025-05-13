@@ -14,11 +14,11 @@ SceneManager::SceneManager()
  * @param newScene
  * @param isReplacing
 */
-void SceneManager::addScene(std::unique_ptr<IScene> newScene, bool isReplacing, GlobalData* data)
+void SceneManager::addScene(std::unique_ptr<IScene> newScene, bool isReplacing, ApplicationContext* data)
 {
     m_addFlag = true;
     m_replaceFlag = isReplacing;
-    if (data) newScene->addData(data);
+    if (data) newScene->setApplicationContext(data);
     m_newScene = std::move(newScene);
 }
 

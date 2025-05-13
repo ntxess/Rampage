@@ -1,11 +1,12 @@
 #pragma once
 
+#include "../core/ApplicationContext.hpp"
 #include "../core/Commands.hpp"
 #include "../core/Components.hpp"
-#include "../core/GlobalData.hpp"
 #include "../core/Managers.hpp"
 #include "../core/interface/IScene.hpp"
 #include "../core/interface/ISceneVisitor.hpp"
+#include "../core/util/DataStore.hpp"
 #include "../core/util/Logger.hpp"
 #include "../scene/Scenes.hpp"
 #include "entt/entity/entity.hpp"
@@ -22,7 +23,7 @@ class GameOfLifeSim final : public IScene
 {
 public:
     GameOfLifeSim();
-    GameOfLifeSim(GlobalData* sysData);
+    GameOfLifeSim(ApplicationContext* sysData);
     ~GameOfLifeSim();
 
     void init() override final;
@@ -32,7 +33,7 @@ public:
     void render() override final;
     void pause() override final;
     void resume() override final;
-    void addData(GlobalData* data) override final;
+    void setApplicationContext(ApplicationContext* context) override final;
     void accept(ISceneVisitor* visitor) override final;
     entt::registry& getRegistry() override final;
 
@@ -51,7 +52,7 @@ private:
     }
 
 private:
-    GlobalData* m_data;
+    ApplicationContext* m_appContext;
     entt::registry m_reg;
 
     int m_width;

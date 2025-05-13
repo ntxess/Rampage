@@ -4,14 +4,14 @@
 #include <memory>
 #include <stack>
 
-struct GlobalData;
+struct ApplicationContext;
 
 class SceneManager
 {
 public:
     SceneManager();
 
-    void addScene(std::unique_ptr<IScene> newScene, bool isReplacing = true, GlobalData* sysData = nullptr);
+    void addScene(std::unique_ptr<IScene> newScene, bool isReplacing = true, ApplicationContext* sysData = nullptr);
 
     void removeScene();
     void processChange();

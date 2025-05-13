@@ -4,7 +4,7 @@
 #include "SFML/Window/Event.hpp"
 
 class ISceneVisitor;
-struct GlobalData;
+struct ApplicationContext;
 
 class IScene
 {
@@ -17,7 +17,7 @@ public:
     virtual void render() = 0;
     virtual void pause() = 0;
     virtual void resume() = 0;
-    virtual void addData(GlobalData* data) = 0;
+    virtual void setApplicationContext(ApplicationContext* context) = 0;
     virtual void accept(ISceneVisitor* visitor) = 0;
     virtual entt::registry& getRegistry() = 0;
 };
