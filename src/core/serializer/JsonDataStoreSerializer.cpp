@@ -123,7 +123,7 @@ void JsonDataStoreSerializer::read(std::string_view key, rapidjson::Value& val, 
 
 void JsonDataStoreSerializer::write(rapidjson::Document& doc, const DataStore& dataStore)
 {
-    for (const auto& [key, data] : dataStore.data())
+    for (const auto& [key, data] : dataStore)
     {
         rapidjson::Value val;
         if (createJsonValue(doc, val, data))

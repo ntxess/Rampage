@@ -27,3 +27,23 @@ const std::unordered_map<std::string, std::any, TransparentHash, TransparentEqua
 {
     return m_data;
 }
+
+std::unordered_map<std::string, std::any>::iterator DataStore::begin()
+{
+    return m_data.begin();
+}
+
+std::unordered_map<std::string, std::any>::iterator DataStore::end()
+{
+    return m_data.end();
+}
+
+std::unordered_map<std::string, std::any>::const_iterator DataStore::begin() const
+{
+    return m_data.begin();
+}
+
+std::unordered_map<std::string, std::any>::const_iterator DataStore::end() const
+{
+    return m_data.end();
+}

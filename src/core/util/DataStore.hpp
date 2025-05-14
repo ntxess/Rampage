@@ -55,6 +55,11 @@ public:
     std::unordered_map<std::string, std::any, TransparentHash, TransparentEqual>& data();
     const std::unordered_map<std::string, std::any, TransparentHash, TransparentEqual>& data() const;
 
+    std::unordered_map<std::string, std::any>::iterator begin();
+    std::unordered_map<std::string, std::any>::iterator end();
+    std::unordered_map<std::string, std::any>::const_iterator begin() const;
+    std::unordered_map<std::string, std::any>::const_iterator end() const;
+
 private:
     std::unordered_map<std::string, std::any, TransparentHash, TransparentEqual> m_data;
 };

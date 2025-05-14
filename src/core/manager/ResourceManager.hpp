@@ -56,7 +56,7 @@ template<typename T>
 inline bool ResourceManager<T>::load(const DataStore& dataStore, thor::Resources::KnownIdStrategy known)
 {
     const std::string cwd = std::filesystem::current_path().string();
-    for (const auto& [id, path] : dataStore.data())
+    for (const auto& [id, path] : dataStore)
     {
         try
         {
