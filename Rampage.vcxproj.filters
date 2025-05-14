@@ -150,9 +150,12 @@
     <ClCompile Include="src\core\interface\IDataStoreSerializer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="test\Unittest-JsonDataStoreSerializer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="test\Unittest-SaveManager.hpp">
+    <ClInclude Include="test\Unittest-JsonDataStoreSerializer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="dep\SFML-imgui\include\imconfig-SFML.h">

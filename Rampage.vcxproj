@@ -207,6 +207,7 @@
     <ClCompile Include="src\scene\GameOfLifeSim.cpp" />
     <ClCompile Include="src\scene\MainMenu.cpp" />
     <ClCompile Include="src\scene\Sandbox.cpp" />
+    <ClCompile Include="test\Unittest-JsonDataStoreSerializer.cpp" />
     <ClCompile Include="test\Unittest-Suite.hpp" />
     <ClCompile Include="src\core\manager\WayPointManager.cpp" />
   </ItemGroup>
@@ -272,7 +273,7 @@
     <ClInclude Include="src\scene\MainMenu.hpp" />
     <ClInclude Include="src\scene\Sandbox.hpp" />
     <ClInclude Include="src\scene\Scenes.hpp" />
-    <ClInclude Include="test\Unittest-SaveManager.hpp" />
+    <ClInclude Include="test\Unittest-JsonDataStoreSerializer.hpp" />
     <ClInclude Include="src\core\manager\WayPointManager.hpp" />
   </ItemGroup>
   <ItemGroup>

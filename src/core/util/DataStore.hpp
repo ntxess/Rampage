@@ -7,34 +7,42 @@
 #include <string>
 #include <unordered_map>
 
-struct TransparentHash {
+struct TransparentHash 
+{
     using is_transparent = void;
 
-    size_t operator()(std::string_view str) const noexcept {
+    size_t operator()(std::string_view str) const noexcept 
+    {
         return std::hash<std::string_view>{}(str);
     }
 
-    size_t operator()(const std::string& str) const noexcept {
+    size_t operator()(const std::string& str) const noexcept 
+    {
         return std::hash<std::string>{}(str);
     }
 };
 
-struct TransparentEqual {
+struct TransparentEqual 
+{
     using is_transparent = void;
 
-    bool operator()(std::string_view lhs, std::string_view rhs) const noexcept {
+    bool operator()(std::string_view lhs, std::string_view rhs) const noexcept 
+    {
         return lhs == rhs;
     }
 
-    bool operator()(const std::string& lhs, const std::string& rhs) const noexcept {
+    bool operator()(const std::string& lhs, const std::string& rhs) const noexcept 
+    {
         return lhs == rhs;
     }
 
-    bool operator()(const std::string& lhs, std::string_view rhs) const noexcept {
+    bool operator()(const std::string& lhs, std::string_view rhs) const noexcept 
+    {
         return lhs == rhs;
     }
 
-    bool operator()(std::string_view lhs, const std::string& rhs) const noexcept {
+    bool operator()(std::string_view lhs, const std::string& rhs) const noexcept 
+    {
         return lhs == rhs;
     }
 };
@@ -159,7 +167,7 @@ inline std::string getValue(const std::any& data)
 
 inline std::ostream& operator<<(std::ostream& os, const DataStore& ds)
 {
-    for (const auto& [key, val] : ds.data())
+    for (const auto& [key, val] : ds)
     {
         os << "\t{ " << key << ", " << getValue(val) << " } | Type: " << getType(val) << "\n";
     }
