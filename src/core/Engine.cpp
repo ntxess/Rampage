@@ -3,8 +3,8 @@
 /**
  * @brief [Public] Normal constuctor.
 */
-Engine::Engine(std::unique_ptr<IScene> initialScene)
-    : m_sysData(std::make_shared<GlobalData>())
+Engine::Engine(const std::string& relativeConfigPath, std::unique_ptr<IScene> initialScene)
+    : m_appContext(std::make_shared<ApplicationContext>())
     , m_windowActive(true)
 {
     // Start logging in the console until configuration file is read.
@@ -12,20 +12,25 @@ Engine::Engine(std::unique_ptr<IScene> initialScene)
 
     LOG_INFO(Logger::get()) << "Initializing system. Reading main configuration file...";
 
-    if (m_sysData->saveManager.init(m_sysData->configData))
+    if (m_appContext->configDataSerializer.load(relativeConfigPath, m_appContext->configData))
     {
         LOG_INFO(Logger::get()) << "Successfully read config file.";
 
-        std::string logPath = m_sysData->saveManager.resolvePath(m_sysData->Configuration<std::string>(DEBUG_LOG_FOLDER)).string();
-        Logger::getInstance().toggleLogging(m_sysData->Configuration<bool>(DEBUG_MODE));
-        Logger::getInstance().setFilterSeverity(m_sysData->Configuration<std::string>(DEBUG_LOG_FILTER_SEVERITY));
+        Logger::getInstance().toggleLogging(m_appContext->configData.get<bool>("debug-mode").value_or(false));
+        Logger::getInstance().setFilterSeverity(m_appContext->configData.get<std::string>("debug-log-filter-severity").value_or("warning"));
 
-        LOG_INFO(Logger::get()) << "Now logging to file. Log file located at: " << logPath;
+        auto logPath = m_appContext->configData.get<std::string>("debug-log-folder").value_or("log/");
+        LOG_INFO(Logger::get()) << "Now logging to file. Log file located at: " << logPath.c_str();
 
         Logger::getInstance().removeAllSinks();
-        Logger::getInstance().setupFileLog(logPath);
+        Logger::getInstance().setupFileLog(logPath.c_str());
 
         configureWindow(std::move(initialScene));
+    }
+    else
+    {
+        LOG_ERROR(Logger::get()) << "Failed to read main config file. Engine failed to start.";
+        return;
     }
 
     LOG_INFO(Logger::get()) << "System initialize. Starting main thread...";
@@ -42,7 +47,7 @@ void Engine::run()
     startThreads();
 
     sf::Event event;
-    while (m_windowActive && m_sysData->window.waitEvent(event))
+    while (m_windowActive && m_appContext->window.waitEvent(event))
     {
         switch (event.type)
         {
@@ -53,26 +58,26 @@ void Engine::run()
             m_renderThread.join();
             m_audioThread.join();
             m_resourceThread.join();
-            m_sysData->window.close();
+            m_appContext->window.close();
             break;
 
         case sf::Event::Resized:
         {
             LOG_INFO(Logger::get()) << "Triggered Event::Resized";
             float newWidth = static_cast<float>(event.size.width);
-            float newHeight = newWidth / m_sysData->aspectRatio;
+            float newHeight = newWidth / m_appContext->aspectRatio;
             if (newHeight > event.size.height)
             {
                 newHeight = static_cast<float>(event.size.height);
-                newWidth = newHeight * m_sysData->aspectRatio;
+                newWidth = newHeight * m_appContext->aspectRatio;
             }
 
-            m_sysData->window.setSize(sf::Vector2u(
+            m_appContext->window.setSize(sf::Vector2u(
                 static_cast<unsigned int>(newWidth),
                 static_cast<unsigned int>(newHeight))
             );
 
-            m_sysData->viewport.setSize(newWidth, newHeight);
+            m_appContext->viewport.setSize(newWidth, newHeight);
             break;
         }
 
@@ -87,7 +92,7 @@ void Engine::run()
             break;
 
         default:
-            m_sysData->sceneManager.getActiveScene()->processEvent(event);
+            m_appContext->sceneManager.getActiveScene()->processEvent(event);
             break;
         }
     }
@@ -117,24 +122,24 @@ void Engine::configureWindow(std::unique_ptr<IScene> initialScene)
     settings.majorVersion = 4;
     settings.minorVersion = 3;
 
-    std::string name = m_sysData->Configuration<std::string>(NAME);
-    unsigned int width = m_sysData->Configuration<int>(WIDTH);
-    unsigned int height = m_sysData->Configuration<int>(HEIGHT);
-    m_sysData->aspectRatio = static_cast<float>(width) / static_cast<float>(height);
-    m_sysData->deltaTime = static_cast<float>(1.f / m_sysData->Configuration<double>(FRAMERATE));
-    m_sysData->window.create(sf::VideoMode(width, height), name, sf::Style::Default, settings);
-    m_sysData->window.setActive(false);
-    m_sysData->window.setFramerateLimit(static_cast<unsigned int>(m_sysData->Configuration<double>(FRAMERATE)));
-    m_sysData->sceneManager.addScene(std::move(initialScene), true, m_sysData.get());
-    m_sysData->sceneManager.processChange();
+    std::string name = m_appContext->configData.get<std::string>("name").value_or("Application");
+    unsigned int width = m_appContext->configData.get<int>("width").value_or(1920);
+    unsigned int height = m_appContext->configData.get<int>("height").value_or(1080);
+    m_appContext->aspectRatio = static_cast<float>(width) / static_cast<float>(height);
+    m_appContext->deltaTime = static_cast<float>(1.f / m_appContext->configData.get<double>("frame-rate").value_or(60));
+    m_appContext->window.create(sf::VideoMode(width, height), name, sf::Style::Default, settings);
+    m_appContext->window.setActive(false);
+    m_appContext->window.setFramerateLimit(static_cast<unsigned int>(m_appContext->configData.get<double>("frame-rate").value_or(60)));
+    m_appContext->sceneManager.addScene(std::move(initialScene), true, m_appContext.get());
+    m_appContext->sceneManager.processChange();
 
-    LOG_DEBUG(Logger::get()) << "System info: \n"
+    LOG_DEBUG(Logger::get()) << "Application Context: \n"
         << "\tWindow name: " << name << "\n"
         << "\tWindow width: " << width << "\n"
         << "\tWindow height: " << height << "\n"
-        << "\tDelta time: " << m_sysData->deltaTime;
+        << "\tDelta time: " << m_appContext->deltaTime;
 
-    LOG_DEBUG(Logger::get()) << "Configuration data: \n" << m_sysData->configData;
+    LOG_DEBUG(Logger::get()) << "Configuration data: \n" << m_appContext->configData;
 }
 
 /**
@@ -145,22 +150,22 @@ void Engine::physicThread()
     LOG_INFO(Logger::get()) << "----- Physic thread started! -----";
 
     float newTime, frameTime;
-    float currentTime = m_sysData->clock.getElapsedTime().asSeconds();
+    float currentTime = m_appContext->clock.getElapsedTime().asSeconds();
     float accumulator = 0.0f;
 
     while (m_windowActive)
     {
-        newTime = m_sysData->clock.getElapsedTime().asSeconds();
+        newTime = m_appContext->clock.getElapsedTime().asSeconds();
         frameTime = newTime - currentTime;
         currentTime = newTime;
         accumulator += frameTime;
 
-        while (m_windowActive && accumulator >= m_sysData->deltaTime)
+        while (m_windowActive && accumulator >= m_appContext->deltaTime)
         {
             m_inputConsumer.acquire();
-            m_sysData->sceneManager.getActiveScene()->update();
+            m_appContext->sceneManager.getActiveScene()->update();
             m_inputProducer.release();
-            accumulator -= m_sysData->deltaTime;
+            accumulator -= m_appContext->deltaTime;
         }
     }
 
@@ -177,17 +182,17 @@ void Engine::renderThread()
 {
     LOG_INFO(Logger::get()) << "----- Render thread started! -----";
 
-    m_sysData->window.setActive(true);
+    m_appContext->window.setActive(true);
 
     while (m_windowActive)
     {
-        m_sysData->window.clear();
-        m_sysData->sceneManager.processChange();
+        m_appContext->window.clear();
+        m_appContext->sceneManager.processChange();
         m_inputProducer.acquire();
-        m_sysData->sceneManager.getActiveScene()->processInput();
+        m_appContext->sceneManager.getActiveScene()->processInput();
         m_inputConsumer.release();
-        m_sysData->sceneManager.getActiveScene()->render();
-        m_sysData->window.display();
+        m_appContext->sceneManager.getActiveScene()->render();
+        m_appContext->window.display();
     }
 
     m_inputConsumer.release();

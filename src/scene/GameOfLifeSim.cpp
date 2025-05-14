@@ -1,7 +1,7 @@
 #include "GameOfLifeSim.hpp"
 
 GameOfLifeSim::GameOfLifeSim()
-    : m_data(nullptr)
+    : m_appContext(nullptr)
     , m_width()
     , m_height()
 {
@@ -9,10 +9,10 @@ GameOfLifeSim::GameOfLifeSim()
     m_grids[1].resize(1920 * 1080, 0);
 }
 
-GameOfLifeSim::GameOfLifeSim(GlobalData* sysData)
-    : m_data(sysData)
-    , m_width(m_data->Configuration<int>(WIDTH))
-    , m_height(m_data->Configuration<int>(HEIGHT))
+GameOfLifeSim::GameOfLifeSim(ApplicationContext* sysData)
+    : m_appContext(sysData)
+    , m_width(m_appContext->configData.get<int>("width").value_or(1920))
+    , m_height(m_appContext->configData.get<int>("height").value_or(1080))
 {
     m_grids[0].resize(m_width * m_height, 0);
     m_grids[1].resize(m_width * m_height, 0);
@@ -171,9 +171,9 @@ void GameOfLifeSim::pause()
 void GameOfLifeSim::resume()
 {}
 
-void GameOfLifeSim::addData(GlobalData* data)
+void GameOfLifeSim::setApplicationContext(ApplicationContext* context)
 {
-    m_data = data;
+    m_appContext = context;
 }
 
 void GameOfLifeSim::accept(ISceneVisitor* visitor)

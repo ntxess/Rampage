@@ -87,9 +87,6 @@
     <ClCompile Include="src\core\manager\SystemManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\core\manager\SaveManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\editor\EditorComponentVisitor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -141,9 +138,24 @@
     <ClCompile Include="src\core\util\LogStream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\core\util\DataStore.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\serializer\GameDataStoreSerializer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\serializer\JsonDataStoreSerializer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\interface\IDataStoreSerializer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="test\Unittest-JsonDataStoreSerializer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="test\Unittest-SaveManager.hpp">
+    <ClInclude Include="test\Unittest-JsonDataStoreSerializer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="dep\SFML-imgui\include\imconfig-SFML.h">
@@ -257,16 +269,7 @@
     <ClInclude Include="src\core\manager\ResourceManager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\core\manager\ConfigKey.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\core\manager\SaveManager.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\core\util\AnyToString.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\core\GlobalData.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\core\Systems.hpp">
@@ -324,6 +327,21 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\core\util\LogStream.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\util\DataStore.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\interface\IDataStoreSerializer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\ApplicationContext.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\serializer\GameDataStoreSerializer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\serializer\JsonDataStoreSerializer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

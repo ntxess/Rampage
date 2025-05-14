@@ -1,7 +1,7 @@
 #include "Editor.hpp"
 
 Editor::Editor()
-    : m_data(nullptr)
+    : m_appContext(nullptr)
     , m_panelFlags(0)
     , m_dockspaceId1(0)
     , m_dockspaceId2(0)
@@ -20,10 +20,10 @@ Editor::Editor()
     , m_reg(nullptr)
 {}
 
-Editor::Editor(GlobalData* sysData)
+Editor::Editor(ApplicationContext* sysData)
     : Editor()
 {
-    m_data = sysData;
+    m_appContext = sysData;
 }
 
 Editor::~Editor()
@@ -53,7 +53,7 @@ void Editor::init()
         ImGuiWindowFlags_NoNavFocus;
 
     // Enable and setup dockspaces
-    ImGui::SFML::Init(m_data->window);
+    ImGui::SFML::Init(m_appContext->window);
     auto& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     io.ConfigWindowsMoveFromTitleBarOnly = true;
@@ -62,27 +62,27 @@ void Editor::init()
 
 
 // Initializing all the scenes for selection
-    std::unique_ptr<IScene> sandbox = std::make_unique<Sandbox>(m_data);
+    std::unique_ptr<IScene> sandbox = std::make_unique<Sandbox>(m_appContext);
     m_sceneMap["Sandbox"] = std::make_unique<SceneData>(
         std::move(sandbox),
-        m_data->Configuration<int>(WIDTH),
-        m_data->Configuration<int>(HEIGHT),
+        m_appContext->configData.get<int>("width").value(),
+        m_appContext->configData.get<int>("height").value(),
         settings
     );
 
-    std::unique_ptr<IScene> mainmenu = std::make_unique<MainMenu>(m_data);
+    std::unique_ptr<IScene> mainmenu = std::make_unique<MainMenu>(m_appContext);
     m_sceneMap["MainMenu"] = std::make_unique<SceneData>(
         std::move(mainmenu),
-        m_data->Configuration<int>(WIDTH),
-        m_data->Configuration<int>(HEIGHT),
+        m_appContext->configData.get<int>("width").value(),
+        m_appContext->configData.get<int>("height").value(),
         settings
     );
 
-    std::unique_ptr<IScene> gameOfLifeSim = std::make_unique<GameOfLifeSim>(m_data);
+    std::unique_ptr<IScene> gameOfLifeSim = std::make_unique<GameOfLifeSim>(m_appContext);
     m_sceneMap["GameOfLifeSim"] = std::make_unique<SceneData>(
         std::move(gameOfLifeSim),
-        m_data->Configuration<int>(WIDTH),
-        m_data->Configuration<int>(HEIGHT),
+        m_appContext->configData.get<int>("width").value(),
+        m_appContext->configData.get<int>("height").value(),
         settings
     );
 
@@ -94,7 +94,7 @@ void Editor::init()
 
 void Editor::processEvent(const sf::Event& event)
 {
-    ImGui::SFML::ProcessEvent(m_data->window, event);
+    ImGui::SFML::ProcessEvent(m_appContext->window, event);
 }
 
 void Editor::processInput()
@@ -113,7 +113,7 @@ void Editor::update()
 
 void Editor::render()
 {
-    ImGui::SFML::Update(m_data->window, sf::seconds(m_data->deltaTime));
+    ImGui::SFML::Update(m_appContext->window, sf::seconds(m_appContext->deltaTime));
 
     // Setup dockspace IDs
     m_dockspaceId1 = ImGui::GetID("Dockspace1");
@@ -128,12 +128,12 @@ void Editor::render()
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0.f, 0.f });
 
     // Setup docked panels
-    const float width = static_cast<float>(m_data->window.getSize().x);
-    const float height = static_cast<float>(m_data->window.getSize().y);
+    const float width = static_cast<float>(m_appContext->window.getSize().x);
+    const float height = static_cast<float>(m_appContext->window.getSize().y);
     const float fifthWidth = width / 5.f;
     const float halfHeight = height / 2.f;
-    const float scalingWidth = width / m_data->aspectRatio;
-    const float scalingHeight = height / m_data->aspectRatio;
+    const float scalingWidth = width / m_appContext->aspectRatio;
+    const float scalingHeight = height / m_appContext->aspectRatio;
     const float scalingFifthWidth = fifthWidth + scalingWidth;
 
     setupDockPanel({ 0.f, 0.f }, { fifthWidth, halfHeight }, "##LP1", m_dockspaceId1);
@@ -154,7 +154,7 @@ void Editor::render()
 
     ImGui::ShowDemoWindow();
 
-    ImGui::SFML::Render(m_data->window);
+    ImGui::SFML::Render(m_appContext->window);
 }
 
 void Editor::pause()
@@ -167,9 +167,9 @@ void Editor::resume()
     // Nothing needed for resume
 }
 
-void Editor::addData(GlobalData* data)
+void Editor::setApplicationContext(ApplicationContext* data)
 {
-    m_data = data;
+    m_appContext = data;
 }
 
 void Editor::accept(ISceneVisitor* visitor)
@@ -352,8 +352,8 @@ void Editor::renderSceneViewPanel(const ImVec2& pos, const ImVec2& size)
 
     // Get free space inside the window and calculate scene size and scale with aspect ratio
     ImVec2 region = ImGui::GetContentRegionAvail();
-    ImVec2 drawSize = scaleSize(region, m_data->aspectRatio);
-    ImVec2 viewPos = getCenteredTLPos(region, m_data->aspectRatio);
+    ImVec2 drawSize = scaleSize(region, m_appContext->aspectRatio);
+    ImVec2 viewPos = getCenteredTLPos(region, m_appContext->aspectRatio);
 
     // Draw the scene texture with correct scaling
     m_gameView.setTexture(renderTexture.getTexture(), true);
@@ -595,7 +595,7 @@ void Editor::drawWayPointCanvas(const entt::entity& entityID, ComponentPropData&
     // Center the image in the window content area
     ImVec2 gameViewSize = { static_cast<float>(m_gameView.getTexture()->getSize().x), static_cast<float>(m_gameView.getTexture()->getSize().y) };
     ImVec2 canvasSize = { gameViewSize.x * m_sceneDrawScale.x, gameViewSize.y * m_sceneDrawScale.y };
-    ImVec2 canvasPosTL = getCenteredTLPos(ImGui::GetContentRegionAvail(), m_data->aspectRatio);
+    ImVec2 canvasPosTL = getCenteredTLPos(ImGui::GetContentRegionAvail(), m_appContext->aspectRatio);
     ImVec2 canvasPosBR = { canvasPosTL.x + canvasSize.x, canvasPosTL.y + canvasSize.y };
     ImVec2 origin = { canvasPosTL.x + cmpntData.scrolling.x, canvasPosTL.y + cmpntData.scrolling.y };
 

@@ -1,23 +1,23 @@
 #include "MainMenu.hpp"
 
 MainMenu::MainMenu()
-    : m_data(nullptr)
+    : m_appContext(nullptr)
     , m_wallpaper(entt::null)
 {}
 
-MainMenu::MainMenu(GlobalData* sysData)
-    : m_data(sysData)
+MainMenu::MainMenu(ApplicationContext* sysData)
+    : m_appContext(sysData)
     , m_wallpaper(entt::null)
 {}
 
 void MainMenu::init()
 {
-    std::unordered_map<std::string, std::any> texturePath;
-    m_data->saveManager.load("config/texture.json", texturePath);     // Load config file
-    m_data->textureManager.load(texturePath, thor::Resources::Reuse); // Load the texture from loaded paths
+    DataStore texturePath;
+    m_appContext->configDataSerializer.load("config/texture.json", texturePath);     // Load config file
+    m_appContext->textureManager.load(texturePath, thor::Resources::Reuse); // Load the texture from loaded paths
 
     m_wallpaper = m_reg.create();
-    m_reg.emplace<Sprite>(m_wallpaper, m_data->textureManager["bg"]);
+    m_reg.emplace<Sprite>(m_wallpaper, m_appContext->textureManager["bg"]);
 }
 
 void MainMenu::processEvent(const sf::Event& event)
@@ -50,9 +50,9 @@ void MainMenu::pause()
 void MainMenu::resume()
 {}
 
-void MainMenu::addData(GlobalData* data)
+void MainMenu::setApplicationContext(ApplicationContext* context)
 {
-    m_data = data;
+    m_appContext = context;
 }
 
 void MainMenu::accept(ISceneVisitor* visitor)

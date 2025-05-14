@@ -2,8 +2,8 @@
 
 #include "EditorSceneVisitor.hpp"
 #include "EditorComponentVisitor.hpp"
+#include "../core/ApplicationContext.hpp"
 #include "../core/Components.hpp"
-#include "../core/GlobalData.hpp"
 #include "../core/Systems.hpp"
 #include "../core/interface/IScene.hpp"
 #include "../core/util/Logger.hpp"
@@ -64,7 +64,7 @@ private:
 
 public:
     Editor();
-    Editor(GlobalData* sysData);
+    Editor(ApplicationContext* sysData);
     ~Editor();
 
     void init() override;
@@ -74,7 +74,7 @@ public:
     void render() override;
     void pause() override;
     void resume() override;
-    void addData(GlobalData* data) override;
+    void setApplicationContext(ApplicationContext* context) override;
     void accept(ISceneVisitor* visitor) override;
     entt::registry& getRegistry() override;
 
@@ -114,7 +114,7 @@ private:
     );
 
 private:
-    GlobalData* m_data;
+    ApplicationContext* m_appContext;
 
     LogStream m_logStream;
     sf::Font m_defaultFont;

@@ -1,12 +1,13 @@
 #pragma once 
 
+#include "../core/ApplicationContext.hpp"
 #include "../core/Commands.hpp"
 #include "../core/Components.hpp"
-#include "../core/GlobalData.hpp"
 #include "../core/Managers.hpp"
 #include "../core/Systems.hpp"
 #include "../core/interface/IScene.hpp"
 #include "../core/interface/ISceneVisitor.hpp"
+#include "../core/util/DataStore.hpp"
 #include "../core/util/Logger.hpp"
 #include "../scene/Scenes.hpp"
 #include "entt/entity/entity.hpp"
@@ -18,7 +19,7 @@ class Sandbox final : public IScene
 {
 public:
     Sandbox();
-    Sandbox(GlobalData* sysData);
+    Sandbox(ApplicationContext* sysData);
     ~Sandbox();
 
     void init() override final;
@@ -28,7 +29,7 @@ public:
     void render() override final;
     void pause() override final;
     void resume() override final;
-    void addData(GlobalData* data) override final;
+    void setApplicationContext(ApplicationContext* context) override final;
     void accept(ISceneVisitor* visitor) override final;
     entt::registry& getRegistry() override final;
 
@@ -38,7 +39,7 @@ private:
     void checkBoundary(const sf::Vector2u& boundary, sf::Sprite& obj);
 
 private:
-    GlobalData* m_data;
+    ApplicationContext* m_appContext;
     entt::registry m_reg;
     entt::entity m_player;
     SystemManager m_system;

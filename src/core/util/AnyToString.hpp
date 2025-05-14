@@ -30,5 +30,5 @@ inline std::string anyToString(const std::any& val)
         result.push_back(']');
         return result;
     }
-    return std::string();
+    return std::string{};
 }

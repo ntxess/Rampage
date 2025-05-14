@@ -1,9 +1,10 @@
 #pragma once 
 
+#include "../core/ApplicationContext.hpp"
 #include "../core/Components.hpp"
-#include "../core/GlobalData.hpp"
 #include "../core/interface/IScene.hpp"
 #include "../core/interface/ISceneVisitor.hpp"
+#include "../core/util/DataStore.hpp"
 #include "../core/util/Logger.hpp"
 #include "../scene/Scenes.hpp"
 #include "entt/entity/entity.hpp"
@@ -13,7 +14,7 @@ class MainMenu final : public IScene
 {
 public:
     MainMenu();
-    MainMenu(GlobalData* sysData);
+    MainMenu(ApplicationContext* sysData);
 
     void init() override final;
     void processEvent(const sf::Event& event) override final;
@@ -22,12 +23,12 @@ public:
     void render() override final;
     void pause() override final;
     void resume() override final;
-    void addData(GlobalData* data) override final;
+    void setApplicationContext(ApplicationContext* context) override final;
     void accept(ISceneVisitor* visitor) override final;
     entt::registry& getRegistry() override final;
 
 private:
-    GlobalData* m_data;
+    ApplicationContext* m_appContext;
     entt::registry m_reg;
 
     entt::entity m_wallpaper;

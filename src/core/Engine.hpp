@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GlobalData.hpp"
+#include "ApplicationContext.hpp"
 #include "util/Logger.hpp"
 #include "SFML/Audio.hpp"
 #include "SFML/Graphics.hpp"
@@ -13,7 +13,7 @@ class Engine
 {
 public:
     Engine() = delete;
-    Engine(std::unique_ptr<IScene> initialScene);
+    Engine(const std::string& relativeConfigPath, std::unique_ptr<IScene> initialScene);
 
     void run();
 
@@ -26,7 +26,7 @@ private:
     void resourceThread();
 
 private:
-    std::shared_ptr<GlobalData> m_sysData;
+    std::shared_ptr<ApplicationContext> m_appContext;
     std::atomic<bool> m_windowActive;
     std::thread m_physicThread;
     std::thread m_renderThread;
