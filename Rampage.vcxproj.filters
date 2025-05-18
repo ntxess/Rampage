@@ -147,6 +147,9 @@
     <ClCompile Include="src\core\interface\IDataStoreSerializer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\editor\EditorSceneData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dep\SFML-imgui\include\imconfig-SFML.h">
@@ -333,6 +336,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\core\serializer\JsonDataStoreSerializer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\editor\EditorSceneData.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

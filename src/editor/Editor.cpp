@@ -17,7 +17,7 @@ Editor::Editor()
     , m_totalEntity(0)
     , m_startButtonEnabled(false)
     , m_forwardFrameEnabled(false)
-    , m_reg(nullptr)
+    , m_selectedSceneData(nullptr)
 {}
 
 Editor::Editor(ApplicationContext* sysData)
@@ -58,38 +58,36 @@ void Editor::init()
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     io.ConfigWindowsMoveFromTitleBarOnly = true;
     io.ConfigDockingAlwaysTabBar = true; // ImGUI bug: Setting this true, will prevent you from using SetNextWindowSizeConstraints
-    // which is needed for ratio-resizing of the scene view rendering panel
+                                         // which is needed for ratio-resizing of the scene view rendering panel
 
-
-// Initializing all the scenes for selection
-    std::unique_ptr<IScene> sandbox = std::make_unique<Sandbox>(m_appContext);
-    m_sceneMap["Sandbox"] = std::make_unique<SceneData>(
-        std::move(sandbox),
-        m_appContext->configData.get<int>("width").value(),
-        m_appContext->configData.get<int>("height").value(),
+    // Initializing all the scenes for selection
+    int width = m_appContext->configData.get<int>("width").value();
+    int height = m_appContext->configData.get<int>("height").value();
+    m_editorSceneMap["Sandbox"] = std::make_unique<EditorSceneData>(
+        std::make_unique<Sandbox>(m_appContext),
+        width,
+        height,
         settings
     );
 
-    std::unique_ptr<IScene> mainmenu = std::make_unique<MainMenu>(m_appContext);
-    m_sceneMap["MainMenu"] = std::make_unique<SceneData>(
-        std::move(mainmenu),
-        m_appContext->configData.get<int>("width").value(),
-        m_appContext->configData.get<int>("height").value(),
+    m_editorSceneMap["MainMenu"] = std::make_unique<EditorSceneData>(
+        std::make_unique<MainMenu>(m_appContext),
+        width,
+        height,
         settings
     );
 
-    std::unique_ptr<IScene> gameOfLifeSim = std::make_unique<GameOfLifeSim>(m_appContext);
-    m_sceneMap["GameOfLifeSim"] = std::make_unique<SceneData>(
-        std::move(gameOfLifeSim),
-        m_appContext->configData.get<int>("width").value(),
-        m_appContext->configData.get<int>("height").value(),
+    m_editorSceneMap["GameOfLifeSim"] = std::make_unique<EditorSceneData>(
+        std::make_unique<GameOfLifeSim>(m_appContext),
+        width,
+        height,
         settings
     );
 
     // Load in first scene of map
-    m_selectedSceneKey = m_sceneMap.begin()->first;
-    m_reg = &m_sceneMap[m_selectedSceneKey]->scene->getRegistry();
-    m_gameView.setTexture(m_reg->get<SceneViewRenderer>(m_sceneMap[m_selectedSceneKey]->renderTextureID).rd.getTexture());
+    m_selectedSceneKey = m_editorSceneMap.begin()->first;
+    m_selectedSceneData = m_editorSceneMap.begin()->second.get();
+    m_gameView.setTexture(m_editorSceneMap[m_selectedSceneKey]->getRenderTexture().getTexture());
 }
 
 void Editor::processEvent(const sf::Event& event)
@@ -100,13 +98,13 @@ void Editor::processEvent(const sf::Event& event)
 void Editor::processInput()
 {
     if (m_startButtonEnabled)
-        m_sceneMap[m_selectedSceneKey]->scene->processInput();
+        m_editorSceneMap[m_selectedSceneKey]->processInput();
 }
 
 void Editor::update()
 {
     if (m_startButtonEnabled || m_forwardFrameEnabled) {
-        m_sceneMap[m_selectedSceneKey]->scene->update();
+        m_editorSceneMap[m_selectedSceneKey]->update();
         m_forwardFrameEnabled = false;
     }
 }
@@ -179,7 +177,8 @@ void Editor::accept(ISceneVisitor* visitor)
 
 entt::registry& Editor::getRegistry()
 {
-    return *m_reg;
+    if (m_selectedSceneData)
+        return m_selectedSceneData->getRegistry();
 }
 
 void Editor::setupDockPanel(const ImVec2& panPos, const ImVec2& panSize, const char* panID, const ImGuiID& dockID) const
@@ -244,12 +243,13 @@ void Editor::renderDebugPanel(const ImVec2& pos, const ImVec2& size)
 
     if (ImGui::CollapsingHeader("Scene Manager"))
     {
-        for (const auto& [sceneName, sceneObj] : m_sceneMap)
+        for (const auto& [sceneName, sceneObj] : m_editorSceneMap)
         {
             if (ImGui::Selectable(sceneName.c_str(), m_selectedSceneKey == sceneName))
             {
                 m_selectedSceneKey = sceneName;
-                m_reg = &m_sceneMap[sceneName]->scene->getRegistry();
+                m_selectedSceneData = m_editorSceneMap[sceneName].get();
+                //m_reg = &m_editorSceneMap[sceneName]->getRegistry();
             }
         }
     }
@@ -341,11 +341,11 @@ void Editor::renderSceneViewPanel(const ImVec2& pos, const ImVec2& size)
     ImGui::Begin("Scene View Panel", nullptr, 0);
     ImGui::PopStyleVar();
 
-    auto& renderTexture = m_reg->get<SceneViewRenderer>(m_sceneMap[m_selectedSceneKey]->renderTextureID).rd;
+    auto& renderTexture = m_editorSceneMap[m_selectedSceneKey]->getRenderTexture();
 
     // Clear the previous buffer then call to the actual scenes render function
     renderTexture.clear();
-    m_sceneMap[m_selectedSceneKey]->scene->render();
+    m_editorSceneMap[m_selectedSceneKey]->render();
 
     displayEntityVisualizers();
     displayCollisionSystemVisualizer();
@@ -392,7 +392,7 @@ void Editor::renderPropertiesPanel(const ImVec2& pos, const ImVec2& size)
 
     static std::unordered_map<entt::entity, bool> closableGroups;
 
-    const auto& view = m_reg->view<Sprite>();
+    const auto& view = m_selectedSceneData->getRegistry().view<entt::entity>();
     for (const auto& entityID : view)
     {
         // Initialize the closable groups and components if it is a new entityID
@@ -471,8 +471,8 @@ void Editor::renderPropertiesPanel(const ImVec2& pos, const ImVec2& size)
 
 void Editor::displayEntityVisualizers()
 {
-    auto& sceneRenderTexture = m_reg->get<SceneViewRenderer>(m_sceneMap[m_selectedSceneKey]->renderTextureID);
-    const auto& view = m_reg->view<Sprite>();
+    auto& sceneRenderTexture = m_editorSceneMap[m_selectedSceneKey]->getRenderTexture();
+    const auto& view = m_selectedSceneData->getRegistry().view<Sprite>();
     for (const auto& entityID : view)
     {
         auto& spriteEntity = view.get<Sprite>(entityID).sprite;
@@ -485,7 +485,7 @@ void Editor::displayEntityVisualizers()
                 spriteEntity.getPosition().x + spriteEntity.getGlobalBounds().getSize().x,
                 spriteEntity.getPosition().y + spriteEntity.getGlobalBounds().getSize().y
             );
-            sceneRenderTexture.rd.draw(IDText);
+            sceneRenderTexture.draw(IDText);
         }
 
         if (m_enableEntityCollider)
@@ -502,7 +502,7 @@ void Editor::displayEntityVisualizers()
             entt::entity player = findEntityID<PlayerInput>();
             if (player != entt::null &&
                 player != entityID &&
-                m_reg->get<Sprite>(player).getGlobalBounds().intersects(spriteEntity.getGlobalBounds()))
+                m_selectedSceneData->getRegistry().get<Sprite>(player).getGlobalBounds().intersects(spriteEntity.getGlobalBounds()))
             {
                 border.setOutlineColor(sf::Color::Red);
                 LOG_TRACE(Logger::get())
@@ -515,7 +515,7 @@ void Editor::displayEntityVisualizers()
             {
                 border.setOutlineColor(sf::Color::Green);
             }
-            sceneRenderTexture.rd.draw(border);
+            sceneRenderTexture.draw(border);
         }
 
         if (m_enableEntityPosition)
@@ -526,7 +526,7 @@ void Editor::displayEntityVisualizers()
                 spriteEntity.getPosition().x + spriteEntity.getGlobalBounds().getSize().x,
                 spriteEntity.getPosition().y
             );
-            sceneRenderTexture.rd.draw(IDText);
+            sceneRenderTexture.draw(IDText);
         }
     }
 }
@@ -535,8 +535,8 @@ void Editor::displayCollisionSystemVisualizer()
 {
     if (m_enableQuadTreeVisualizer)
     {
-        auto& sceneRenderTexture = m_reg->get<SceneViewRenderer>(m_sceneMap[m_selectedSceneKey]->renderTextureID).rd;
-        auto manager = static_cast<Sandbox*>(m_sceneMap[m_selectedSceneKey]->scene.get())->getSystemManager();
+        auto& sceneRenderTexture = m_editorSceneMap[m_selectedSceneKey]->getRenderTexture();
+        auto manager = static_cast<Sandbox*>(m_editorSceneMap[m_selectedSceneKey]->get())->getSystemManager();
         manager->getSystem<CollisionSystem>()->draw(sceneRenderTexture);
     }
 }
@@ -707,9 +707,9 @@ void Editor::drawWayPointContextMenu(const entt::entity& entityID, ComponentProp
 
 void Editor::updateWayPointCanvas(const entt::entity& entityID, ComponentPropData& cmpntData)
 {
-    if (m_reg->all_of<MovementPattern, Sprite>(entityID))
+    if (m_selectedSceneData->getRegistry().all_of<MovementPattern, Sprite>(entityID))
     {
-        auto& movement = m_reg->get<MovementPattern>(entityID);
+        auto& movement = m_selectedSceneData->getRegistry().get<MovementPattern>(entityID);
 
         WayPoint* current = movement.movePattern.get();
 
@@ -728,10 +728,10 @@ void Editor::updateWayPointCanvas(const entt::entity& entityID, ComponentPropDat
 
 void Editor::updateWayPointComponent(const entt::entity& entityID, ComponentPropData& cmpntData, WayPointEditMode mode)
 {
-    if (m_reg->all_of<MovementPattern, Sprite>(entityID))
+    if (m_selectedSceneData->getRegistry().all_of<MovementPattern, Sprite>(entityID))
     {
-        auto& sprite = m_reg->get<Sprite>(entityID);
-        auto& movement = m_reg->get<MovementPattern>(entityID);
+        auto& sprite = m_selectedSceneData->getRegistry().get<Sprite>(entityID);
+        auto& movement = m_selectedSceneData->getRegistry().get<MovementPattern>(entityID);
 
         // If the waypoint canvas editor is empty, set the starting waypoint to the current position of the sprite
         // This syncs the waypoint component with the waypoint canvas
@@ -746,7 +746,7 @@ void Editor::updateWayPointComponent(const entt::entity& entityID, ComponentProp
             std::unique_ptr<WayPoint> root = std::make_unique<WayPoint>(sf::Vector2f{ sprite.getPosition().x, sprite.getPosition().y });
             movement.currentPath = root.get();
             movement.distance = 0.f;
-            m_reg->emplace_or_replace<MovementPattern>(entityID, std::move(root), true);
+            m_selectedSceneData->getRegistry().emplace_or_replace<MovementPattern>(entityID, std::move(root), true);
         }
         else
         {

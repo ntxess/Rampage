@@ -1,7 +1,8 @@
 #pragma once
 
-#include "EditorSceneVisitor.hpp"
 #include "EditorComponentVisitor.hpp"
+#include "EditorSceneData.hpp"
+#include "EditorSceneVisitor.hpp"
 #include "../core/ApplicationContext.hpp"
 #include "../core/Components.hpp"
 #include "../core/Systems.hpp"
@@ -21,19 +22,6 @@
 class Editor : public IScene
 {
 private:
-    struct SceneData
-    {
-        std::unique_ptr<IScene> scene;
-        entt::entity renderTextureID;
-
-        SceneData(std::unique_ptr<IScene> scn, unsigned int width, unsigned int height, const sf::ContextSettings& settings) : scene(std::move(scn))
-        {
-            scene->init();
-            renderTextureID = scene->getRegistry().create();
-            scene->getRegistry().emplace<SceneViewRenderer>(renderTextureID, width, height, settings);
-        }
-    };
-
     struct ComponentPropData
     {
         entt::entity entityID{};
@@ -139,10 +127,9 @@ private:
     std::atomic<bool> m_forwardFrameEnabled;
 
     // Current loaded scene data
-    std::unordered_map<std::string, std::unique_ptr<SceneData>> m_sceneMap;
+    std::unordered_map<std::string, std::unique_ptr<EditorSceneData>> m_editorSceneMap;
     std::string m_selectedSceneKey;
-    entt::registry* m_reg;
-
+    EditorSceneData* m_selectedSceneData;
     sf::Sprite m_gameView;
 
     // Component Data used for modifying properties in PropertiesPanel
@@ -156,7 +143,7 @@ template<typename... Args>
 inline entt::entity Editor::findEntityID()
 {
     // Hacky way of getting entity ID from a unique component
-    const auto& view = m_reg->view<Args...>();
+    const auto& view = m_selectedSceneData->getRegistry().view<Args...>();
     for (const auto& entityID : view)
     {
         return entityID;
@@ -168,14 +155,14 @@ inline entt::entity Editor::findEntityID()
 template<typename T>
 inline bool Editor::renderComponentProperties(const entt::entity& entityID, std::string_view componentID, bool& visible, EditorComponentVisitor& visitor, std::function<void(const entt::entity&)> callback)
 {
-    if (!m_reg->all_of<T>(entityID))
+    if (!m_selectedSceneData->getRegistry().all_of<T>(entityID))
     {
         return false;
     }
 
     if (ImGui::CollapsingHeader(componentID.data(), &visible, ImGuiTreeNodeFlags_DefaultOpen))
     {
-        auto& component = m_reg->get<T>(entityID);
+        auto& component = m_selectedSceneData->getRegistry().get<T>(entityID);
         component.accept(&visitor, entityID);
 
         if (callback)
@@ -187,7 +174,7 @@ inline bool Editor::renderComponentProperties(const entt::entity& entityID, std:
     if (!visible)
     {
         // TODO: Remove the sprite component from QuadTree
-        m_reg->remove<T>(entityID);
+        m_selectedSceneData->getRegistry().remove<T>(entityID);
         //static_cast<Sandbox*>(
         // m_sceneMap[m_selectedSceneKey]->scene.get())->getSystemManager()->getSystem<CollisionSystem>()->remove(*m_reg, entityID);
         return false;
