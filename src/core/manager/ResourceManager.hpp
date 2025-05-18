@@ -15,14 +15,14 @@ class ResourceManager
 public:
     ResourceManager() = default;
     ResourceManager(const DataStore& dataStore, thor::Resources::KnownIdStrategy known = thor::Resources::Reuse);
-    T& operator[](const std::string id);
-    const T& operator[](const std::string id) const;
+    T& operator[](const std::string& id);
+    const T& operator[](const std::string& id) const;
 
-    const T& get(const std::string id) const;
+    const T& get(const std::string& id) const;
     bool load(const DataStore& dataStore, thor::Resources::KnownIdStrategy known = thor::Resources::Reuse);
-    bool load(const std::string id, const std::string filepath, thor::Resources::KnownIdStrategy known = thor::Resources::Reuse);
+    bool load(const std::string& id, const std::string& filepath, thor::Resources::KnownIdStrategy known = thor::Resources::Reuse);
     bool unload();
-    bool unload(const std::string);
+    bool unload(const std::string& id);
 
 private:
     thor::ResourceHolder<T, std::string> m_holder;
@@ -35,19 +35,19 @@ inline ResourceManager<T>::ResourceManager(const DataStore& dataStore, thor::Res
 }
 
 template<typename T>
-inline T& ResourceManager<T>::operator[](const std::string id)
+inline T& ResourceManager<T>::operator[](const std::string& id)
 {
     return m_holder[id];
 }
 
 template<typename T>
-inline const T& ResourceManager<T>::operator[](const std::string id) const
+inline const T& ResourceManager<T>::operator[](const std::string& id) const
 {
     return m_holder[id];
 }
 
 template<typename T>
-inline const T& ResourceManager<T>::get(const std::string id) const
+inline const T& ResourceManager<T>::get(const std::string& id) const
 {
     return m_holder[id];
 }
@@ -63,13 +63,13 @@ inline bool ResourceManager<T>::load(const DataStore& dataStore, thor::Resources
             m_holder.acquire
             (
                 id,
-                thor::Resources::fromFile<T>(cwd + anyToString(path)),
+                thor::Resources::fromFile<T>(cwd + getValue(path)),
                 known
             );
         }
         catch (const thor::ResourceLoadingException& e)
         {
-            LOG_ERROR(Logger::get()) << "Failed to aquire resource at: " << cwd + anyToString(path) << ". Error: " << e.what();
+            LOG_ERROR(Logger::get()) << "Failed to aquire resource at: " << cwd + getValue(path) << ". Error: " << e.what();
             return false;
         }
     }
@@ -77,7 +77,7 @@ inline bool ResourceManager<T>::load(const DataStore& dataStore, thor::Resources
 }
 
 template<typename T>
-inline bool ResourceManager<T>::load(const std::string id, const std::string filepath, thor::Resources::KnownIdStrategy known)
+inline bool ResourceManager<T>::load(const std::string& id, const std::string& filepath, thor::Resources::KnownIdStrategy known)
 {
     const std::string cwd = std::filesystem::current_path().string();
     try
@@ -85,13 +85,13 @@ inline bool ResourceManager<T>::load(const std::string id, const std::string fil
         m_holder.acquire
         (
             id,
-            thor::Resources::fromFile<T>(cwd + anyToString(filepath)),
+            thor::Resources::fromFile<T>(cwd + filepath),
             known
         );
     }
     catch (const thor::ResourceLoadingException& e)
     {
-        LOG_ERROR(Logger::get()) << "Failed to aquire resource at: " << cwd + anyToString(filepath) << ". Error: " << e.what();
+        LOG_ERROR(Logger::get()) << "Failed to aquire resource at: " << cwd + filepath << ". Error: " << e.what();
         return false;
     }
     return true;
@@ -113,7 +113,7 @@ inline bool ResourceManager<T>::unload()
 }
 
 template<typename T>
-inline bool ResourceManager<T>::unload(const std::string id)
+inline bool ResourceManager<T>::unload(const std::string& id)
 {
     try
     {
