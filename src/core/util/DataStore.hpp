@@ -8,41 +8,41 @@
 #include <string>
 #include <unordered_map>
 
-struct TransparentHash 
+struct TransparentHash
 {
     using is_transparent = void;
 
-    size_t operator()(std::string_view str) const noexcept 
+    size_t operator()(std::string_view str) const noexcept
     {
         return std::hash<std::string_view>{}(str);
     }
 
-    size_t operator()(const std::string& str) const noexcept 
+    size_t operator()(const std::string& str) const noexcept
     {
         return std::hash<std::string>{}(str);
     }
 };
 
-struct TransparentEqual 
+struct TransparentEqual
 {
     using is_transparent = void;
 
-    bool operator()(std::string_view lhs, std::string_view rhs) const noexcept 
+    bool operator()(std::string_view lhs, std::string_view rhs) const noexcept
     {
         return lhs == rhs;
     }
 
-    bool operator()(const std::string& lhs, const std::string& rhs) const noexcept 
+    bool operator()(const std::string& lhs, const std::string& rhs) const noexcept
     {
         return lhs == rhs;
     }
 
-    bool operator()(const std::string& lhs, std::string_view rhs) const noexcept 
+    bool operator()(const std::string& lhs, std::string_view rhs) const noexcept
     {
         return lhs == rhs;
     }
 
-    bool operator()(std::string_view lhs, const std::string& rhs) const noexcept 
+    bool operator()(std::string_view lhs, const std::string& rhs) const noexcept
     {
         return lhs == rhs;
     }
@@ -83,13 +83,13 @@ private:
 template<typename T>
 inline std::optional<T> DataStore::get(std::string_view key) const
 {
-    if (auto it = m_data.find(key); it != m_data.end()) 
+    if (auto it = m_data.find(key); it != m_data.end())
     {
-        try 
+        try
         {
             return std::any_cast<T>(it->second);
         }
-        catch (const std::bad_any_cast& e) 
+        catch (const std::bad_any_cast& e)
         {
             LOG_ERROR(Logger::get()) << "Failed to cast value for key: " << key << " | [" << getType(m_data.at(std::string(key))) << ", " << getValue(m_data.at(std::string(key))) << "]. Error: " << e.what();
             return std::nullopt;
