@@ -1,10 +1,13 @@
 {
     "system": {
-        "name": "unittest-config",
-        "version": "0.1b"
+        "name": "unittest-defaultConfig",
+        "version": "0.1b",
+        "debug-mode": true,
+        "debug-log-filter-severity": "debug"
     },
     "system-paths": {
         "config-folder": "config/",
+        "debug-log-folder": "log/",
         "save-folder": "save/",
         "script-folder": "script/"
     },
@@ -13,7 +16,7 @@
             "width": 1920,
             "height": 1080
         },
-        "frame-rate": 165.0,
+        "frame-rate": 160.0,
         "fullscreen": false,
         "damage-number": true,
         "visual-effects": true,
@@ -49,5 +52,12 @@
     },
     "accessibility-settings": {
         "colorblind-mode": false
-    }
+    },
+    "array": [
+        1,
+        2,
+        3,
+        4,
+        5
+    ]
 }

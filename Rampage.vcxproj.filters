@@ -18,9 +18,6 @@
     <ClCompile Include="src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="test\Unittest-Suite.hpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="dep\SFML-imgui\include\imgui-SFML.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -150,14 +147,8 @@
     <ClCompile Include="src\core\interface\IDataStoreSerializer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="test\Unittest-JsonDataStoreSerializer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="test\Unittest-JsonDataStoreSerializer.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="dep\SFML-imgui\include\imconfig-SFML.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -349,6 +340,5 @@
     <None Include="config\font.json" />
     <None Include="config\config.json" />
     <None Include="config\texture.json" />
-    <None Include="config\unittest-config.json" />
   </ItemGroup>
 </Project>

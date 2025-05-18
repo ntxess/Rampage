@@ -27,26 +27,26 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -207,8 +207,6 @@
     <ClCompile Include="src\scene\GameOfLifeSim.cpp" />
     <ClCompile Include="src\scene\MainMenu.cpp" />
     <ClCompile Include="src\scene\Sandbox.cpp" />
-    <ClCompile Include="test\Unittest-JsonDataStoreSerializer.cpp" />
-    <ClCompile Include="test\Unittest-Suite.hpp" />
     <ClCompile Include="src\core\manager\WayPointManager.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -273,14 +271,12 @@
     <ClInclude Include="src\scene\MainMenu.hpp" />
     <ClInclude Include="src\scene\Sandbox.hpp" />
     <ClInclude Include="src\scene\Scenes.hpp" />
-    <ClInclude Include="test\Unittest-JsonDataStoreSerializer.hpp" />
     <ClInclude Include="src\core\manager\WayPointManager.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="config\config.json" />
     <None Include="config\font.json" />
     <None Include="config\texture.json" />
-    <None Include="config\unittest-config.json" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

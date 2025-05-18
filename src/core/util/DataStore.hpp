@@ -47,55 +47,6 @@ struct TransparentEqual
     }
 };
 
-class DataStore
-{
-public:
-    template<typename T>
-    std::optional<T> get(std::string_view key) const;
-
-    template<typename T>
-    void set(std::string_view key, T&& val);
-
-    bool contains(std::string_view key) const;
-    void remove(std::string_view key);
-    void clear();
-
-    std::unordered_map<std::string, std::any, TransparentHash, TransparentEqual>& data();
-    const std::unordered_map<std::string, std::any, TransparentHash, TransparentEqual>& data() const;
-
-    std::unordered_map<std::string, std::any>::iterator begin();
-    std::unordered_map<std::string, std::any>::iterator end();
-    std::unordered_map<std::string, std::any>::const_iterator begin() const;
-    std::unordered_map<std::string, std::any>::const_iterator end() const;
-
-private:
-    std::unordered_map<std::string, std::any, TransparentHash, TransparentEqual> m_data;
-};
-
-template<typename T>
-inline std::optional<T> DataStore::get(std::string_view key) const
-{
-    if (auto it = m_data.find(key); it != m_data.end()) 
-    {
-        try 
-        {
-            return std::any_cast<T>(it->second);
-        }
-        catch (const std::bad_any_cast& e) 
-        {
-            LOG_ERROR(Logger::get()) << "Failed to cast value for key: " << key << ". Error: " << e.what();
-            return std::nullopt;
-        }
-    }
-    return std::nullopt;
-}
-
-template<typename T>
-inline void DataStore::set(std::string_view key, T&& value)
-{
-    m_data[std::string(key)] = std::forward<T>(value);
-}
-
 inline std::string getType(const std::any& data)
 {
     if (std::any_cast<std::string>(&data))
@@ -112,14 +63,14 @@ inline std::string getType(const std::any& data)
         return "double";
     else if (auto x = std::any_cast<std::vector<std::any>>(&data))
     {
-        std::string result = "[";
+        std::string result = "<";
         for (size_t i = 0; i < (*x).size(); ++i)
         {
             result += getType((*x)[i]);
             if (i + 1 < (*x).size())
                 result += ", ";
         }
-        result.push_back(']');
+        result.push_back('>');
         return result;
     }
     return "Undefined Type";
@@ -163,6 +114,61 @@ inline std::string getValue(const std::any& data)
         }
     }
     return std::string{};
+}
+
+class DataStore
+{
+public:
+    using key_type = std::string;
+    using mapped_type = std::any;
+    using container_type = std::unordered_map<key_type, mapped_type, TransparentHash, TransparentEqual>;
+    using iterator = container_type::iterator;
+    using const_iterator = container_type::const_iterator;
+
+    template<typename T>
+    std::optional<T> get(std::string_view key) const;
+
+    template<typename T>
+    void set(std::string_view key, T&& val);
+
+    bool contains(std::string_view key) const;
+    void remove(std::string_view key);
+    void clear();
+
+    container_type& data();
+    const container_type& data() const;
+
+    iterator begin();
+    iterator end();
+    const_iterator begin() const;
+    const_iterator end() const;
+
+private:
+    std::unordered_map<key_type, mapped_type, TransparentHash, TransparentEqual> m_data;
+};
+
+template<typename T>
+inline std::optional<T> DataStore::get(std::string_view key) const
+{
+    if (auto it = m_data.find(key); it != m_data.end()) 
+    {
+        try 
+        {
+            return std::any_cast<T>(it->second);
+        }
+        catch (const std::bad_any_cast& e) 
+        {
+            LOG_ERROR(Logger::get()) << "Failed to cast value for key: " << key << " | [" << getType(m_data.at(std::string(key))) << ", " << getValue(m_data.at(std::string(key))) << "]. Error: " << e.what();
+            return std::nullopt;
+        }
+    }
+    return std::nullopt;
+}
+
+template<typename T>
+inline void DataStore::set(std::string_view key, T&& value)
+{
+    m_data[std::string(key)] = std::forward<T>(value);
 }
 
 inline std::ostream& operator<<(std::ostream& os, const DataStore& ds)

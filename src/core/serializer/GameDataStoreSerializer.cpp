@@ -17,3 +17,8 @@ bool GameDataStoreSerializer::save(std::string_view filename, const DataStore& d
 {
     return false;
 }
+
+bool GameDataStoreSerializer::update(std::string_view filename, const DataStore& dataStore)
+{
+    return false;
+}

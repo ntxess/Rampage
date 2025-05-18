@@ -21,12 +21,14 @@ public:
 
     bool load(std::string_view filename, DataStore& dataStore) override;
     bool save(std::string_view filename, const DataStore& dataStore) override;
+    bool update(std::string_view filename, const DataStore& dataStore) override;
 
 private:
     void read(std::string_view key, rapidjson::Value& val, DataStore& dataStore);
     void write(rapidjson::Document& doc, const DataStore& dataStore);
+    void findAndReplace(rapidjson::Document& doc, rapidjson::Value& val, const DataStore& dataStore);
     std::optional<std::any> valueToAny(const rapidjson::Value& val);
-    bool createJsonValue(rapidjson::Document& doc, rapidjson::Value& val, const std::any& data);
+    std::optional<rapidjson::Value> createJsonValue(rapidjson::Document& doc, const std::any& data);
     void vecParseHelper(std::string_view key, rapidjson::Value& val, std::vector<std::any>& vec);
 };
 

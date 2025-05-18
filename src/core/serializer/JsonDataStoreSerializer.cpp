@@ -67,6 +67,51 @@ bool JsonDataStoreSerializer::save(std::string_view filename, const DataStore& d
     return true;
 }
 
+bool JsonDataStoreSerializer::update(std::string_view filename, const DataStore& dataStore)
+{
+    const auto path = resolvePath(filename.data());
+    std::ifstream ifs(path, std::fstream::app);
+
+    if (!ifs.good())
+    {
+        LOG_ERROR(Logger::get()) << "File cannot be read: " << path.c_str();
+        return false;
+    }
+
+    // Read in the json file
+    rapidjson::IStreamWrapper isw(ifs);
+    rapidjson::Document doc;
+    doc.ParseStream(isw);
+
+    // Update the json document with the new data
+    if (doc.IsObject())
+    {
+        findAndReplace(doc, doc, dataStore);
+    }
+    else
+    {
+        LOG_ERROR(Logger::get()) << "Invalid JSON format in file: " << path.c_str();
+        return false;
+    }
+
+    // Setup the document to write
+    rapidjson::StringBuffer buffer;
+    rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
+    doc.Accept(writer);
+    std::string json(buffer.GetString(), buffer.GetSize());
+
+    std::ofstream ofs(path);
+    if (!ofs.good())
+    {
+        LOG_ERROR(Logger::get()) << "File cannot be written: " << path.c_str();
+        return false;
+    }
+
+    ofs << json;
+
+    return true;
+}
+
 void JsonDataStoreSerializer::read(std::string_view key, rapidjson::Value& val, DataStore& dataStore)
 {
     if (val.IsObject())
@@ -125,11 +170,51 @@ void JsonDataStoreSerializer::write(rapidjson::Document& doc, const DataStore& d
 {
     for (const auto& [key, data] : dataStore)
     {
-        rapidjson::Value val;
-        if (createJsonValue(doc, val, data))
+        auto val = createJsonValue(doc, data);
+        if (!val.has_value())
         {
-            rapidjson::Value index(key.c_str(), static_cast<rapidjson::SizeType>(key.size()), doc.GetAllocator());
-            doc.AddMember(index, val, doc.GetAllocator());
+            LOG_ERROR(Logger::get()) << "Failed to convert value to any type for key: " << key;
+            continue;
+        }
+
+        rapidjson::Value index(key.c_str(), static_cast<rapidjson::SizeType>(key.size()), doc.GetAllocator());
+        doc.AddMember(index, val.value(), doc.GetAllocator());
+    }
+}
+
+void JsonDataStoreSerializer::findAndReplace(rapidjson::Document& doc, rapidjson::Value& val, const DataStore& dataStore)
+{
+    if (val.IsObject())
+    {
+        for (auto itr = val.MemberBegin(); itr != val.MemberEnd(); ++itr)
+        {
+            std::string keyStr = itr->name.GetString();
+
+            // If this key is in the updates map, replace it
+            if (auto it = dataStore.data().find(keyStr); it != dataStore.end())
+            {
+                itr->value = createJsonValue(doc, it->second).value_or(rapidjson::Value{});
+
+                // If the value is an object, we need to replace it
+                if (itr->value.IsObject())
+                {
+                    itr->value = createJsonValue(doc, it->second).value_or(rapidjson::Value{});
+                }
+                else
+                {
+                    LOG_ERROR(Logger::get()) << "Failed to convert value to any type for key: " << keyStr;
+                }
+            }
+
+            // Recurse deeper if the value is also an object
+            findAndReplace(doc, itr->value, dataStore);
+        }
+    }
+    else if (val.IsArray())
+    {
+        for (auto& element : val.GetArray())
+        {
+            findAndReplace(doc, element, dataStore);
         }
     }
 }
@@ -163,8 +248,9 @@ std::optional<std::any> JsonDataStoreSerializer::valueToAny(const rapidjson::Val
     return std::nullopt;
 }
 
-bool JsonDataStoreSerializer::createJsonValue(rapidjson::Document& doc, rapidjson::Value& val, const std::any& data)
+std::optional<rapidjson::Value> JsonDataStoreSerializer::createJsonValue(rapidjson::Document& doc, const std::any& data)
 {
+    rapidjson::Value val;
     if (data.type() == typeid(const char*))
     {
         val.SetString(std::any_cast<const char*>(data), doc.GetAllocator());
@@ -194,16 +280,12 @@ bool JsonDataStoreSerializer::createJsonValue(rapidjson::Document& doc, rapidjso
         val.SetArray();
         for (const auto& item : std::any_cast<std::vector<std::any>>(data))
         {
-            rapidjson::Value itemVal;
-            createJsonValue(doc, itemVal, item);
+            auto itemVal = createJsonValue(doc, item).value_or(rapidjson::Value{});
             val.PushBack(itemVal, doc.GetAllocator());
         }
     }
-    else
-    {
-        return false;
-    }
-    return true;
+
+    return val;
 }
 
 void JsonDataStoreSerializer::vecParseHelper(std::string_view key, rapidjson::Value& val, std::vector<std::any>& vec)

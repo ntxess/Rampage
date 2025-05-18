@@ -18,6 +18,7 @@ public:
 
     virtual bool load(std::string_view filename, DataStore& dataStore) = 0;
     virtual bool save(std::string_view filename, const DataStore& dataStore) = 0;
+    virtual bool update(std::string_view filename, const DataStore& dataStore) = 0;
     virtual std::filesystem::path resolvePath(std::string path);
 
 protected:

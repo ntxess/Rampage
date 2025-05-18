@@ -18,5 +18,6 @@ public:
 
     bool load(std::string_view filename, DataStore& dataStore) override;
     bool save(std::string_view filename, const DataStore& dataStore) override;
+    bool update(std::string_view filename, const DataStore& dataStore) override;
 };
 

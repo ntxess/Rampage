@@ -19,6 +19,13 @@
     "mature": true,
     "music-volume": 100.0,
     "effects-volume": 100.0,
+    "array": [
+        1,
+        2,
+        3,
+        4,
+        5
+    ],
     "key-1": "u",
     "key-up": "w",
     "key-jump": "space",
