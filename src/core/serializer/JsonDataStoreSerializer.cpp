@@ -191,7 +191,7 @@ void JsonDataStoreSerializer::findAndReplace(rapidjson::Document& doc, rapidjson
             std::string keyStr = itr->name.GetString();
 
             // If this key is in the updates map, replace it
-            if (auto it = dataStore.data().find(keyStr); it != dataStore.end())
+            if (auto it = dataStore.find(keyStr); it != dataStore.end())
             {
                 itr->value = createJsonValue(doc, it->second).value_or(rapidjson::Value{});
 

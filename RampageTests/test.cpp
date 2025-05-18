@@ -33,8 +33,8 @@ namespace RampageTests::Serializer
         EXPECT_EQ(saveDataStore.get<int>("height").value_or(1), loadDataStore.get<int>("height").value_or(2));
         EXPECT_EQ(saveDataStore.get<double>("frame-rate").value_or(1.0f), loadDataStore.get<double>("frame-rate").value_or(2.0f));
 
-        const auto& savedArray = saveDataStore.get<std::vector<std::any>>("array").value();
-        const auto& loadedArray = loadDataStore.get<std::vector<std::any>>("array").value();
+        const auto savedArray = saveDataStore.get<std::vector<std::any>>("array").value();
+        const auto loadedArray = loadDataStore.get<std::vector<std::any>>("array").value();
         for (size_t i = 0; i < savedArray.size(); ++i) 
         {
             EXPECT_EQ(std::any_cast<int>(savedArray[i]), std::any_cast<int>(loadedArray[i]));

@@ -138,6 +138,7 @@ public:
     container_type& data();
     const container_type& data() const;
 
+    const_iterator find(std::string_view key) const;
     iterator begin();
     iterator end();
     const_iterator begin() const;

@@ -18,32 +18,37 @@ void DataStore::clear()
     m_data.clear();
 }
 
-std::unordered_map<std::string, std::any, TransparentHash, TransparentEqual>& DataStore::data()
+DataStore::container_type& DataStore::data()
 {
     return m_data;
 }
 
-const std::unordered_map<std::string, std::any, TransparentHash, TransparentEqual>& DataStore::data() const
+const DataStore::container_type& DataStore::data() const
 {
     return m_data;
 }
 
-std::unordered_map<std::string, std::any>::iterator DataStore::begin()
+DataStore::const_iterator DataStore::find(std::string_view key) const
+{
+    return m_data.find(key);
+}
+
+DataStore::iterator DataStore::begin()
 {
     return m_data.begin();
 }
 
-std::unordered_map<std::string, std::any>::iterator DataStore::end()
+DataStore::iterator DataStore::end()
 {
     return m_data.end();
 }
 
-std::unordered_map<std::string, std::any>::const_iterator DataStore::begin() const
+DataStore::const_iterator DataStore::begin() const
 {
     return m_data.begin();
 }
 
-std::unordered_map<std::string, std::any>::const_iterator DataStore::end() const
+DataStore::const_iterator DataStore::end() const
 {
     return m_data.end();
 }
